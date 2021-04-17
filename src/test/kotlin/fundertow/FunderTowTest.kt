@@ -1,17 +1,11 @@
 package fundertow
 
 import failfast.describe
-import io.undertow.Undertow
-import io.undertow.UndertowOptions
-import io.undertow.server.HttpHandler
-import io.undertow.server.HttpServerExchange
-import io.undertow.server.handlers.PathHandler
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import java.net.ServerSocket
 
 class UserService : RestService {
     fun create(user: User): User = User("userId", "userName")
@@ -46,41 +40,3 @@ object FunderTowTest {
     }
 }
 
-class FunderTow(serviceMapping: Map<String, RestService>) : AutoCloseable {
-    val port: Int = findFreePort()
-
-    private fun findFreePort(): Int = ServerSocket(0).use {
-        it.reuseAddress = true
-        it.localPort
-    }
-
-    private val undertow: Undertow = run {
-
-        val pathHandler = PathHandler()
-        serviceMapping.forEach { (key, value) ->
-            pathHandler.addExactPath(key, RestServiceHandler(value))
-        }
-        Undertow.builder()
-            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-            .addHttpListener(port, "127.0.0.1")
-            .setHandler(pathHandler)
-            .build()
-    }
-
-    init {
-        undertow.start()
-    }
-
-    override fun close() {
-    }
-
-}
-
-class RestServiceHandler(service: RestService) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) {
-        TODO("Not yet implemented")
-    }
-
-}
-
-interface RestService
