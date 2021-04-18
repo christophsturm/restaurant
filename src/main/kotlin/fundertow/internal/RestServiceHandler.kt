@@ -1,10 +1,26 @@
 package fundertow.internal
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import fundertow.HttpService
 import fundertow.RestService
+import kotlinx.coroutines.runBlocking
+import kotlin.reflect.KFunction
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.functions
+import kotlin.reflect.javaType
 
-class RestServiceHandler(service: RestService) : HttpService {
+class RestServiceHandler(private val service: RestService) : HttpService {
+    private val functions = service::class.functions.associateBy { it.name }
+
+    @OptIn(ExperimentalStdlibApi::class)
     override fun handle(requestBody: ByteArray): ByteArray {
-        TODO("Not yet implemented")
+        val function: KFunction<*>? = functions["create"]
+        val parameterType = function!!.parameters[1].type.javaType as Class<*>
+        val parameter = jacksonObjectMapper().readValue(requestBody, parameterType)
+        return runBlocking {
+            val result = function.callSuspend(service, parameter)
+            jacksonObjectMapper().writeValueAsBytes(result)
+
+        }
     }
 }
