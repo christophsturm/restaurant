@@ -15,6 +15,12 @@ class UserService : RestService {
         delay(1)
         return user.copy(id = "userId")
     }
+
+    suspend fun show(userId: Int): User {
+        delay(1)
+        return User(id = userId.toString(), name = "User $userId")
+    }
+
 }
 
 object RestServiceHandlerTest {

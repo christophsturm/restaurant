@@ -11,7 +11,7 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 
 
-object restaurantTest {
+object RestaurantTest {
     @Suppress("BlockingMethodInNonBlockingContext")
     val context = describe(Restaurant::class) {
         val restaurant = autoClose(
@@ -49,6 +49,13 @@ object restaurantTest {
                 expectThat(response) {
                     get { code }.isEqualTo(200)
                     get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"userId","name":"userName"}""")
+                }
+            }
+            pending("calls show method on get request") {
+                val response = request("/api/user/5")
+                expectThat(response) {
+                    get { code }.isEqualTo(200)
+                    get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
                 }
             }
         }

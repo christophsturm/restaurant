@@ -21,7 +21,7 @@ class Restaurant(serviceMapping: Map<String, HttpService>) : AutoCloseable {
 
         val pathHandler = PathHandler()
         serviceMapping.forEach { (key, value) ->
-            pathHandler.addExactPath(key, HttpServiceHandler(value))
+            pathHandler.addPrefixPath(key, HttpServiceHandler(value))
         }
         Undertow.builder()
             .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
@@ -41,11 +41,9 @@ class Restaurant(serviceMapping: Map<String, HttpService>) : AutoCloseable {
 
 class HttpServiceHandler(private val service: HttpService) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
-        exchange.requestReceiver.receiveFullBytes { _, message ->
-            exchange.responseSender.send(ByteBuffer.wrap(service.handle(message)))
+        exchange.requestReceiver.receiveFullBytes { exchange, body ->
+            exchange.responseSender.send(ByteBuffer.wrap(service.handle(body)))
         }
-
-
     }
 
 }
