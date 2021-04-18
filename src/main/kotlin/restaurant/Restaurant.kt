@@ -1,4 +1,4 @@
-package fundertow
+package restaurant
 
 import io.undertow.Undertow
 import io.undertow.UndertowOptions
@@ -9,7 +9,7 @@ import java.net.ServerSocket
 import java.nio.ByteBuffer
 
 
-class FunderTow(serviceMapping: Map<String, HttpService>) : AutoCloseable {
+class Restaurant(serviceMapping: Map<String, HttpService>) : AutoCloseable {
     val port: Int = findFreePort()
 
     private fun findFreePort(): Int = ServerSocket(0).use {

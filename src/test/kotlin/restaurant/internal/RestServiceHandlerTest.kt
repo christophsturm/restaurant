@@ -1,9 +1,9 @@
-package fundertow.internal
+package restaurant.internal
 
 import failfast.describe
-import fundertow.HttpService
-import fundertow.RestService
 import kotlinx.coroutines.delay
+import restaurant.HttpService
+import restaurant.RestService
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.nio.charset.Charset
@@ -13,7 +13,7 @@ data class User(val id: String?, val name: String)
 class UserService : RestService {
     suspend fun create(user: User): User {
         delay(1)
-        return User("userId", "userName")
+        return user.copy(id = "userId")
     }
 }
 
@@ -23,7 +23,7 @@ object RestServiceHandlerTest {
             val handler: HttpService = RestServiceHandler(UserService())
             expectThat(
                 String(
-                    handler.handle("""{"name":"sentName"}""".toByteArray()),
+                    handler.handle("""{"name":"userName"}""".toByteArray()),
                     Charset.defaultCharset()
                 )
             ).isEqualTo("""{"id":"userId","name":"userName"}""")

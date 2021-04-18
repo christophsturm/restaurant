@@ -1,23 +1,21 @@
-package fundertow
+package restaurant
 
 import failfast.describe
-import fundertow.internal.RestServiceHandler
-import fundertow.internal.UserService
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import restaurant.internal.RestServiceHandler
+import restaurant.internal.UserService
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 
 
-
-
-object FunderTowTest {
+object restaurantTest {
     @Suppress("BlockingMethodInNonBlockingContext")
-    val context = describe(FunderTow::class) {
-        val funderTow = autoClose(
-            FunderTow(
+    val context = describe(Restaurant::class) {
+        val restaurant = autoClose(
+            Restaurant(
                 mapOf(
                     "/api/user" to RestServiceHandler(UserService()),
                     "/handlers/reverser" to ReverserService()
@@ -27,7 +25,7 @@ object FunderTowTest {
         val client = okhttp3.OkHttpClient()
         fun request(path: String, config: Request.Builder.() -> Request.Builder = { this }): Response {
             return client.newCall(
-                Request.Builder().url("http://localhost:${funderTow.port}$path").config().build()
+                Request.Builder().url("http://localhost:${restaurant.port}$path").config().build()
             ).execute()
         }
 
@@ -47,7 +45,7 @@ object FunderTowTest {
 
         describe("rest services") {
             it("calls create method on post request") {
-                val response = request("/api/user") { post("""{"name":"sentName"}""".toRequestBody()) }
+                val response = request("/api/user") { post("""{"name":"userName"}""".toRequestBody()) }
                 expectThat(response) {
                     get { code }.isEqualTo(200)
                     get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"userId","name":"userName"}""")

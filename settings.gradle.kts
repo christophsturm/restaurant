@@ -1,2 +1,2 @@
-rootProject.name = "fundertow"
+rootProject.name = "restaurant"
 

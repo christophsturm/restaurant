@@ -38,7 +38,7 @@ tasks.withType<KotlinCompile> {
 }
 
 val testMain = tasks.register("testMain", JavaExec::class) {
-    main = "fundertow.AllTestsKt"
+    main = "restaurant.AllTestsKt"
     classpath = sourceSets["test"].runtimeClasspath
 }
 tasks.check {

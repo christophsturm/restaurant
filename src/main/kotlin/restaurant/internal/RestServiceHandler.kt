@@ -1,9 +1,9 @@
-package fundertow.internal
+package restaurant.internal
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import fundertow.HttpService
-import fundertow.RestService
 import kotlinx.coroutines.runBlocking
+import restaurant.HttpService
+import restaurant.RestService
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.functions

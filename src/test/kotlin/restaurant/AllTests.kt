@@ -1,4 +1,4 @@
-package fundertow
+package restaurant
 
 import failfast.FailFast.runAllTests
 
