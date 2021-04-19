@@ -6,6 +6,7 @@ import io.undertow.UndertowOptions
 import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
+import io.undertow.server.handlers.error.SimpleErrorPageHandler
 import io.undertow.util.Methods
 import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
@@ -29,7 +30,7 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
         Undertow.builder()
             .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
             .addHttpListener(port, "127.0.0.1")
-            .setHandler(routingHandler)
+            .setHandler(SimpleErrorPageHandler(routingHandler))
             .build()
     }
 
@@ -50,9 +51,25 @@ class RoutingDSL(private val routingHandler: RoutingHandler, private val routesA
     fun resource(path: String, service: RestService) {
         val routes = routesAdder.routesFor(service)
         routes.post?.let { routingHandler.post(path, HttpServiceHandler(it)) }
+        routes.get?.let {
+            routingHandler.get("$path/{id}", NoBodyServiceHandler(it))
+        }
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
+}
+
+class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange) {
+        exchange.responseSender.send(
+            ByteBuffer.wrap(
+                service.handle(
+                    null,
+                    exchange.queryParameters.mapValues { it.value.single() })
+            )
+        )
+    }
+
 }
 
 class HttpServiceHandler(private val service: HttpService) : HttpHandler {
@@ -64,7 +81,7 @@ class HttpServiceHandler(private val service: HttpService) : HttpHandler {
                 ByteBuffer.wrap(
                     service.handle(
                         body,
-                        exchange.pathParameters.mapValues { it.value.single() })
+                        exchange.queryParameters.mapValues { it.value.single() })
                 )
             )
         }

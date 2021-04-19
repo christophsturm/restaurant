@@ -43,13 +43,12 @@ private class RestServiceHandler(
 private class GetRestServiceHandler(
     private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
 ) : HttpService {
-    private val parameterType = function.parameters[1].type.javaType as Class<*>
-
     override fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
-        val parameter = pathVariables["id"]!!.toInt()
+        val id = pathVariables["id"]
+            ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
+        val parameter = id.toInt()
         return runBlocking {
-            val result = function.callSuspend(service, parameter)
-            objectMapper.writeValueAsBytes(result)
+            objectMapper.writeValueAsBytes(function.callSuspend(service, parameter))
         }
     }
 }

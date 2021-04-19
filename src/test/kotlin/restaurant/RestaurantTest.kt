@@ -52,11 +52,11 @@ object RestaurantTest {
                         .isEqualTo("""{"id":"userId","name":"userName"}""")
                 }
             }
-            pending("calls show method on get request") {
+            it("calls show method on get request") {
                 val response = request("/api/user/5")
                 expectThat(response) {
                     get { code }.isEqualTo(200)
-                    get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
+                    get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"User 5"}""")
                 }
             }
         }
