@@ -4,13 +4,14 @@ import io.undertow.Undertow
 import io.undertow.UndertowOptions
 import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
-import io.undertow.server.handlers.PathHandler
+import io.undertow.server.RoutingHandler
 import io.undertow.util.Methods
+import restaurant.internal.RestServiceHandler
 import java.net.ServerSocket
 import java.nio.ByteBuffer
 
 
-class Restaurant(serviceMapping: Map<String, HttpService>) : AutoCloseable {
+class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
     val port: Int = findFreePort()
 
     private fun findFreePort(): Int = ServerSocket(0).use {
@@ -20,14 +21,12 @@ class Restaurant(serviceMapping: Map<String, HttpService>) : AutoCloseable {
 
     private val undertow: Undertow = run {
 
-        val pathHandler = PathHandler()
-        serviceMapping.forEach { (key, value) ->
-            pathHandler.addPrefixPath(key, HttpServiceHandler(value))
-        }
+        val routingHandler = RoutingHandler()
+        RoutingDSL(routingHandler).serviceMapping()
         Undertow.builder()
             .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
             .addHttpListener(port, "127.0.0.1")
-            .setHandler(pathHandler)
+            .setHandler(routingHandler)
             .build()
     }
 
@@ -38,6 +37,21 @@ class Restaurant(serviceMapping: Map<String, HttpService>) : AutoCloseable {
     override fun close() {
     }
 
+}
+
+class RoutingDSL(private val routingHandler: RoutingHandler) {
+    fun post(path: String, service: HttpService) {
+        routingHandler.post(path, HttpServiceHandler(service))
+    }
+
+    fun resource(path: String, service: RestService) {
+        routingHandler.post(
+            path,
+            HttpServiceHandler(RestServiceHandler(service))
+        )
+    }
+
+    private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
 }
 
 class HttpServiceHandler(private val service: HttpService) : HttpHandler {

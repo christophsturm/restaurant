@@ -4,7 +4,6 @@ import failfast.describe
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import restaurant.internal.RestServiceHandler
 import restaurant.internal.UserService
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -15,12 +14,11 @@ object RestaurantTest {
     @Suppress("BlockingMethodInNonBlockingContext")
     val context = describe(Restaurant::class) {
         val restaurant = autoClose(
-            Restaurant(
-                mapOf(
-                    "/api/user" to RestServiceHandler(UserService()),
-                    "/handlers/reverser" to ReverserService()
-                )
-            )
+            Restaurant {
+                post("/handlers/reverser", ReverserService())
+                resource("/api/user", UserService())
+
+            }
         ) { it.close() }
         val client = okhttp3.OkHttpClient()
         fun request(path: String, config: Request.Builder.() -> Request.Builder = { this }): Response {
