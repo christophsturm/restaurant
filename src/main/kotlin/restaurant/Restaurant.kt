@@ -7,7 +7,6 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
-import io.undertow.util.Methods
 import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
@@ -45,45 +44,37 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 
 class RoutingDSL(private val routingHandler: RoutingHandler, private val routesAdder: RoutesAdder) {
     fun post(path: String, service: HttpService) {
-        routingHandler.post(path, HttpServiceHandler(service))
+        routingHandler.post(path, HttpServiceHandler(service, 201))
     }
 
     fun resource(path: String, service: RestService) {
         val routes = routesAdder.routesFor(service)
-        routes.post?.let { routingHandler.post(path, HttpServiceHandler(it)) }
-        routes.get?.let {
-            routingHandler.get("$path/{id}", NoBodyServiceHandler(it))
-        }
+        routes.post?.let { routingHandler.post(path, HttpServiceHandler(it, 201)) }
+        routes.get?.let { routingHandler.get("$path/{id}", NoBodyServiceHandler(it)) }
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
 }
 
-class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) {
-        exchange.responseSender.send(
-            ByteBuffer.wrap(
-                service.handle(
-                    null,
-                    exchange.queryParameters.mapValues { it.value.single() })
-            )
+private fun call(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
+    exchange.responseSender.send(
+        ByteBuffer.wrap(
+            service.handle(
+                requestBody,
+                exchange.queryParameters.mapValues { it.value.single() })
         )
-    }
-
+    )
 }
 
-class HttpServiceHandler(private val service: HttpService) : HttpHandler {
+class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange) = call(exchange, service, null)
+}
+
+class HttpServiceHandler(private val service: HttpService, val statusCode: Int) : HttpHandler {
     override fun handleRequest(ex: HttpServerExchange) {
         ex.requestReceiver.receiveFullBytes { exchange, body ->
-            if (exchange.requestMethod == Methods.POST)
-                exchange.statusCode = 201
-            exchange.responseSender.send(
-                ByteBuffer.wrap(
-                    service.handle(
-                        body,
-                        exchange.queryParameters.mapValues { it.value.single() })
-                )
-            )
+            exchange.statusCode = statusCode
+            call(exchange, service, body)
         }
     }
 
