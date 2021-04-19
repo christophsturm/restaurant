@@ -9,6 +9,7 @@ import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
 import io.undertow.util.Methods
 import restaurant.internal.RestServiceHandler
+import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
 
@@ -44,6 +45,7 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 }
 
 class RoutingDSL(private val routingHandler: RoutingHandler, private val objectMapper: ObjectMapper) {
+    val routesAdder = RoutesAdder(objectMapper)
     fun post(path: String, service: HttpService) {
         routingHandler.post(path, HttpServiceHandler(service))
     }
