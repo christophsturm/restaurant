@@ -1,6 +1,5 @@
 package restaurant
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
 import io.undertow.UndertowOptions
@@ -8,7 +7,6 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
 import io.undertow.util.Methods
-import restaurant.internal.RestServiceHandler
 import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
@@ -27,7 +25,7 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
     private val undertow: Undertow = run {
 
         val routingHandler = RoutingHandler()
-        RoutingDSL(routingHandler, objectMapper).serviceMapping()
+        RoutingDSL(routingHandler, RoutesAdder(objectMapper)).serviceMapping()
         Undertow.builder()
             .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
             .addHttpListener(port, "127.0.0.1")
@@ -44,21 +42,14 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 
 }
 
-class RoutingDSL(private val routingHandler: RoutingHandler, private val objectMapper: ObjectMapper) {
-    val routesAdder = RoutesAdder(objectMapper)
+class RoutingDSL(private val routingHandler: RoutingHandler, private val routesAdder: RoutesAdder) {
     fun post(path: String, service: HttpService) {
         routingHandler.post(path, HttpServiceHandler(service))
     }
 
     fun resource(path: String, service: RestService) {
-        routingHandler.post(
-            path,
-            HttpServiceHandler(RestServiceHandler(service, objectMapper))
-        )
-        routingHandler.get(
-            "$path/{id}",
-            HttpServiceHandler(RestServiceHandler(service, objectMapper))
-        )
+        val routes = routesAdder.routesFor(service)
+        routes.postRoute?.let { routingHandler.post(path, HttpServiceHandler(it)) }
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")

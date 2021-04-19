@@ -6,13 +6,13 @@ import restaurant.HttpService
 import restaurant.RestService
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.callSuspend
-import kotlin.reflect.full.functions
 import kotlin.reflect.javaType
 
 @OptIn(ExperimentalStdlibApi::class)
-class RestServiceHandler(private val service: RestService, private val objectMapper: ObjectMapper) : HttpService {
-    private val functions = service::class.functions.associateBy { it.name }
-    private val function: KFunction<*>? = functions["create"]
+class RestServiceHandler(
+    private val service: RestService, private val objectMapper: ObjectMapper, kFunction: KFunction<*>?
+) : HttpService {
+    private val function: KFunction<*>? = kFunction
     private val parameterType = function!!.parameters[1].type.javaType as Class<*>
 
     override fun handle(requestBody: ByteArray, pathVariables: Map<String, String>): ByteArray {

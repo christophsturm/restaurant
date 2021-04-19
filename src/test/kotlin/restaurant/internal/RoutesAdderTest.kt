@@ -13,7 +13,8 @@ object RoutesAdderTest {
         it("adds a post route") {
             expectThat(
                 String(
-                    routes.postRoute.handle("""{"name":"userName"}""".toByteArray(), mapOf()), Charset.defaultCharset()
+                    routes.postRoute!!.handle("""{"name":"userName"}""".toByteArray(), mapOf()),
+                    Charset.defaultCharset()
                 )
             ).isEqualTo("""{"id":"userId","name":"userName"}""")
         }
