@@ -49,7 +49,7 @@ class RoutingDSL(private val routingHandler: RoutingHandler, private val routesA
 
     fun resource(path: String, service: RestService) {
         val routes = routesAdder.routesFor(service)
-        routes.postRoute?.let { routingHandler.post(path, HttpServiceHandler(it)) }
+        routes.post?.let { routingHandler.post(path, HttpServiceHandler(it)) }
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
@@ -75,6 +75,6 @@ class HttpServiceHandler(private val service: HttpService) : HttpHandler {
 interface RestService
 
 interface HttpService {
-    fun handle(requestBody: ByteArray, pathVariables: Map<String, String>): ByteArray
+    fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray?
 }
 

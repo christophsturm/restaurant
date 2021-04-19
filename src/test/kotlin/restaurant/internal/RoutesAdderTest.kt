@@ -13,10 +13,18 @@ object RoutesAdderTest {
         it("adds a post route") {
             expectThat(
                 String(
-                    routes.postRoute!!.handle("""{"name":"userName"}""".toByteArray(), mapOf()),
+                    routes.post!!.handle("""{"name":"userName"}""".toByteArray(), mapOf())!!,
                     Charset.defaultCharset()
                 )
             ).isEqualTo("""{"id":"userId","name":"userName"}""")
+        }
+        it("adds a get route") {
+            expectThat(
+                String(
+                    routes.get!!.handle(null, mapOf("id" to "5"))!!,
+                    Charset.defaultCharset()
+                )
+            ).isEqualTo("""{"id":"5","name":"User 5"}""")
         }
     }
 }

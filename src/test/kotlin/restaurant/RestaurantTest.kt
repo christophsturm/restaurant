@@ -64,8 +64,8 @@ object RestaurantTest {
 }
 
 class ReverserService : HttpService {
-    override fun handle(requestBody: ByteArray, pathVariables: Map<String, String>): ByteArray =
-        requestBody.reversedArray()
+    override fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? =
+        requestBody?.reversedArray()
 }
 
 
