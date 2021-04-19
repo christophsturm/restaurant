@@ -1,5 +1,6 @@
 package restaurant.internal
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import failfast.describe
 import kotlinx.coroutines.delay
 import restaurant.HttpService
@@ -26,7 +27,7 @@ class UserService : RestService {
 object RestServiceHandlerTest {
     val context = describe(RestServiceHandler::class) {
         it("wraps a Rest Service") {
-            val handler: HttpService = RestServiceHandler(UserService())
+            val handler: HttpService = RestServiceHandler(UserService(), jacksonObjectMapper())
             expectThat(
                 String(
                     handler.handle("""{"name":"userName"}""".toByteArray()),

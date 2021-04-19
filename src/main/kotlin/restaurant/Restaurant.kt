@@ -1,5 +1,7 @@
 package restaurant
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
 import io.undertow.UndertowOptions
 import io.undertow.server.HttpHandler
@@ -19,10 +21,12 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
         it.localPort
     }
 
+    private val objectMapper = jacksonObjectMapper()
+
     private val undertow: Undertow = run {
 
         val routingHandler = RoutingHandler()
-        RoutingDSL(routingHandler).serviceMapping()
+        RoutingDSL(routingHandler, objectMapper).serviceMapping()
         Undertow.builder()
             .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
             .addHttpListener(port, "127.0.0.1")
@@ -39,7 +43,7 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 
 }
 
-class RoutingDSL(private val routingHandler: RoutingHandler) {
+class RoutingDSL(private val routingHandler: RoutingHandler, val objectMapper: ObjectMapper) {
     fun post(path: String, service: HttpService) {
         routingHandler.post(path, HttpServiceHandler(service))
     }
@@ -47,7 +51,7 @@ class RoutingDSL(private val routingHandler: RoutingHandler) {
     fun resource(path: String, service: RestService) {
         routingHandler.post(
             path,
-            HttpServiceHandler(RestServiceHandler(service))
+            HttpServiceHandler(RestServiceHandler(service, objectMapper))
         )
     }
 
