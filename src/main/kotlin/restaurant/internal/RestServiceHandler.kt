@@ -20,7 +20,6 @@ class RestServiceHandler(private val service: RestService) : HttpService {
         return runBlocking {
             val result = function.callSuspend(service, parameter)
             jacksonObjectMapper().writeValueAsBytes(result)
-
         }
     }
 }

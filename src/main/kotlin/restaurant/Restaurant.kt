@@ -5,6 +5,7 @@ import io.undertow.UndertowOptions
 import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.PathHandler
+import io.undertow.util.Methods
 import java.net.ServerSocket
 import java.nio.ByteBuffer
 
@@ -40,8 +41,10 @@ class Restaurant(serviceMapping: Map<String, HttpService>) : AutoCloseable {
 }
 
 class HttpServiceHandler(private val service: HttpService) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) {
-        exchange.requestReceiver.receiveFullBytes { exchange, body ->
+    override fun handleRequest(ex: HttpServerExchange) {
+        ex.requestReceiver.receiveFullBytes { exchange, body ->
+            if (exchange.requestMethod == Methods.POST)
+                exchange.statusCode = 201
             exchange.responseSender.send(ByteBuffer.wrap(service.handle(body)))
         }
     }

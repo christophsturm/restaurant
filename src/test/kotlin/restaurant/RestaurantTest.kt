@@ -38,17 +38,20 @@ object RestaurantTest {
         it("calls handlers with body and returns result") {
             val response = request("/handlers/reverser") { post("""jakob""".toRequestBody()) }
             expectThat(response) {
-                get { code }.isEqualTo(200)
+                get { code }.isEqualTo(201)
                 get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
             }
         }
 
         describe("rest services") {
-            it("calls create method on post request") {
+            describe("post requests") {
                 val response = request("/api/user") { post("""{"name":"userName"}""".toRequestBody()) }
-                expectThat(response) {
-                    get { code }.isEqualTo(200)
-                    get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"userId","name":"userName"}""")
+                it("returns 201 - Created on successful post request") {
+                    expectThat(response).get { code }.isEqualTo(201)
+                }
+                it("calls create method on post request") {
+                    expectThat(response).get { body }.isNotNull().get { string() }
+                        .isEqualTo("""{"id":"userId","name":"userName"}""")
                 }
             }
             pending("calls show method on get request") {
