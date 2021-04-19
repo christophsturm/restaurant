@@ -35,6 +35,9 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
+    kotlinOptions.freeCompilerArgs =
+        listOf("-Xopt-in=kotlin.RequiresOptIn")
+
 }
 
 val testMain = tasks.register("testMain", JavaExec::class) {

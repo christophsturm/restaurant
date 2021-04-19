@@ -30,8 +30,7 @@ object RestServiceHandlerTest {
             val handler: HttpService = RestServiceHandler(UserService(), jacksonObjectMapper())
             expectThat(
                 String(
-                    handler.handle("""{"name":"userName"}""".toByteArray()),
-                    Charset.defaultCharset()
+                    handler.handle("""{"name":"userName"}""".toByteArray(), mapOf()), Charset.defaultCharset()
                 )
             ).isEqualTo("""{"id":"userId","name":"userName"}""")
         }

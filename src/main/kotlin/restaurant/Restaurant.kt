@@ -43,7 +43,7 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 
 }
 
-class RoutingDSL(private val routingHandler: RoutingHandler, val objectMapper: ObjectMapper) {
+class RoutingDSL(private val routingHandler: RoutingHandler, private val objectMapper: ObjectMapper) {
     fun post(path: String, service: HttpService) {
         routingHandler.post(path, HttpServiceHandler(service))
     }
@@ -51,6 +51,10 @@ class RoutingDSL(private val routingHandler: RoutingHandler, val objectMapper: O
     fun resource(path: String, service: RestService) {
         routingHandler.post(
             path,
+            HttpServiceHandler(RestServiceHandler(service, objectMapper))
+        )
+        routingHandler.get(
+            "$path/{id}",
             HttpServiceHandler(RestServiceHandler(service, objectMapper))
         )
     }
@@ -63,7 +67,13 @@ class HttpServiceHandler(private val service: HttpService) : HttpHandler {
         ex.requestReceiver.receiveFullBytes { exchange, body ->
             if (exchange.requestMethod == Methods.POST)
                 exchange.statusCode = 201
-            exchange.responseSender.send(ByteBuffer.wrap(service.handle(body)))
+            exchange.responseSender.send(
+                ByteBuffer.wrap(
+                    service.handle(
+                        body,
+                        exchange.pathParameters.mapValues { it.value.single() })
+                )
+            )
         }
     }
 
@@ -72,6 +82,6 @@ class HttpServiceHandler(private val service: HttpService) : HttpHandler {
 interface RestService
 
 interface HttpService {
-    fun handle(requestBody: ByteArray): ByteArray
+    fun handle(requestBody: ByteArray, pathVariables: Map<String, String>): ByteArray
 }
 

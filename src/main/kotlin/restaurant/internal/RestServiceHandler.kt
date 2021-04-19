@@ -15,7 +15,7 @@ class RestServiceHandler(private val service: RestService, private val objectMap
     private val function: KFunction<*>? = functions["create"]
     private val parameterType = function!!.parameters[1].type.javaType as Class<*>
 
-    override fun handle(requestBody: ByteArray): ByteArray {
+    override fun handle(requestBody: ByteArray, pathVariables: Map<String, String>): ByteArray {
         val parameter = objectMapper.readValue(requestBody, parameterType)
         return runBlocking {
             val result = function!!.callSuspend(service, parameter)
