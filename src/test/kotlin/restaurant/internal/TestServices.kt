@@ -4,8 +4,8 @@ import kotlinx.coroutines.delay
 import restaurant.RestService
 
 data class User(val id: String?, val name: String)
-
-class UserService : RestService {
+data class Hobby(val name: String)
+class UsersService : RestService {
     suspend fun create(user: User): User {
         delay(1)
         return user.copy(id = "userId")
@@ -19,6 +19,14 @@ class UserService : RestService {
     suspend fun update(userId: Int, user: User): User {
         delay(1)
         return user.copy(id = userId.toString())
+    }
+
+}
+
+class HobbiesService : RestService {
+    suspend fun create(userId: Int, hobby: Hobby): Hobby {
+        delay(1)
+        return Hobby("user $userId's hobby ${hobby.name}")
     }
 
 }

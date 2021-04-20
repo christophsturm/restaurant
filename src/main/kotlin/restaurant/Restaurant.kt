@@ -42,6 +42,7 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 
 }
 
+@RestDSL
 class RoutingDSL(
     private val routingHandler: RoutingHandler,
     private val routesAdder: RoutesAdder,
@@ -51,12 +52,13 @@ class RoutingDSL(
         routingHandler.post(path, HttpServiceHandler(service, 201))
     }
 
-    fun resources(path: String, service: RestService) {
+    fun resources(path: String, service: RestService, function: ResourceDSL.() -> Unit = {}) {
         val resolvedPath = prefix + path
         val routes = routesAdder.routesFor(service)
         routes.post?.let { routingHandler.post(resolvedPath, HttpServiceHandler(it, 201)) }
         routes.get?.let { routingHandler.get("$resolvedPath/{id}", NoBodyServiceHandler(it)) }
         routes.put?.let { routingHandler.put("$resolvedPath/{id}", HttpServiceHandler(it, 200)) }
+        ResourceDSL(resolvedPath).function()
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
@@ -64,8 +66,17 @@ class RoutingDSL(
         RoutingDSL(routingHandler, routesAdder, this.prefix + prefix).function()
     }
 
-    fun resources(service: RestService) {
-        resources("/${path(service)}", service)
+    fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
+        resources("/${path(service)}", service, function)
+    }
+}
+
+@DslMarker
+annotation class RestDSL
+
+@RestDSL
+class ResourceDSL(resolvedPath: String) {
+    fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
     }
 }
 
@@ -83,7 +94,7 @@ class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) = call(exchange, service, null)
 }
 
-class HttpServiceHandler(private val service: HttpService, val statusCode: Int) : HttpHandler {
+class HttpServiceHandler(private val service: HttpService, private val statusCode: Int) : HttpHandler {
     override fun handleRequest(ex: HttpServerExchange) {
         ex.requestReceiver.receiveFullBytes { exchange, body ->
             exchange.statusCode = statusCode

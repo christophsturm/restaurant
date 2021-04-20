@@ -9,7 +9,7 @@ import java.nio.charset.Charset
 object RoutesAdderTest {
     val context = describe(RoutesAdder::class) {
         val routesAdder = RoutesAdder(jacksonObjectMapper())
-        val routes = routesAdder.routesFor(UserService())
+        val routes = routesAdder.routesFor(UsersService())
         it("adds a post route") {
             expectThat(
                 String(
