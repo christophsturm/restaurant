@@ -22,9 +22,11 @@ object RestaurantTest {
         ) { it.close() }
         val client = okhttp3.OkHttpClient()
         fun request(path: String, config: Request.Builder.() -> Request.Builder = { this }): Response {
-            return client.newCall(
-                Request.Builder().url("http://localhost:${restaurant.port}$path").config().build()
-            ).execute()
+            return autoClose(
+                client.newCall(
+                    Request.Builder().url("http://localhost:${restaurant.port}$path").config().build()
+                ).execute()
+            ) { it.close() }
         }
 
         it("returns 404 if the route is not found") {
