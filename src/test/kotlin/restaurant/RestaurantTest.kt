@@ -59,6 +59,13 @@ object RestaurantTest {
                     get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"User 5"}""")
                 }
             }
+            it("calls update method on put request") {
+                val response = request("/api/user/5") { put("""{"name":"userName"}""".toRequestBody()) }
+                expectThat(response) {
+                    get { code }.isEqualTo(200)
+                    get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
+                }
+            }
         }
     }
 }

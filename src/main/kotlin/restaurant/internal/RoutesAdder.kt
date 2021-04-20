@@ -18,11 +18,31 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
         val get = functions["show"]?.let {
             GetRestServiceHandler(restService, objectMapper, it)
         }
-        return Routes(post, get)
+        val put = functions["update"]?.let {
+            PutRestServiceHandler(restService, objectMapper, it)
+        }
+        return Routes(post, get, put)
     }
 }
 
-data class Routes(val post: HttpService?, val get: HttpService?)
+data class Routes(val post: HttpService?, val get: HttpService?, val put: HttpService?)
+
+@OptIn(ExperimentalStdlibApi::class)
+private class PutRestServiceHandler(
+    private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
+) : HttpService {
+    private val parameterType = function.parameters[2].type.javaType as Class<*>
+
+    override fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
+        val id = pathVariables["id"]?.toInt()
+            ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
+        val parameter = objectMapper.readValue(requestBody, parameterType)
+        return runBlocking {
+            val result = function.callSuspend(service, id, parameter)
+            objectMapper.writeValueAsBytes(result)
+        }
+    }
+}
 
 @OptIn(ExperimentalStdlibApi::class)
 private class RestServiceHandler(

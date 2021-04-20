@@ -51,6 +51,7 @@ class RoutingDSL(private val routingHandler: RoutingHandler, private val routesA
         val routes = routesAdder.routesFor(service)
         routes.post?.let { routingHandler.post(path, HttpServiceHandler(it, 201)) }
         routes.get?.let { routingHandler.get("$path/{id}", NoBodyServiceHandler(it)) }
+        routes.put?.let { routingHandler.put("$path/{id}", HttpServiceHandler(it, 200)) }
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")

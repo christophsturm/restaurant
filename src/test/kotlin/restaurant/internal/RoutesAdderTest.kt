@@ -26,5 +26,13 @@ object RoutesAdderTest {
                 )
             ).isEqualTo("""{"id":"5","name":"User 5"}""")
         }
+        it("adds a put route") {
+            expectThat(
+                String(
+                    routes.put!!.handle("""{"name":"userName"}""".toByteArray(), mapOf("id" to "5"))!!,
+                    Charset.defaultCharset()
+                )
+            ).isEqualTo("""{"id":"5","name":"userName"}""")
+        }
     }
 }

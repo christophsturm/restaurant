@@ -16,4 +16,9 @@ class UserService : RestService {
         return User(id = userId.toString(), name = "User $userId")
     }
 
+    suspend fun update(userId: Int, user: User): User {
+        delay(1)
+        return user.copy(id = userId.toString())
+    }
+
 }
