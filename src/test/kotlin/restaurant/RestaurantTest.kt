@@ -16,7 +16,9 @@ object RestaurantTest {
         val restaurant = autoClose(
             Restaurant {
                 post("/handlers/reverser", ReverserService())
-                resources("/api/user", UserService())
+                namespace("/api") {
+                    resources("/user", UserService())
+                }
             }
         ) { it.close() }
         val client = okhttp3.OkHttpClient()

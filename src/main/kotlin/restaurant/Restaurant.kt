@@ -42,19 +42,27 @@ class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 
 }
 
-class RoutingDSL(private val routingHandler: RoutingHandler, private val routesAdder: RoutesAdder) {
+class RoutingDSL(
+    private val routingHandler: RoutingHandler,
+    private val routesAdder: RoutesAdder,
+    val prefix: String = ""
+) {
     fun post(path: String, service: HttpService) {
         routingHandler.post(path, HttpServiceHandler(service, 201))
     }
 
     fun resources(path: String, service: RestService) {
+        val resolvedPath = prefix + path
         val routes = routesAdder.routesFor(service)
-        routes.post?.let { routingHandler.post(path, HttpServiceHandler(it, 201)) }
-        routes.get?.let { routingHandler.get("$path/{id}", NoBodyServiceHandler(it)) }
-        routes.put?.let { routingHandler.put("$path/{id}", HttpServiceHandler(it, 200)) }
+        routes.post?.let { routingHandler.post(resolvedPath, HttpServiceHandler(it, 201)) }
+        routes.get?.let { routingHandler.get("$resolvedPath/{id}", NoBodyServiceHandler(it)) }
+        routes.put?.let { routingHandler.put("$resolvedPath/{id}", HttpServiceHandler(it, 200)) }
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
+    fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
+        RoutingDSL(routingHandler, routesAdder, this.prefix + prefix).function()
+    }
 }
 
 private fun call(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
