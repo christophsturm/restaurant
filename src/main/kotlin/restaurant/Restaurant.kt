@@ -47,7 +47,7 @@ class RoutingDSL(private val routingHandler: RoutingHandler, private val routesA
         routingHandler.post(path, HttpServiceHandler(service, 201))
     }
 
-    fun resource(path: String, service: RestService) {
+    fun resources(path: String, service: RestService) {
         val routes = routesAdder.routesFor(service)
         routes.post?.let { routingHandler.post(path, HttpServiceHandler(it, 201)) }
         routes.get?.let { routingHandler.get("$path/{id}", NoBodyServiceHandler(it)) }

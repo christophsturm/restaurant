@@ -16,8 +16,7 @@ object RestaurantTest {
         val restaurant = autoClose(
             Restaurant {
                 post("/handlers/reverser", ReverserService())
-                resource("/api/user", UserService())
-
+                resources("/api/user", UserService())
             }
         ) { it.close() }
         val client = okhttp3.OkHttpClient()
@@ -31,9 +30,7 @@ object RestaurantTest {
 
         it("returns 404 if the route is not found") {
             val response = request("/unconfigured-url")
-            expectThat(response) {
-                get { code }.isEqualTo(404)
-            }
+            expectThat(response).get { code }.isEqualTo(404)
         }
         it("calls handlers with body and returns result") {
             val response = request("/handlers/reverser") { post("""jakob""".toRequestBody()) }
