@@ -17,7 +17,7 @@ object RestaurantTest {
             Restaurant {
                 post("/handlers/reverser", ReverserService())
                 namespace("/api") {
-                    resources("/user", UserService())
+                    resources(UserService())
                 }
             }
         ) { it.close() }

@@ -63,6 +63,10 @@ class RoutingDSL(
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
         RoutingDSL(routingHandler, routesAdder, this.prefix + prefix).function()
     }
+
+    fun resources(service: RestService) {
+        resources("/${path(service)}", service)
+    }
 }
 
 private fun call(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
