@@ -3,7 +3,8 @@
 The name will probably change because everybody except me thinks it is stupid.
 
 ```kotlin
-            Restaurant {
+
+Restaurant {
     namespace("/api") {
         resources(UsersService())
     }
@@ -33,7 +34,7 @@ class UsersService : RestService {
 Next: nested resources:
 
 ```kotlin
-                namespace("/api") {
+namespace("/api") {
     resources(UsersService()) {
         resources(HobbiesService()) // user has many hobbies
     }
