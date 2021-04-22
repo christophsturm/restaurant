@@ -28,5 +28,4 @@ class HobbiesService : RestService {
         delay(1)
         return Hobby("user $userId's hobby ${hobby.name}")
     }
-
 }
