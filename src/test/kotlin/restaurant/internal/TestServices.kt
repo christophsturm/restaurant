@@ -28,6 +28,17 @@ class UsersService : RestService {
 
 }
 
+class NonSuspendUsersService : RestService {
+    fun index(): List<User> = listOf(User("5", "userName"), User("6", "userName"))
+
+    fun create(user: User): User = user.copy(id = "userId")
+
+    fun show(userId: Int): User = User(id = userId.toString(), name = "User $userId")
+
+    fun update(userId: Int, user: User): User = user.copy(id = userId.toString())
+
+}
+
 class HobbiesService : RestService {
     suspend fun create(userId: Int, hobby: Hobby): Hobby {
         delay(1)
