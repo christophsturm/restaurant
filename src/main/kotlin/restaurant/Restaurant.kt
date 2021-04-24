@@ -1,5 +1,6 @@
 package restaurant
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
 import io.undertow.UndertowOptions
@@ -16,9 +17,11 @@ internal fun findFreePort(): Int = ServerSocket(0).use {
     it.localPort
 }
 
-class Restaurant(val port: Int = findFreePort(), serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
-
-    private val objectMapper = jacksonObjectMapper()
+class Restaurant(
+    val port: Int = findFreePort(),
+    private val objectMapper: ObjectMapper = jacksonObjectMapper(),
+    serviceMapping: RoutingDSL.() -> Unit,
+) : AutoCloseable {
 
     private val undertow: Undertow = run {
 
