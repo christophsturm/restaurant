@@ -1,6 +1,6 @@
 ### Restaurant - Rest without boilerplate
 
-A small web server for rest apis.
+A small web server for REST apis.
 
 There is clear consensus how a good REST api should look like. Restaurant helps you implement it in a simple way that is
 easy to test. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
