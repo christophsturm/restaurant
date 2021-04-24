@@ -61,8 +61,6 @@ val restaurant = Restaurant(errorHandler = { ex ->
 }/*.....*/)
 ```
 
-also possible: error handling via result types or services returning sealed classes
-
 ### nested resources:
 
 ```kotlin
@@ -75,6 +73,10 @@ namespace("/api") {
 
 will generate routes like `GET /api/users/10/hobbies/20` or `POST /api/users/10/hobbies`
 
-### authentication via jwt
+### Authentication via JWT
 
+### Developer friendly
 
+* Show a list of defined routes when a 404 error occurs in development mode.
+* Friendly error messages when json can be serialized or deserialized.
+* Any stacktrace in undertow or restaurant code that does not show a useful error message should be reported as a bug.
