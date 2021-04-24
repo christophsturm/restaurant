@@ -44,7 +44,7 @@ class Restaurant(val port: Int = findFreePort(), serviceMapping: RoutingDSL.() -
 class RoutingDSL(
     private val routingHandler: RoutingHandler,
     private val routesAdder: RoutesAdder,
-    val prefix: String = ""
+    private val prefix: String = ""
 ) {
     fun post(path: String, service: HttpService) {
         routingHandler.post(path, HttpServiceHandler(service, 201))
