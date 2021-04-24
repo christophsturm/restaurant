@@ -47,3 +47,22 @@ val testMain = tasks.register("testMain", JavaExec::class) {
 tasks.check {
     dependsOn(testMain)
 }
+
+tasks.named<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>("dependencyUpdates") {
+    val filtered =
+        listOf("alpha", "beta", "rc", "cr", "m", "preview", "dev", "eap")
+            .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-]*.*") }
+    resolutionStrategy {
+        componentSelection {
+            all {
+                if (filtered.any { it.matches(candidate.version) }) {
+                    reject("Release candidate")
+                }
+            }
+        }
+        checkForGradleUpdate = true
+        outputFormatter = "json"
+        outputDir = "build/dependencyUpdates"
+        reportfileName = "report"
+    }
+}
