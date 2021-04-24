@@ -12,15 +12,19 @@ import kotlin.reflect.javaType
 class RoutesAdder(private val objectMapper: ObjectMapper) {
     fun routesFor(restService: RestService): Routes {
         val functions = restService::class.functions.associateBy { it.name }
+
         val post = functions["create"]?.let {
             RestServiceHandler(restService, objectMapper, it)
         }
+
         val get = functions["show"]?.let {
             GetRestServiceHandler(restService, objectMapper, it)
         }
+
         val getList = functions["index"]?.let {
             GetListRestServiceHandler(restService, objectMapper, it)
         }
+
         val put = functions["update"]?.let {
             PutRestServiceHandler(restService, objectMapper, it)
         }
