@@ -12,6 +12,7 @@ object RoutesAdderTest {
         listOf(
             Pair(UsersService(), "service with suspend functions and Int primary keys"),
             Pair(NonSuspendUsersService(), "service with blocking functions and Int primary keys")
+/*            Pair(NonSuspendStringKeyUsersService(), "service with blocking functions and String primary keys")*/
         ).forEach { (service, description) ->
             describe("for a $description") {
                 val routes = routesAdder.routesFor(service)

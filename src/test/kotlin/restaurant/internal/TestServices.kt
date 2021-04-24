@@ -30,13 +30,16 @@ class UsersService : RestService {
 
 class NonSuspendUsersService : RestService {
     fun index(): List<User> = listOf(User("5", "userName"), User("6", "userName"))
-
     fun create(user: User): User = user.copy(id = "userId")
-
     fun show(userId: Int): User = User(id = userId.toString(), name = "User $userId")
-
     fun update(userId: Int, user: User): User = user.copy(id = userId.toString())
+}
 
+class NonSuspendStringKeyUsersService : RestService {
+    fun index(): List<User> = listOf(User("5", "userName"), User("6", "userName"))
+    fun create(user: User): User = user.copy(id = "userId")
+    fun show(userId: String): User = User(id = userId, name = "User $userId")
+    fun update(userId: String, user: User): User = user.copy(id = userId)
 }
 
 class HobbiesService : RestService {
