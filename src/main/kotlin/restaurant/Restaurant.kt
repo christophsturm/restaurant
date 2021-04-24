@@ -11,14 +11,12 @@ import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
 
+internal fun findFreePort(): Int = ServerSocket(0).use {
+    it.reuseAddress = true
+    it.localPort
+}
 
-class Restaurant(serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
-    val port: Int = findFreePort()
-
-    private fun findFreePort(): Int = ServerSocket(0).use {
-        it.reuseAddress = true
-        it.localPort
-    }
+class Restaurant(val port: Int = findFreePort(), serviceMapping: RoutingDSL.() -> Unit) : AutoCloseable {
 
     private val objectMapper = jacksonObjectMapper()
 
