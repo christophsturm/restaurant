@@ -3,7 +3,7 @@
 A small web server for rest apis.
 
 There is clear consensus how a good REST api should look like. Restaurant helps you implement it in a simple way that is
-easy to test.
+easy to test. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
 
 ```kotlin
 
