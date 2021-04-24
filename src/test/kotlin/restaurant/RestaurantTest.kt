@@ -56,11 +56,19 @@ object RestaurantTest {
                         .isEqualTo("""{"id":"userId","name":"userName"}""")
                 }
             }
-            it("calls show method on get request") {
+            it("calls show method on get request with id") {
                 val response = request("/api/users/5")
                 expectThat(response) {
                     get { code }.isEqualTo(200)
                     get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"User 5"}""")
+                }
+            }
+            it("calls index method on get request without id") {
+                val response = request("/api/users")
+                expectThat(response) {
+                    get { code }.isEqualTo(200)
+                    get { body }.isNotNull().get { string() }
+                        .isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
                 }
             }
             it("calls update method on put request") {
@@ -70,6 +78,7 @@ object RestaurantTest {
                     get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
                 }
             }
+
         }
     }
 }

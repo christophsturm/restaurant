@@ -55,6 +55,7 @@ class RoutingDSL(
         val routes = routesAdder.routesFor(service)
         routes.post?.let { routingHandler.post(resolvedPath, HttpServiceHandler(it, 201)) }
         routes.get?.let { routingHandler.get("$resolvedPath/{id}", NoBodyServiceHandler(it)) }
+        routes.getList?.let { routingHandler.get(resolvedPath, NoBodyServiceHandler(it)) }
         routes.put?.let { routingHandler.put("$resolvedPath/{id}", HttpServiceHandler(it, 200)) }
         ResourceDSL(resolvedPath).function()
     }

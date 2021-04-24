@@ -18,14 +18,17 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
         val get = functions["show"]?.let {
             GetRestServiceHandler(restService, objectMapper, it)
         }
+        val getList = functions["index"]?.let {
+            GetListRestServiceHandler(restService, objectMapper, it)
+        }
         val put = functions["update"]?.let {
             PutRestServiceHandler(restService, objectMapper, it)
         }
-        return Routes(post, get, put)
+        return Routes(post, get, put, getList)
     }
 }
 
-data class Routes(val post: HttpService?, val get: HttpService?, val put: HttpService?)
+data class Routes(val post: HttpService?, val get: HttpService?, val put: HttpService?, val getList: HttpService?)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(
@@ -69,6 +72,17 @@ private class GetRestServiceHandler(
         val parameter = id.toInt()
         return runBlocking {
             objectMapper.writeValueAsBytes(function.callSuspend(service, parameter))
+        }
+    }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+private class GetListRestServiceHandler(
+    private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
+) : HttpService {
+    override fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
+        return runBlocking {
+            objectMapper.writeValueAsBytes(function.callSuspend(service))
         }
     }
 }

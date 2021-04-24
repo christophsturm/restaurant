@@ -18,13 +18,21 @@ object RoutesAdderTest {
                 )
             ).isEqualTo("""{"id":"userId","name":"userName"}""")
         }
-        it("adds a get route") {
+        it("adds a get detail route") {
             expectThat(
                 String(
                     routes.get!!.handle(null, mapOf("id" to "5"))!!,
                     Charset.defaultCharset()
                 )
             ).isEqualTo("""{"id":"5","name":"User 5"}""")
+        }
+        it("adds a get list route") {
+            expectThat(
+                String(
+                    routes.getList!!.handle(null, mapOf())!!,
+                    Charset.defaultCharset()
+                )
+            ).isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
         }
         it("adds a put route") {
             expectThat(
