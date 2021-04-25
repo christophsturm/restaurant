@@ -8,6 +8,10 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
+import io.undertow.util.SameThreadExecutor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
@@ -83,13 +87,17 @@ class ResourceDSL(resolvedPath: String) {
 }
 
 private fun call(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
-    exchange.responseSender.send(
-        ByteBuffer.wrap(
-            service.handle(
-                requestBody,
-                exchange.queryParameters.mapValues { it.value.single() })
-        )
-    )
+    exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
+        GlobalScope.launch(Dispatchers.Unconfined) {
+            exchange.responseSender.send(
+                ByteBuffer.wrap(
+                    service.handle(
+                        requestBody,
+                        exchange.queryParameters.mapValues { it.value.single() })
+                )
+            )
+        }
+    })
 }
 
 class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
@@ -109,6 +117,6 @@ class HttpServiceHandler(private val service: HttpService, private val statusCod
 interface RestService
 
 interface HttpService {
-    fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray?
+    suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray?
 }
 
