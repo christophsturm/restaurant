@@ -15,7 +15,7 @@ fun main() {
     }
 }
 
-data class User(val id: String?, val name: String)
+data class User(val id: String?, val name: String/*..all kinds of user fields..*/)
 class UsersService : RestService {
     suspend fun index(): List<User> {
 
