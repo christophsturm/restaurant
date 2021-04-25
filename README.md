@@ -45,6 +45,7 @@ methods can be `suspend` or not, and can declare their incoming and outgoing par
 serialized and deserialized with jackson.
 
 ## coming next:
+(all features below this point are not yet implemented)
 
 ### error handling
 
