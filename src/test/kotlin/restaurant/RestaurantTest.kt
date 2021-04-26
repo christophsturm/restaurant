@@ -21,6 +21,7 @@ object RestaurantTest {
                     resources(UsersService()) {
                         resources(HobbiesService()) // user has many hobbies
                     }
+                    resource(CartService()) // singular resource
                 }
             }
         ) { it.close() }
@@ -81,6 +82,10 @@ object RestaurantTest {
 
         }
     }
+}
+
+class CartService : RestService {
+
 }
 
 

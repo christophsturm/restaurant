@@ -3,15 +3,16 @@ package restaurant
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
-import io.undertow.UndertowOptions
 import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
 import io.undertow.util.SameThreadExecutor
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
 import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
@@ -21,7 +22,9 @@ internal fun findFreePort(): Int = ServerSocket(0).use {
     it.localPort
 }
 
+private val logger = KotlinLogging.logger {}
 class Restaurant(
+
     val port: Int = findFreePort(),
     private val objectMapper: ObjectMapper = jacksonObjectMapper(),
     serviceMapping: RoutingDSL.() -> Unit,
@@ -32,7 +35,7 @@ class Restaurant(
         val routingHandler = RoutingHandler()
         RoutingDSL(routingHandler, RoutesAdder(objectMapper)).serviceMapping()
         Undertow.builder()
-            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+//            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
             .addHttpListener(port, "127.0.0.1")
             .setHandler(SimpleErrorPageHandler(routingHandler))
             .build()
@@ -43,6 +46,7 @@ class Restaurant(
     }
 
     override fun close() {
+        undertow.stop()
     }
 
 }
@@ -75,6 +79,10 @@ class RoutingDSL(
     fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
         resources("/${path(service)}", service, function)
     }
+
+    fun resource(service: RestService) {
+
+    }
 }
 
 @DslMarker
@@ -86,32 +94,39 @@ class ResourceDSL(resolvedPath: String) {
     }
 }
 
-private fun call(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
+private fun callSuspend(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
+    val scope = CoroutineScope(Dispatchers.Unconfined)
+    exchange.addExchangeCompleteListener { _, nextListener ->
+        try {
+            scope.cancel()
+        } catch (e: Exception) {
+            logger.error(e) { "error closing coroutine context" }
+        }
+        nextListener.proceed()
+    }
     exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
-        GlobalScope.launch(Dispatchers.Unconfined) {
-            exchange.responseSender.send(
-                ByteBuffer.wrap(
-                    service.handle(
-                        requestBody,
-                        exchange.queryParameters.mapValues { it.value.single() })
-                )
+        scope.launch {
+            val result = ByteBuffer.wrap(
+                service.handle(
+                    requestBody,
+                    exchange.queryParameters.mapValues { it.value.single() })
             )
+            exchange.responseSender.send(result)
         }
     })
 }
 
-class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) = call(exchange, service, null)
+private class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange) = callSuspend(exchange, service, null)
 }
 
-class HttpServiceHandler(private val service: HttpService, private val statusCode: Int) : HttpHandler {
+private class HttpServiceHandler(private val service: HttpService, private val statusCode: Int) : HttpHandler {
     override fun handleRequest(ex: HttpServerExchange) {
         ex.requestReceiver.receiveFullBytes { exchange, body ->
             exchange.statusCode = statusCode
-            call(exchange, service, body)
+            callSuspend(exchange, service, body)
         }
     }
-
 }
 
 interface RestService

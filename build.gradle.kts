@@ -10,6 +10,7 @@ val okhttpVersion = "4.9.1"
 val kotlinVersion = "1.4.32"
 val jacksonVersion = "2.12.3"
 val coroutinesVersion = "1.4.3"
+val log4j2Version = "2.14.1"
 
 
 
@@ -25,11 +26,17 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation("io.undertow:undertow-core:2.2.7.Final")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("io.github.microutils:kotlin-logging:2.0.6")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("com.christophsturm.failfast:failfast:$failfastVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.7.1")
+    testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    testImplementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
+    testImplementation("org.apache.logging.log4j:log4j-jul:$log4j2Version")
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+    testImplementation("org.slf4j:slf4j-api:1.7.30")
 }
 
 
