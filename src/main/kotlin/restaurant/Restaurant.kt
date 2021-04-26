@@ -23,8 +23,8 @@ internal fun findFreePort(): Int = ServerSocket(0).use {
 }
 
 private val logger = KotlinLogging.logger {}
-class Restaurant(
 
+class Restaurant(
     val port: Int = findFreePort(),
     private val objectMapper: ObjectMapper = jacksonObjectMapper(),
     serviceMapping: RoutingDSL.() -> Unit,
@@ -95,22 +95,19 @@ class ResourceDSL(resolvedPath: String) {
 }
 
 private fun callSuspend(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
-    val scope = CoroutineScope(Dispatchers.Unconfined)
+    val requestScope = CoroutineScope(Dispatchers.Unconfined)
     exchange.addExchangeCompleteListener { _, nextListener ->
         try {
-            scope.cancel()
+            requestScope.cancel()
         } catch (e: Exception) {
             logger.error(e) { "error closing coroutine context" }
         }
         nextListener.proceed()
     }
     exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
-        scope.launch {
-            val result = ByteBuffer.wrap(
-                service.handle(
-                    requestBody,
-                    exchange.queryParameters.mapValues { it.value.single() })
-            )
+        requestScope.launch {
+            val result =
+                ByteBuffer.wrap(service.handle(requestBody, exchange.queryParameters.mapValues { it.value.single() }))
             exchange.responseSender.send(result)
         }
     })
