@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package restaurant
 
 import failfast.describe
@@ -32,59 +34,76 @@ object RestaurantTest {
         }
 
         describe("rest services") {
-            val restaurant = autoClose(
-                Restaurant {
-                    namespace("/api") {
-                        resources(UsersService()) {
-                            resources(HobbiesService()) // user has many hobbies
+            describe("rest routes") {
+                val restaurant = autoClose(
+                    Restaurant {
+                        namespace("/api") {
+                            resources(UsersService())
                         }
-                        resource(CartService()) // singular resource
+                    }
+                ) { it.close() }
+
+                describe("post requests") {
+                    val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""".toRequestBody()) }
+                    it("returns 201 - Created on successful post request") {
+                        expectThat(response).get { code }.isEqualTo(201)
+                    }
+                    it("calls create method on post request") {
+                        expectThat(response).get { body }.isNotNull().get { string() }
+                            .isEqualTo("""{"id":"userId","name":"userName"}""")
                     }
                 }
-            ) { it.close() }
+                it("calls show method on get request with id") {
+                    val response = request(restaurant, "/api/users/5")
+                    expectThat(response) {
+                        get { code }.isEqualTo(200)
+                        get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"User 5"}""")
+                    }
+                }
+                it("calls index method on get request without id") {
+                    val response = request(restaurant, "/api/users")
+                    expectThat(response) {
+                        get { code }.isEqualTo(200)
+                        get { body }.isNotNull().get { string() }
+                            .isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
+                    }
+                }
+                it("calls update method on put request") {
+                    val response =
+                        request(restaurant, "/api/users/5") { put("""{"name":"userName"}""".toRequestBody()) }
+                    expectThat(response) {
+                        get { code }.isEqualTo(200)
+                        get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
+                    }
+                }
+            }
+            pending("nested routes") {
+                val restaurant = autoClose(
+                    Restaurant {
+                        namespace("/api") {
+                            resources(UsersService()) {
+                                resources(HobbiesService()) // user has many hobbies
+                            }
+                        }
+                    }
+                ) { it.close() }
 
-            describe("post requests") {
-                val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""".toRequestBody()) }
-                it("returns 201 - Created on successful post request") {
-                    expectThat(response).get { code }.isEqualTo(201)
-                }
-                it("calls create method on post request") {
-                    expectThat(response).get { body }.isNotNull().get { string() }
-                        .isEqualTo("""{"id":"userId","name":"userName"}""")
-                }
             }
-            it("calls show method on get request with id") {
-                val response = request(restaurant, "/api/users/5")
-                expectThat(response) {
-                    get { code }.isEqualTo(200)
-                    get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"User 5"}""")
-                }
+            pending("singular routes") {
+                val restaurant = autoClose(
+                    Restaurant {
+                        namespace("/api") {
+                            resource(CartService()) // singular resource
+                        }
+                    }
+                ) { it.close() }
             }
-            it("calls index method on get request without id") {
-                val response = request(restaurant, "/api/users")
-                expectThat(response) {
-                    get { code }.isEqualTo(200)
-                    get { body }.isNotNull().get { string() }
-                        .isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
-                }
-            }
-            it("calls update method on put request") {
-                val response = request(restaurant, "/api/users/5") { put("""{"name":"userName"}""".toRequestBody()) }
-                expectThat(response) {
-                    get { code }.isEqualTo(200)
-                    get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
-                }
-            }
-
-
         }
     }
 }
 
 /* A singular resource. */
-class CartService : RestService {
-
-}
+class CartService : RestService
 
 
 class ReverserService : HttpService {
