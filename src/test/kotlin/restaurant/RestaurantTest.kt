@@ -1,4 +1,4 @@
-@file:Suppress("UNUSED_VARIABLE")
+@file:Suppress("UNUSED_VARIABLE", "BlockingMethodInNonBlockingContext")
 
 package restaurant
 
@@ -11,10 +11,14 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 
 object RestaurantTest {
-    @Suppress("BlockingMethodInNonBlockingContext")
+    @Suppress()
     val context = describe(Restaurant::class) {
-
         describe("routing") {
+            class ReverserService : HttpService {
+                override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? =
+                    requestBody?.reversedArray()
+            }
+
             val restaurant = autoClose(
                 Restaurant {
                     post("/handlers/reverser", ReverserService())
@@ -90,6 +94,8 @@ object RestaurantTest {
 
             }
             pending("singular routes") {
+                class CartService : RestService
+
                 val restaurant = autoClose(
                     Restaurant {
                         namespace("/api") {
@@ -102,13 +108,7 @@ object RestaurantTest {
     }
 }
 
-/* A singular resource. */
-class CartService : RestService
 
 
-class ReverserService : HttpService {
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? =
-        requestBody?.reversedArray()
-}
 
 
