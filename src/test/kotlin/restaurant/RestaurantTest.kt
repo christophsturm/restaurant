@@ -83,7 +83,7 @@ object RestaurantTest {
         }
     }
 }
-
+/* A singular resource. */
 class CartService : RestService {
 
 }
