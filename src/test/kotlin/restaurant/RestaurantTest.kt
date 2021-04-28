@@ -23,7 +23,7 @@ object RestaurantTest {
                 Restaurant {
                     post("/handlers/reverser", ReverserService())
                 }
-            ) { it.close() }
+            )
             it("returns 404 if the route is not found") {
                 val response = request(restaurant, "/unconfigured-url")
                 expectThat(response).get { code }.isEqualTo(404)
@@ -45,7 +45,7 @@ object RestaurantTest {
                             resources(UsersService())
                         }
                     }
-                ) { it.close() }
+                )
 
                 describe("post requests") {
                     val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""".toRequestBody()) }
@@ -90,7 +90,7 @@ object RestaurantTest {
                             }
                         }
                     }
-                ) { it.close() }
+                )
 
             }
             pending("singular routes") {
@@ -102,7 +102,7 @@ object RestaurantTest {
                             resource(CartService()) // singular resource
                         }
                     }
-                ) { it.close() }
+                )
             }
         }
     }
