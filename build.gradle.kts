@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.4.32"
     id("com.github.ben-manes.versions") version "0.38.0"
+    id("info.solidsoft.pitest") version "1.6.0"
+
 }
 val failfastVersion = "0.4.1"
 val striktVersion = "0.30.1"
@@ -11,6 +13,7 @@ val kotlinVersion = "1.4.32"
 val jacksonVersion = "2.12.3"
 val coroutinesVersion = "1.4.3"
 val log4j2Version = "2.14.1"
+val pitestVersion = "1.6.5"
 
 
 
@@ -72,5 +75,20 @@ tasks.named<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>("
         outputFormatter = "json"
         outputDir = "build/dependencyUpdates"
         reportfileName = "report"
+    }
+}
+
+plugins.withId("info.solidsoft.pitest") {
+    configure<info.solidsoft.gradle.pitest.PitestPluginExtension> {
+        //        verbose.set(true)
+        jvmArgs.set(listOf("-Xmx512m")) // necessary on CI
+        testPlugin.set("failfast")
+        targetClasses.set(setOf("restaurant.*")) //by default "${project.group}.*"
+        targetTests.set(setOf("restaurant.*Test", "restaurant.**.*Test"))
+        pitestVersion.set(this@Build_gradle.pitestVersion)
+        threads.set(
+            System.getenv("PITEST_THREADS")?.toInt() ?: Runtime.getRuntime().availableProcessors()
+        )
+        outputFormats.set(setOf("XML", "HTML"))
     }
 }
