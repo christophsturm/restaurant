@@ -59,7 +59,7 @@ val restaurant = Restaurant(errorHandler = { ex ->
 
 
 ## coming next:
-(all features below this point are not yet implemented)
+Readme driven development: all features below this point are not yet implemented.
 
 ### nested resources:
 
