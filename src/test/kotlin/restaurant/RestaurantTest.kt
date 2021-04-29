@@ -23,7 +23,7 @@ object RestaurantTest {
                 Restaurant {
                     post("/handlers/reverser", ReverserService())
                 }
-            ) { it.close() }
+            )
             it("returns 404 if the route is not found") {
                 val response = request(restaurant, "/unconfigured-url")
                 expectThat(response).get { code }.isEqualTo(404)
@@ -45,7 +45,7 @@ object RestaurantTest {
                             resources(UsersService())
                         }
                     }
-                ) { it.close() }
+                )
 
                 describe("post requests") {
                     val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""".toRequestBody()) }
@@ -81,6 +81,34 @@ object RestaurantTest {
                     }
                 }
             }
+            describe("error handling") {
+                class ExceptionsService : RestService {
+                    fun index() {
+                        throw RuntimeException("error message")
+                    }
+                }
+                it("returns status 500 per default on error") {
+                    val restaurant = autoClose(Restaurant { resources(ExceptionsService()) })
+                    expectThat(request(restaurant, "/exceptions")) {
+                        get{code}.isEqualTo(500)
+                        get{body}.isNotNull().get{string()}.isEqualTo("internal server error")
+                    }
+
+                }
+                it("calls error handler to create error reply") {
+                    val restaurant = Restaurant(errorHandler = { ex ->
+                        ErrorReply(
+                            status = 418,
+                            body = "sorry: " + ex.cause!!.message
+                        )
+                    }) { resources(ExceptionsService()) }
+                    expectThat(request(restaurant, "/exceptions")) {
+                        get{code}.isEqualTo(418)
+                        get{body}.isNotNull().get{string()}.isEqualTo("sorry: error message")
+                    }
+
+                }
+            }
             pending("nested routes") {
                 val restaurant = autoClose(
                     Restaurant {
@@ -90,7 +118,7 @@ object RestaurantTest {
                             }
                         }
                     }
-                ) { it.close() }
+                )
 
             }
             pending("singular routes") {
@@ -102,7 +130,7 @@ object RestaurantTest {
                             resource(CartService()) // singular resource
                         }
                     }
-                ) { it.close() }
+                )
             }
         }
     }

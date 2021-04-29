@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.4.32"
     id("com.github.ben-manes.versions") version "0.38.0"
 }
-val failfastVersion = "0.4.0"
+val failfastVersion = "0.4.1"
 val striktVersion = "0.30.1"
 val okhttpVersion = "4.9.1"
 val kotlinVersion = "1.4.32"
@@ -19,6 +19,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://oss.sonatype.org/content/repositories/comchristophsturmfailfast-1004/")
 }
 
 dependencies {

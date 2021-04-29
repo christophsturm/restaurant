@@ -44,23 +44,22 @@ This will create these routes
 methods can be `suspend` or not, and can declare their incoming and outgoing parameters as data classes that will be
 serialized and deserialized with jackson.
 
-## coming next:
-(all features below this point are not yet implemented)
-
 ### error handling
 
-#### Exception based error handling
-
-Exceptions thrown by the service handler will be converted to a http error reply via a lambda
+Exceptions thrown by the service handler will be converted to a http error reply via a lambda.
 
 ```kotlin
 val restaurant = Restaurant(errorHandler = { ex ->
     ErrorReply(
         status = 500,
-        body = InternalServerError("sorry", ex.stackTraceToString())
+        body = "sorry"
     )
-}/*.....*/)
+})
 ```
+
+
+## coming next:
+(all features below this point are not yet implemented)
 
 ### nested resources:
 
