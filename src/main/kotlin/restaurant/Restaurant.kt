@@ -24,8 +24,15 @@ internal fun findFreePort(): Int = ServerSocket(0).use {
 
 private val logger = KotlinLogging.logger {}
 
+data class ErrorReply(val status: Int, val body: String)
+
+typealias ThrowableToErrorReply = (Throwable) -> ErrorReply
+
+val defaultErrorHandler: ThrowableToErrorReply = { ErrorReply(500, "internal server error") }
+
 class Restaurant(
     val port: Int = findFreePort(),
+    val errorHandler: ThrowableToErrorReply = defaultErrorHandler,
     private val objectMapper: ObjectMapper = jacksonObjectMapper(),
     serviceMapping: RoutingDSL.() -> Unit,
 ) : AutoCloseable {
@@ -33,7 +40,7 @@ class Restaurant(
     private val undertow: Undertow = run {
 
         val routingHandler = RoutingHandler()
-        RoutingDSL(routingHandler, RoutesAdder(objectMapper)).serviceMapping()
+        RoutingDSL(routingHandler, RoutesAdder(objectMapper), errorHandler = errorHandler).serviceMapping()
         Undertow.builder()
 //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
             .addHttpListener(port, "127.0.0.1")
@@ -55,25 +62,26 @@ class Restaurant(
 class RoutingDSL(
     private val routingHandler: RoutingHandler,
     private val routesAdder: RoutesAdder,
-    private val prefix: String = ""
+    private val prefix: String = "",
+    private val errorHandler: ThrowableToErrorReply
 ) {
     fun post(path: String, service: HttpService) {
-        routingHandler.post(path, HttpServiceHandler(service, 201))
+        routingHandler.post(path, HttpServiceHandler(service, 201, errorHandler))
     }
 
     fun resources(path: String, service: RestService, function: ResourceDSL.() -> Unit = {}) {
         val resolvedPath = prefix + path
         val routes = routesAdder.routesFor(service)
-        routes.post?.let { routingHandler.post(resolvedPath, HttpServiceHandler(it, 201)) }
-        routes.get?.let { routingHandler.get("$resolvedPath/{id}", NoBodyServiceHandler(it)) }
-        routes.getList?.let { routingHandler.get(resolvedPath, NoBodyServiceHandler(it)) }
-        routes.put?.let { routingHandler.put("$resolvedPath/{id}", HttpServiceHandler(it, 200)) }
+        routes.post?.let { routingHandler.post(resolvedPath, HttpServiceHandler(it, 201, errorHandler)) }
+        routes.get?.let { routingHandler.get("$resolvedPath/{id}", NoBodyServiceHandler(it, errorHandler)) }
+        routes.getList?.let { routingHandler.get(resolvedPath, NoBodyServiceHandler(it, errorHandler)) }
+        routes.put?.let { routingHandler.put("$resolvedPath/{id}", HttpServiceHandler(it, 200, errorHandler)) }
         ResourceDSL(resolvedPath).function()
     }
 
     private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
-        RoutingDSL(routingHandler, routesAdder, this.prefix + prefix).function()
+        RoutingDSL(routingHandler, routesAdder, this.prefix + prefix, errorHandler).function()
     }
 
     fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
@@ -94,7 +102,12 @@ class ResourceDSL(resolvedPath: String) {
     }
 }
 
-private fun callSuspend(exchange: HttpServerExchange, service: HttpService, requestBody: ByteArray?) {
+private fun callSuspend(
+    exchange: HttpServerExchange,
+    service: HttpService,
+    requestBody: ByteArray?,
+    errorHandler: ThrowableToErrorReply
+) {
     val requestScope = CoroutineScope(Dispatchers.Unconfined)
     exchange.addExchangeCompleteListener { _, nextListener ->
         try {
@@ -106,22 +119,32 @@ private fun callSuspend(exchange: HttpServerExchange, service: HttpService, requ
     }
     exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
         requestScope.launch {
-            val result =
-                ByteBuffer.wrap(service.handle(requestBody, exchange.queryParameters.mapValues { it.value.single() }))
-            exchange.responseSender.send(result)
+            try {
+                val result =
+                    ByteBuffer.wrap(service.handle(requestBody, exchange.queryParameters.mapValues { it.value.single() }))
+                exchange.responseSender.send(result)
+            } catch (e: Exception) {
+                val result = errorHandler(e)
+                exchange.statusCode = result.status
+                exchange.responseSender.send(result.body)
+            }
         }
     })
 }
 
-private class NoBodyServiceHandler(private val service: HttpService) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) = callSuspend(exchange, service, null)
+private class NoBodyServiceHandler(private val service: HttpService, private val errorHandler: ThrowableToErrorReply) : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange) = callSuspend(exchange, service, null, errorHandler)
 }
 
-private class HttpServiceHandler(private val service: HttpService, private val statusCode: Int) : HttpHandler {
+private class HttpServiceHandler(
+    private val service: HttpService,
+    private val statusCode: Int,
+    private val errorHandler: ThrowableToErrorReply
+) : HttpHandler {
     override fun handleRequest(ex: HttpServerExchange) {
         ex.requestReceiver.receiveFullBytes { exchange, body ->
             exchange.statusCode = statusCode
-            callSuspend(exchange, service, body)
+                callSuspend(exchange, service, body, errorHandler)
         }
     }
 }
