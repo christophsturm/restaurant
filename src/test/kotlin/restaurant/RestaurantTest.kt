@@ -50,6 +50,7 @@ object RestaurantTest {
                 describe("post requests") {
                     val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""".toRequestBody()) }
                     it("returns 201 - Created on successful post request") {
+                        println(restaurant.routes.joinToString("\n"))
                         expectThat(response).get { code }.isEqualTo(201)
                     }
                     it("calls create method on post request") {

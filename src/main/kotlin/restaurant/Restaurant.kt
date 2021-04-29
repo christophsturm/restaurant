@@ -7,12 +7,15 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
+import io.undertow.util.Methods
 import io.undertow.util.SameThreadExecutor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import restaurant.internal.Method
+import restaurant.internal.Route
 import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
@@ -33,14 +36,30 @@ val defaultErrorHandler: ThrowableToErrorReply = { ErrorReply(500, "internal ser
 class Restaurant(
     val port: Int = findFreePort(),
     val errorHandler: ThrowableToErrorReply = defaultErrorHandler,
-    private val objectMapper: ObjectMapper = jacksonObjectMapper(),
+    objectMapper: ObjectMapper = jacksonObjectMapper(),
     serviceMapping: RoutingDSL.() -> Unit,
 ) : AutoCloseable {
 
+    private val routing = Routing(RoutesAdder(objectMapper), errorHandler = errorHandler).apply { serviceMapping() }
+    val routes = routing.routes.toList()
     private val undertow: Undertow = run {
 
-        val routingHandler = RoutingHandler()
-        RoutingDSL(routingHandler, RoutesAdder(objectMapper), errorHandler = errorHandler).serviceMapping()
+        val routingHandler = routes.fold(RoutingHandler()) { handler, route ->
+            handler.add(
+                when (route.method) {
+                    Method.GET -> Methods.GET
+                    Method.PUT -> Methods.PUT
+                    Method.POST -> Methods.POST
+                    Method.DELETE -> Methods.DELETE
+                },
+                route.path,
+                if (route.method == Method.GET) NoBodyServiceHandler(
+                    route.handler,
+                    errorHandler
+                ) else HttpServiceHandler(route.handler, if (route.method == Method.POST) 201 else 200, errorHandler)
+            )
+        }
+
         Undertow.builder()
 //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
             .addHttpListener(port, "127.0.0.1")
@@ -58,37 +77,37 @@ class Restaurant(
 
 }
 
+private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
+
+interface RoutingDSL {
+    fun post(path: String, service: HttpService)
+    fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
+    fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
+    fun resource(service: RestService)
+}
+
 @RestDSL
-class RoutingDSL(
-    private val routingHandler: RoutingHandler,
+class Routing(
     private val routesAdder: RoutesAdder,
     private val prefix: String = "",
     private val errorHandler: ThrowableToErrorReply
-) {
-    fun post(path: String, service: HttpService) {
-        routingHandler.post(path, HttpServiceHandler(service, 201, errorHandler))
+) : RoutingDSL {
+    val routes = mutableListOf<Route>()
+    override fun post(path: String, service: HttpService) {
+        routes.add(Route(Method.POST, path, service))
     }
 
-    fun resources(path: String, service: RestService, function: ResourceDSL.() -> Unit = {}) {
+    override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
         val resolvedPath = prefix + path
-        val routes = routesAdder.routesFor(service)
-        routes.post?.let { routingHandler.post(resolvedPath, HttpServiceHandler(it, 201, errorHandler)) }
-        routes.get?.let { routingHandler.get("$resolvedPath/{id}", NoBodyServiceHandler(it, errorHandler)) }
-        routes.getList?.let { routingHandler.get(resolvedPath, NoBodyServiceHandler(it, errorHandler)) }
-        routes.put?.let { routingHandler.put("$resolvedPath/{id}", HttpServiceHandler(it, 200, errorHandler)) }
+        routes.addAll(routesAdder.routesFor(service, resolvedPath))
         ResourceDSL(resolvedPath).function()
     }
 
-    private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
-    fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
-        RoutingDSL(routingHandler, routesAdder, this.prefix + prefix, errorHandler).function()
+    override fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
+        routes.addAll(Routing(routesAdder, this.prefix + prefix + "/", errorHandler).apply(function).routes)
     }
 
-    fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
-        resources("/${path(service)}", service, function)
-    }
-
-    fun resource(service: RestService) {
+    override fun resource(service: RestService) {
 
     }
 }
@@ -121,7 +140,11 @@ private fun callSuspend(
         requestScope.launch {
             try {
                 val result =
-                    ByteBuffer.wrap(service.handle(requestBody, exchange.queryParameters.mapValues { it.value.single() }))
+                    ByteBuffer.wrap(
+                        service.handle(
+                            requestBody,
+                            exchange.queryParameters.mapValues { it.value.single() })
+                    )
                 exchange.responseSender.send(result)
             } catch (e: Exception) {
                 val result = errorHandler(e)
@@ -132,7 +155,8 @@ private fun callSuspend(
     })
 }
 
-private class NoBodyServiceHandler(private val service: HttpService, private val errorHandler: ThrowableToErrorReply) : HttpHandler {
+private class NoBodyServiceHandler(private val service: HttpService, private val errorHandler: ThrowableToErrorReply) :
+    HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) = callSuspend(exchange, service, null, errorHandler)
 }
 
@@ -144,7 +168,7 @@ private class HttpServiceHandler(
     override fun handleRequest(ex: HttpServerExchange) {
         ex.requestReceiver.receiveFullBytes { exchange, body ->
             exchange.statusCode = statusCode
-                callSuspend(exchange, service, body, errorHandler)
+            callSuspend(exchange, service, body, errorHandler)
         }
     }
 }

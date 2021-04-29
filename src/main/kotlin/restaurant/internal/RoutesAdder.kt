@@ -9,29 +9,38 @@ import kotlin.reflect.full.functions
 import kotlin.reflect.javaType
 
 class RoutesAdder(private val objectMapper: ObjectMapper) {
-    fun routesFor(restService: RestService): Routes {
+    @OptIn(ExperimentalStdlibApi::class)
+    fun routesFor(restService: RestService, path: String): List<Route> {
         val functions = restService::class.functions.associateBy { it.name }
+        val list = buildList {
+            val post = functions["create"]?.let {
+                add(Route(Method.POST, path, RestServiceHandler(restService, objectMapper, it)))
+            }
 
-        val post = functions["create"]?.let {
-            RestServiceHandler(restService, objectMapper, it)
-        }
+            val get = functions["show"]?.let {
+                add(Route(Method.GET, "$path/{id}", GetRestServiceHandler(restService, objectMapper, it)))
+            }
 
-        val get = functions["show"]?.let {
-            GetRestServiceHandler(restService, objectMapper, it)
-        }
+            val getList = functions["index"]?.let {
+                add(Route(Method.GET, path, GetListRestServiceHandler(restService, objectMapper, it)))
+            }
 
-        val getList = functions["index"]?.let {
-            GetListRestServiceHandler(restService, objectMapper, it)
+            val put = functions["update"]?.let {
+                add(Route(Method.PUT, "$path/{id}", PutRestServiceHandler(restService, objectMapper, it)))
+            }
         }
-
-        val put = functions["update"]?.let {
-            PutRestServiceHandler(restService, objectMapper, it)
-        }
-        return Routes(post, get, put, getList)
+        return list
     }
 }
 
-data class Routes(val post: HttpService?, val get: HttpService?, val put: HttpService?, val getList: HttpService?)
+enum class Method {
+    GET,
+    PUT,
+    POST,
+    DELETE
+}
+
+data class Route(val method: Method, val path: String, val handler: HttpService)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(
