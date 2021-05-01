@@ -5,11 +5,10 @@ import okhttp3.Request
 import okhttp3.Response
 import java.util.concurrent.TimeUnit
 
-val client =
-    okhttp3.OkHttpClient.Builder()
-//        .connectTimeout(500, TimeUnit.MILLISECONDS)
-//        .readTimeout(500, TimeUnit.MILLISECONDS)
-        .build()
+val client = okhttp3.OkHttpClient.Builder()
+    .connectTimeout(1000, TimeUnit.MILLISECONDS)
+    .readTimeout(1000, TimeUnit.MILLISECONDS)
+    .build()
 
 fun ResourcesDSL.request(
     restaurant: Restaurant,
