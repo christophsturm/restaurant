@@ -7,6 +7,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService
 import strikt.api.expectThat
+import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 
@@ -36,8 +37,28 @@ object RestaurantTest {
                 }
             }
         }
+        describe("empty responses return 204")
+        {
+            class EmptyReplyService : HttpService {
+                override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): Nothing? =
+                    null
+            }
 
-        describe("rest services") {
+            val restaurant = autoClose(
+                Restaurant {
+                    get("/handlers/empty", EmptyReplyService())
+                }
+            )
+            val response = request(restaurant, "/handlers/empty")
+            expectThat(response) {
+                get { code }.isEqualTo(204)
+                get { body!!.string() }.isEmpty()
+            }
+
+        }
+
+        describe("rest services")
+        {
             describe("rest routes") {
                 val restaurant = autoClose(
                     Restaurant {
@@ -91,8 +112,8 @@ object RestaurantTest {
                 it("returns status 500 per default on error") {
                     val restaurant = autoClose(Restaurant { resources(ExceptionsService()) })
                     expectThat(request(restaurant, "/exceptions")) {
-                        get{code}.isEqualTo(500)
-                        get{body}.isNotNull().get{string()}.isEqualTo("internal server error")
+                        get { code }.isEqualTo(500)
+                        get { body }.isNotNull().get { string() }.isEqualTo("internal server error")
                     }
 
                 }
@@ -104,8 +125,8 @@ object RestaurantTest {
                         )
                     }) { resources(ExceptionsService()) }
                     expectThat(request(restaurant, "/exceptions")) {
-                        get{code}.isEqualTo(418)
-                        get{body}.isNotNull().get{string()}.isEqualTo("sorry: error message")
+                        get { code }.isEqualTo(418)
+                        get { body }.isNotNull().get { string() }.isEqualTo("sorry: error message")
                     }
 
                 }
@@ -135,6 +156,7 @@ object RestaurantTest {
             }
         }
     }
+
 }
 
 

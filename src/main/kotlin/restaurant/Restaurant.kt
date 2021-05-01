@@ -84,6 +84,7 @@ interface RoutingDSL {
     fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
     fun resource(service: RestService)
+    fun get(path: String, service: HttpService)
 }
 
 @RestDSL
@@ -95,6 +96,10 @@ class Routing(
     val routes = mutableListOf<Route>()
     override fun post(path: String, service: HttpService) {
         routes.add(Route(Method.POST, path, service))
+    }
+
+    override fun get(path: String, service: HttpService) {
+        routes.add(Route(Method.GET, path, service))
     }
 
     override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
@@ -115,6 +120,7 @@ class Routing(
 @DslMarker
 annotation class RestDSL
 
+@Suppress("UNUSED_PARAMETER")
 @RestDSL
 class ResourceDSL(resolvedPath: String) {
     fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
@@ -139,13 +145,12 @@ private fun callSuspend(
     exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
         requestScope.launch {
             try {
-                val result =
-                    ByteBuffer.wrap(
-                        service.handle(
-                            requestBody,
-                            exchange.queryParameters.mapValues { it.value.single() })
-                    )
-                exchange.responseSender.send(result)
+                val r = service.handle(requestBody, exchange.queryParameters.mapValues { it.value.single() })
+                if (r == null) {
+                    exchange.statusCode = 204
+                    exchange.endExchange()
+                } else
+                    exchange.responseSender.send(ByteBuffer.wrap(r))
             } catch (e: Exception) {
                 val result = errorHandler(e)
                 exchange.statusCode = result.status
