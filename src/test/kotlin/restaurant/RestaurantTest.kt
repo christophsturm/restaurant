@@ -52,7 +52,7 @@ object RestaurantTest {
             val response = request(restaurant, "/handlers/empty")
             expectThat(response) {
                 get { code }.isEqualTo(204)
-                get { body!!.string() }.isEmpty()
+                get { body }.isNotNull().get { string() }.isEmpty()
             }
 
         }
@@ -100,6 +100,14 @@ object RestaurantTest {
                     expectThat(response) {
                         get { code }.isEqualTo(200)
                         get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
+                    }
+                }
+                it("calls delete method on delete request") {
+                    val response =
+                        request(restaurant, "/api/users/5") { delete("""{"name":"userName"}""".toRequestBody()) }
+                    expectThat(response) {
+                        get { code }.isEqualTo(200)
+                        get { body }.isNotNull().get { string() }.isEqualTo("""{"status":"user 5 deleted"}""")
                     }
                 }
             }

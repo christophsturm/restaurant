@@ -13,20 +13,24 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
     fun routesFor(restService: RestService, path: String): List<Route> {
         val functions = restService::class.functions.associateBy { it.name }
         val list = buildList {
-            val post = functions["create"]?.let {
+            functions["create"]?.let {
                 add(Route(Method.POST, path, RestServiceHandler(restService, objectMapper, it)))
             }
 
-            val get = functions["show"]?.let {
+            functions["show"]?.let {
                 add(Route(Method.GET, "$path/{id}", GetRestServiceHandler(restService, objectMapper, it)))
             }
 
-            val getList = functions["index"]?.let {
+            functions["index"]?.let {
                 add(Route(Method.GET, path, GetListRestServiceHandler(restService, objectMapper, it)))
             }
 
-            val put = functions["update"]?.let {
+            functions["update"]?.let {
                 add(Route(Method.PUT, "$path/{id}", PutRestServiceHandler(restService, objectMapper, it)))
+            }
+
+            functions["delete"]?.let {
+                add(Route(Method.DELETE, "$path/{id}", GetRestServiceHandler(restService, objectMapper, it)))
             }
         }
         return list

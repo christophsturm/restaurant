@@ -26,13 +26,21 @@ class UsersService : RestService {
         return user.copy(id = userId.toString())
     }
 
+    suspend fun delete(userId: Int): DeleteReply {
+        delay(1)
+        return DeleteReply("user $userId deleted")
+    }
+
 }
+
+data class DeleteReply(val status: String)
 
 class NonSuspendUsersService : RestService {
     fun index(): List<User> = listOf(User("5", "userName"), User("6", "userName"))
     fun create(user: User): User = user.copy(id = "userId")
     fun show(userId: Int): User = User(id = userId.toString(), name = "User $userId")
     fun update(userId: Int, user: User): User = user.copy(id = userId.toString())
+    fun delete(userId: Int): DeleteReply = DeleteReply("user $userId deleted")
 }
 
 class NonSuspendStringKeyUsersService : RestService {

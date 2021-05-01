@@ -75,6 +75,21 @@ object RoutesAdderTest {
                                 .isEqualTo("""{"id":"5","name":"userName"}""")
                         }
                 }
+                it("adds a delete route") {
+                    expectThat(routes).getValue(Method.DELETE).single()
+                        .and {
+                            get { path }.isEqualTo("$ROOT/{id}")
+                            get {
+                                runBlocking {
+                                    handler.handle(
+                                        null,
+                                        mapOf("id" to "5")
+                                    )
+                                }!!.decodeToString()
+                            }
+                                .isEqualTo("""{"status":"user 5 deleted"}""")
+                        }
+                }
             }
         }
     }
