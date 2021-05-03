@@ -12,7 +12,7 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
     @OptIn(ExperimentalStdlibApi::class)
     fun routesFor(restService: RestService, path: String): List<Route> {
         val functions = restService::class.functions.associateBy { it.name }
-        val list = buildList {
+        return buildList {
             functions["create"]?.let {
                 add(Route(Method.POST, path, RestServiceHandler(restService, objectMapper, it)))
             }
@@ -29,11 +29,10 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
                 add(Route(Method.PUT, "$path/{id}", PutRestServiceHandler(restService, objectMapper, it)))
             }
 
-            functions["delete"]?.let {
+            functions["delete"]?.let<KFunction<*>, Unit> {
                 add(Route(Method.DELETE, "$path/{id}", GetRestServiceHandler(restService, objectMapper, it)))
             }
         }
-        return list
     }
 }
 
@@ -90,7 +89,12 @@ private class GetRestServiceHandler(
 private class GetListRestServiceHandler(
     private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
 ) : HttpService {
+    val func = RestFunction(function, service)
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
-        return objectMapper.writeValueAsBytes(function.callSuspend(service))
+        return objectMapper.writeValueAsBytes(func.callSuspend())
     }
+}
+
+class RestFunction(private val function: KFunction<*>, private val service: RestService) {
+    suspend fun callSuspend(): Any? = function.callSuspend(service)
 }
