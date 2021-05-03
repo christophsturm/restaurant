@@ -64,16 +64,16 @@ private class PutRestServiceHandler(
 private class RestServiceHandler(
     private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
 ) : HttpService {
-    private val parameterType = function.parameters[1].type.javaType as Class<*>
+    private val func = RestFunction(function, service)
+    private val parameterType = func.parameterType
 
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
         val parameter = objectMapper.readValue(requestBody, parameterType)
-        val result = function.callSuspend(service, parameter)
+        val result = func.callSuspend(parameter)
         return objectMapper.writeValueAsBytes(result)
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private class GetRestServiceHandler(
     private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
 ) : HttpService {
@@ -87,14 +87,21 @@ private class GetRestServiceHandler(
 
 @OptIn(ExperimentalStdlibApi::class)
 private class GetListRestServiceHandler(
-    private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
+    service: RestService, private val objectMapper: ObjectMapper, function: KFunction<*>
 ) : HttpService {
     val func = RestFunction(function, service)
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
-        return objectMapper.writeValueAsBytes(func.callSuspend())
+        return objectMapper.writeValueAsBytes(func.callSuspend(null))
     }
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 class RestFunction(private val function: KFunction<*>, private val service: RestService) {
-    suspend fun callSuspend(): Any? = function.callSuspend(service)
+    val parameterType: Class<*>? = function.parameters.getOrNull(1)?.type?.javaType as? Class<*>
+
+    suspend fun callSuspend(parameter: Any? = null): Any? =
+        if (parameter == null)
+            function.callSuspend(service)
+        else
+            function.callSuspend(service, parameter)
 }
