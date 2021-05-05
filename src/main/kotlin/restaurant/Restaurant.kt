@@ -19,6 +19,7 @@ import restaurant.internal.Route
 import restaurant.internal.RoutesAdder
 import java.net.ServerSocket
 import java.nio.ByteBuffer
+import java.util.*
 
 internal fun findFreePort(): Int = ServerSocket(0).use {
     it.reuseAddress = true
@@ -77,7 +78,8 @@ class Restaurant(
 
 }
 
-private fun path(service: RestService) = service::class.simpleName!!.toLowerCase().removeSuffix("service")
+private fun path(service: RestService) =
+    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
 interface RoutingDSL {
     fun post(path: String, service: HttpService)

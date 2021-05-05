@@ -60,6 +60,7 @@ private class PutRestServiceHandler(
     }
 }
 
+@Suppress("CanBeParameter")
 @OptIn(ExperimentalStdlibApi::class)
 private class RestServiceHandler(
     private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>

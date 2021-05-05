@@ -1,15 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.0"
     id("com.github.ben-manes.versions") version "0.38.0"
     id("info.solidsoft.pitest") version "1.6.0"
 
 }
 val failfastVersion = "0.4.1"
-val striktVersion = "0.30.1"
+val striktVersion = "0.31.0"
 val okhttpVersion = "4.9.1"
-val kotlinVersion = "1.4.32"
+val kotlinVersion = "1.5.0"
 val jacksonVersion = "2.12.3"
 val coroutinesVersion = "1.4.3"
 val log4j2Version = "2.14.1"
