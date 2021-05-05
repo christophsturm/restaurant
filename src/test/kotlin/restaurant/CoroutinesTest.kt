@@ -17,7 +17,8 @@ fun main() {
 object CoroutinesTest {
     val context = describe("coroutine handling") {
         pending("cancels coroutine scope when the client disconnects") {
-            // it seems undertow does not close the exchange when the client disconnects.
+            // it seems undertow does not close the exchange when the client disconnects, so we have no way of detecting
+            // client disconnects.
             val client = okhttp3.OkHttpClient.Builder().callTimeout(30, TimeUnit.MILLISECONDS).build()
             val delayService = DelayService()
             val restaurant = Restaurant {
