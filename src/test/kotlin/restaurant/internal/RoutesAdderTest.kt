@@ -23,21 +23,17 @@ object RoutesAdderTest {
 /*            Pair(NonSuspendStringKeyUsersService(), "service with blocking functions and String primary keys")*/
         ).forEach { (service, description) ->
             describe("for a $description") {
-                val ROOT = "root"
-                val routes: Map<Method, List<Route>> = routesAdder.routesFor(service, ROOT).groupBy { it.method }
+                val rootPath = "root"
+                val routes: Map<Method, List<Route>> = routesAdder.routesFor(service, rootPath).groupBy { it.method }
                 it("adds a post route") {
                     expectThat(routes).getValue(Method.POST).single()
                         .and {
-                            get { path }.isEqualTo(ROOT)
+                            get { path }.isEqualTo(rootPath)
                             get {
                                 runBlocking {
-                                    handler.handle(
-                                        """{"name":"userName"}""".toByteArray(),
-                                        mapOf()
-                                    )
+                                    handler.handle("""{"name":"userName"}""".toByteArray(), mapOf())
                                 }!!.decodeToString()
-                            }
-                                .isEqualTo("""{"id":"userId","name":"userName"}""")
+                            }.isEqualTo("""{"id":"userId","name":"userName"}""")
                         }
                 }
                 describe("get routes") {
@@ -46,7 +42,10 @@ object RoutesAdderTest {
                     it("adds a get detail route") {
                         expectThat(
                             String(
-                                getRoutes.single { it.path == "$ROOT/{id}" }.handler.handle(null, mapOf("id" to "5"))!!,
+                                getRoutes.single { it.path == "$rootPath/{id}" }.handler.handle(
+                                    null,
+                                    mapOf("id" to "5")
+                                )!!,
                                 Charset.defaultCharset()
                             )
                         ).isEqualTo("""{"id":"5","name":"User 5"}""")
@@ -54,7 +53,7 @@ object RoutesAdderTest {
                     it("adds a get list route") {
                         expectThat(
                             String(
-                                getRoutes.single { it.path == ROOT }.handler.handle(null, mapOf())!!,
+                                getRoutes.single { it.path == rootPath }.handler.handle(null, mapOf())!!,
                                 Charset.defaultCharset()
                             )
                         ).isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
@@ -63,7 +62,7 @@ object RoutesAdderTest {
                 it("adds a put route") {
                     expectThat(routes).getValue(Method.PUT).single()
                         .and {
-                            get { path }.isEqualTo("$ROOT/{id}")
+                            get { path }.isEqualTo("$rootPath/{id}")
                             get {
                                 runBlocking {
                                     handler.handle(
@@ -78,7 +77,7 @@ object RoutesAdderTest {
                 it("adds a delete route") {
                     expectThat(routes).getValue(Method.DELETE).single()
                         .and {
-                            get { path }.isEqualTo("$ROOT/{id}")
+                            get { path }.isEqualTo("$rootPath/{id}")
                             get {
                                 runBlocking {
                                     handler.handle(
@@ -86,8 +85,7 @@ object RoutesAdderTest {
                                         mapOf("id" to "5")
                                     )
                                 }!!.decodeToString()
-                            }
-                                .isEqualTo("""{"status":"user 5 deleted"}""")
+                            }.isEqualTo("""{"status":"user 5 deleted"}""")
                         }
                 }
             }
