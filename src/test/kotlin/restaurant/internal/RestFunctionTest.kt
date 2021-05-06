@@ -11,8 +11,8 @@ fun main() {
 }
 object RestFunctionTest {
     val context = describe(RestFunction::class) {
+        data class Body(val field: String)
         describe("parameter type") {
-            data class Body(val field: String)
             it("detects parameter type for methods with only the body parameter") {
                 class A : RestService {
                     fun create(body: Body) = Unit
@@ -32,6 +32,42 @@ object RestFunctionTest {
                     }
                     expectThat(RestFunction(A::update, A())).get { parameterType }.isEqualTo(Body::class.java)
                 }
+            }
+        }
+        describe("invoking the method") {
+            it("can invoke a method with only an string id parameter") {
+                class A : RestService {
+                    fun get(id: String) = id
+                }
+
+                val subject = RestFunction(A::get, A())
+                expectThat(subject.callSuspend(null, "id")).isEqualTo("id")
+            }
+            it("can invoke a method with only an int id parameter") {
+                class A : RestService {
+                    fun get(id: Int) = id
+                }
+
+                val subject = RestFunction(A::get, A())
+                expectThat(subject.callSuspend(null, "123")).isEqualTo(123)
+            }
+            it("can invoke a method with only a body parameter") {
+                class A : RestService {
+                    fun create(body: Body) = body
+                }
+
+                val subject = RestFunction(A::create, A())
+                expectThat(subject.callSuspend(Body("value"), null)).isEqualTo(Body("value"))
+            }
+            it("can invoke a method with a body and a id parameter") {
+                class A : RestService {
+                    fun update(body: Body, id: Int) = Body(body.field + " with id " + id)
+                }
+
+                val subject = RestFunction(A::update, A())
+                expectThat(subject.callSuspend(Body("value"), "10")).isEqualTo(Body("value with id 10"))
+
+
             }
         }
     }

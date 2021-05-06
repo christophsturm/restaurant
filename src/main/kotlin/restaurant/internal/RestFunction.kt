@@ -16,10 +16,31 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
     }
 
     val parameterType: Class<*>? = parameters.singleOrNull { !it.isId() }?.type?.javaType as? Class<*>
+    private val idParameter = parameters.singleOrNull { it.isId() }?.type?.classifier
 
-    suspend fun callSuspend(parameter: Any? = null, pathVariables: Map<String, String>): Any? =
-        if (parameter == null)
-            function.callSuspend(service)
+
+    suspend fun callSuspend(parameter: Any? = null, id: String?): Any? =
+        when {
+            parameter == null && id == null -> {
+                function.callSuspend(service)
+            }
+            parameter == null && id != null -> {
+                function.callSuspend(service, id(id))
+            }
+            id == null -> {
+                function.callSuspend(service, parameter)
+            }
+            else -> {
+                function.callSuspend(service, parameter, id(id))
+            }
+        }
+
+    private fun id(id: String): Any {
+        if (idParameter == Int::class)
+            return id.toInt()
         else
-            function.callSuspend(service, parameter)
+            return id
+    }
+
+
 }

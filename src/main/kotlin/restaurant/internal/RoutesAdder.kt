@@ -14,7 +14,7 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
         val functions = restService::class.functions.associateBy { it.name }
         return buildList {
             functions["create"]?.let {
-                add(Route(Method.POST, path, RestServiceHandler(restService, objectMapper, it)))
+                add(Route(Method.POST, path, CreateRestServiceHandler(restService, objectMapper, it)))
             }
 
             functions["show"]?.let {
@@ -62,7 +62,7 @@ private class PutRestServiceHandler(
 
 @Suppress("CanBeParameter")
 @OptIn(ExperimentalStdlibApi::class)
-private class RestServiceHandler(
+private class CreateRestServiceHandler(
     private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
 ) : HttpService {
     private val func = RestFunction(function, service)
@@ -70,7 +70,7 @@ private class RestServiceHandler(
 
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
         val parameter = objectMapper.readValue(requestBody, parameterType)
-        val result = func.callSuspend(parameter, pathVariables)
+        val result = func.callSuspend(parameter, null)
         return objectMapper.writeValueAsBytes(result)
     }
 }
@@ -82,8 +82,7 @@ private class GetRestServiceHandler(
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        val parameter = id.toInt()
-        return objectMapper.writeValueAsBytes(function.callSuspend(service, parameter))
+        return objectMapper.writeValueAsBytes(func.callSuspend(null, id))
     }
 }
 
@@ -93,7 +92,7 @@ private class GetListRestServiceHandler(
 ) : HttpService {
     val func = RestFunction(function, service)
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
-        return objectMapper.writeValueAsBytes(func.callSuspend(null, pathVariables))
+        return objectMapper.writeValueAsBytes(func.callSuspend(null, null))
     }
 }
 
