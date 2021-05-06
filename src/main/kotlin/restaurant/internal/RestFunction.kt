@@ -21,18 +21,10 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
 
     suspend fun callSuspend(parameter: Any? = null, id: String?): Any? =
         when {
-            parameter == null && id == null -> {
-                function.callSuspend(service)
-            }
-            parameter == null && id != null -> {
-                function.callSuspend(service, id(id))
-            }
-            id == null -> {
-                function.callSuspend(service, parameter)
-            }
-            else -> {
-                function.callSuspend(service, parameter, id(id))
-            }
+            parameter == null && id == null -> function.callSuspend(service)
+            parameter == null && id != null -> function.callSuspend(service, id(id))
+            id == null -> function.callSuspend(service, parameter)
+            else -> function.callSuspend(service, parameter, id(id))
         }
 
     private fun id(id: String): Any {
