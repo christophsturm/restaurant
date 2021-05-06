@@ -36,10 +36,10 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
         }
 
     private fun id(id: String): Any {
-        if (idParameter == Int::class)
-            return id.toInt()
+        return if (idParameter == Int::class)
+            id.toInt()
         else
-            return id
+            id
     }
 
 

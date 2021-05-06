@@ -18,11 +18,18 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
             }
 
             functions["show"]?.let {
-                add(Route(Method.GET, "$path/{id}", GetRestServiceHandler(restService, objectMapper, it)))
+                add(
+                    Route(
+                        Method.GET, "$path/{id}", GetRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
+                        )
+                    )
+                )
             }
 
             functions["index"]?.let {
-                add(Route(Method.GET, path, GetListRestServiceHandler(restService, objectMapper, it)))
+                add(Route(Method.GET, path, GetListRestServiceHandler(objectMapper, RestFunction(it, restService))))
             }
 
             functions["update"]?.let {
@@ -30,7 +37,14 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
             }
 
             functions["delete"]?.let<KFunction<*>, Unit> {
-                add(Route(Method.DELETE, "$path/{id}", GetRestServiceHandler(restService, objectMapper, it)))
+                add(
+                    Route(
+                        Method.DELETE, "$path/{id}", GetRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
+                        )
+                    )
+                )
             }
         }
     }
@@ -76,23 +90,22 @@ private class CreateRestServiceHandler(
 }
 
 private class GetRestServiceHandler(
-    private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
+    private val objectMapper: ObjectMapper,
+    val function: RestFunction
 ) : HttpService {
-    private val func = RestFunction(function, service)
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        return objectMapper.writeValueAsBytes(func.callSuspend(null, id))
+        return objectMapper.writeValueAsBytes(function.callSuspend(null, id))
     }
 }
 
 @OptIn(ExperimentalStdlibApi::class)
 private class GetListRestServiceHandler(
-    service: RestService, private val objectMapper: ObjectMapper, function: KFunction<*>
+    private val objectMapper: ObjectMapper, val function: RestFunction
 ) : HttpService {
-    val func = RestFunction(function, service)
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
-        return objectMapper.writeValueAsBytes(func.callSuspend(null, null))
+        return objectMapper.writeValueAsBytes(function.callSuspend(null, null))
     }
 }
 
