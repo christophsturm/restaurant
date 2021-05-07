@@ -67,14 +67,23 @@ object RestFunctionTest {
                 val subject = RestFunction(A::create, A())
                 expectThat(subject.callSuspend(Body("value"), null)).isEqualTo(Body("value"))
             }
-            it("can invoke a method with a body and a id parameter") {
-                class A : RestService {
-                    fun update(body: Body, id: Int) = Body(body.field + " with id " + id)
+            describe("invoking a method with body and a id parameter") {
+                it("supports declaring the body before the id") {
+                    class A : RestService {
+                        fun update(body: Body, id: Int) = Body(body.field + " with id " + id)
+                    }
+
+                    val subject = RestFunction(A::update, A())
+                    expectThat(subject.callSuspend(Body("value"), "10")).isEqualTo(Body("value with id 10"))
                 }
+                it("supports declaring the id before the body") {
+                    class A : RestService {
+                        fun update(id: Int, body: Body) = Body(body.field + " with id " + id)
+                    }
 
-                val subject = RestFunction(A::update, A())
-                expectThat(subject.callSuspend(Body("value"), "10")).isEqualTo(Body("value with id 10"))
-
+                    val subject = RestFunction(A::update, A())
+                    expectThat(subject.callSuspend(Body("value"), "10")).isEqualTo(Body("value with id 10"))
+                }
 
             }
         }
