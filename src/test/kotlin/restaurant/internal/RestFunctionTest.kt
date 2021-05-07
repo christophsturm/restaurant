@@ -35,7 +35,7 @@ object RestFunctionTest {
             }
         }
         describe("invoking the method") {
-            it("can invoke a method with only an string id parameter") {
+            it("can invoke a method with only an id parameter") {
                 class A : RestService {
                     fun get(id: String) = id
                 }
@@ -43,13 +43,21 @@ object RestFunctionTest {
                 val subject = RestFunction(A::get, A())
                 expectThat(subject.callSuspend(null, "id")).isEqualTo("id")
             }
-            it("can invoke a method with only an int id parameter") {
-                class A : RestService {
-                    fun get(id: Int) = id
-                }
+            describe("id parameter type") {
+                it("can be Int") {
+                    class A : RestService {
+                        fun get(id: Int) = id
+                    }
 
-                val subject = RestFunction(A::get, A())
-                expectThat(subject.callSuspend(null, "123")).isEqualTo(123)
+                    expectThat(RestFunction(A::get, A()).callSuspend(null, "123")).isEqualTo(123)
+                }
+                it("can be Long") {
+                    class A : RestService {
+                        fun get(id: Long) = id
+                    }
+
+                    expectThat(RestFunction(A::get, A()).callSuspend(null, "123")).isEqualTo(123L)
+                }
             }
             it("can invoke a method with only a body parameter") {
                 class A : RestService {
