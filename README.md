@@ -46,7 +46,7 @@ serialized and deserialized with jackson.
 
 ### error handling
 
-Exceptions thrown by the service handler will be converted to a http error reply via a lambda.
+Exceptions thrown by the service handler are converted to a http error reply via a lambda.
 
 ```kotlin
 val restaurant = Restaurant(errorHandler = { ex ->
