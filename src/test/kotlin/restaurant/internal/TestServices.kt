@@ -33,6 +33,34 @@ class UsersService : RestService {
 
 }
 
+class UsersStringPKService : RestService {
+    suspend fun index(): List<User> {
+        delay(1)
+        return listOf(User("5", "userName"), User("6", "userName"))
+    }
+
+    suspend fun create(user: User): User {
+        delay(1)
+        return user.copy(id = "userId")
+    }
+
+    suspend fun show(userId: String): User {
+        delay(1)
+        return User(id = userId, name = "User $userId")
+    }
+
+    suspend fun update(userId: String, user: User): User {
+        delay(1)
+        return user.copy(id = userId)
+    }
+
+    suspend fun delete(userId: String): DeleteReply {
+        delay(1)
+        return DeleteReply("user $userId deleted")
+    }
+
+}
+
 data class DeleteReply(val status: String)
 
 class NonSuspendUsersService : RestService {
@@ -43,11 +71,12 @@ class NonSuspendUsersService : RestService {
     fun delete(userId: Int): DeleteReply = DeleteReply("user $userId deleted")
 }
 
-class NonSuspendStringKeyUsersService : RestService {
+class NonSuspendStringPKUsersService : RestService {
     fun index(): List<User> = listOf(User("5", "userName"), User("6", "userName"))
     fun create(user: User): User = user.copy(id = "userId")
     fun show(userId: String): User = User(id = userId, name = "User $userId")
     fun update(userId: String, user: User): User = user.copy(id = userId)
+    fun delete(userId: String): DeleteReply = DeleteReply("user $userId deleted")
 }
 
 class HobbiesService : RestService {

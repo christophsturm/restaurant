@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import restaurant.HttpService
 import restaurant.RestService
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.functions
-import kotlin.reflect.javaType
 
 class RoutesAdder(private val objectMapper: ObjectMapper) {
     @OptIn(ExperimentalStdlibApi::class)
@@ -33,7 +31,14 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
             }
 
             functions["update"]?.let {
-                add(Route(Method.PUT, "$path/{id}", PutRestServiceHandler(restService, objectMapper, it)))
+                add(
+                    Route(
+                        Method.PUT, "$path/{id}", PutRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
+                        )
+                    )
+                )
             }
 
             functions["delete"]?.let<KFunction<*>, Unit> {
@@ -61,15 +66,15 @@ data class Route(val method: Method, val path: String, val handler: HttpService)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(
-    private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
+    private val objectMapper: ObjectMapper,
+    val function: RestFunction
 ) : HttpService {
-    private val parameterType = function.parameters[2].type.javaType as Class<*>
 
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
-        val id = pathVariables["id"]?.toInt()
+        val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        val parameter = objectMapper.readValue(requestBody, parameterType)
-        val result = function.callSuspend(service, id, parameter)
+        val parameter = objectMapper.readValue(requestBody, function.parameterType)
+        val result = function.callSuspend(parameter, id)
         return objectMapper.writeValueAsBytes(result)
     }
 }

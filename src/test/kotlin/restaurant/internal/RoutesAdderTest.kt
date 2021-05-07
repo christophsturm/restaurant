@@ -19,7 +19,9 @@ object RoutesAdderTest {
         val routesAdder = RoutesAdder(jacksonObjectMapper())
         listOf(
             Pair(UsersService(), "service with suspend functions and Int primary keys"),
-            Pair(NonSuspendUsersService(), "service with blocking functions and Int primary keys")
+            Pair(NonSuspendUsersService(), "service with blocking functions and Int primary keys"),
+            Pair(UsersStringPKService(), "service with suspend functions and String primary keys"),
+            Pair(NonSuspendStringPKUsersService(), "service with blocking functions and String primary keys")
         ).forEach { (service, description) ->
             describe("for a $description") {
                 val rootPath = "root"
