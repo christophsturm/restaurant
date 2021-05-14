@@ -12,7 +12,14 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
         val functions = restService::class.functions.associateBy { it.name }
         return buildList {
             functions["create"]?.let {
-                add(Route(Method.POST, path, CreateRestServiceHandler(restService, objectMapper, it)))
+                add(
+                    Route(
+                        Method.POST, path, CreateRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
+                        )
+                    )
+                )
             }
 
             functions["show"]?.let {
@@ -82,14 +89,14 @@ private class PutRestServiceHandler(
 @Suppress("CanBeParameter")
 @OptIn(ExperimentalStdlibApi::class)
 private class CreateRestServiceHandler(
-    private val service: RestService, private val objectMapper: ObjectMapper, private val function: KFunction<*>
+    private val objectMapper: ObjectMapper,
+    val restFunction: RestFunction
 ) : HttpService {
-    private val func = RestFunction(function, service)
-    private val parameterType = func.parameterType
+    private val parameterType = restFunction.parameterType
 
     override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
         val parameter = objectMapper.readValue(requestBody, parameterType)
-        val result = func.callSuspend(parameter, null)
+        val result = restFunction.callSuspend(parameter, null)
         return objectMapper.writeValueAsBytes(result)
     }
 }
