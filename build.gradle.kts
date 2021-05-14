@@ -6,7 +6,7 @@ plugins {
     id("info.solidsoft.pitest") version "1.6.0"
 
 }
-val failfastVersion = "0.4.1"
+val failfastVersion = "0.4.2"
 val striktVersion = "0.31.0"
 val okhttpVersion = "4.9.1"
 val kotlinVersion = "1.5.0"
