@@ -37,7 +37,7 @@ dependencies {
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("com.christophsturm.failfast:failfast:$failfastVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.7.1")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.7.1")
     testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-jul:$log4j2Version")
