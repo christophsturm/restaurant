@@ -11,14 +11,16 @@ import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 
+class ReverserService : HttpService {
+    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? =
+        requestBody?.reversedArray()
+}
+
+
 object RestaurantTest {
     @Suppress()
     val context = describe(Restaurant::class) {
         describe("routing") {
-            class ReverserService : HttpService {
-                override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? =
-                    requestBody?.reversedArray()
-            }
 
             val restaurant = autoClose(
                 Restaurant {

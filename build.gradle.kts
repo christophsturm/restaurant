@@ -31,6 +31,8 @@ dependencies {
     implementation("io.undertow:undertow-core:2.2.7.Final")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("io.github.microutils:kotlin-logging:2.0.6")
+    implementation("com.auth0:java-jwt:3.16.0")
+
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")

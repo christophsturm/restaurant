@@ -79,7 +79,7 @@ class Restaurant(
 }
 
 private fun path(service: RestService) =
-    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
+    service::class.simpleName!!.toLowerCase(Locale.getDefault()).removeSuffix("service")
 
 interface RoutingDSL {
     fun post(path: String, service: HttpService)
@@ -87,6 +87,7 @@ interface RoutingDSL {
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
     fun resource(service: RestService)
     fun get(path: String, service: HttpService)
+    fun jwt(function: RoutingDSL.() -> Unit)
 }
 
 @RestDSL
@@ -102,6 +103,11 @@ class Routing(
 
     override fun get(path: String, service: HttpService) {
         routes.add(Route(Method.GET, path, service))
+    }
+
+    override fun jwt(function: RoutingDSL.() -> Unit) {
+        function()
+
     }
 
     override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
