@@ -92,7 +92,7 @@ interface RoutingDSL {
 }
 
 interface Wrapper {
-
+    suspend fun invoke()
 }
 
 @RestDSL
