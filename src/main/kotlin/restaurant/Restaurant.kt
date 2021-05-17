@@ -88,6 +88,11 @@ interface RoutingDSL {
     fun resource(service: RestService)
     fun get(path: String, service: HttpService)
     fun jwt(function: RoutingDSL.() -> Unit)
+    fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
+}
+
+interface Wrapper {
+
 }
 
 @RestDSL
@@ -108,6 +113,10 @@ class Routing(
     override fun jwt(function: RoutingDSL.() -> Unit) {
         function()
 
+    }
+
+    override fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit) {
+        function()
     }
 
     override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {

@@ -27,10 +27,10 @@ class JWTTest {
                 get { code }.isEqualTo(201)
                 get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
             }
-
         }
 
         pending("returns 401 for unauthorized requests") {
+            // first we need wrappers.
             val response = request(restaurant, "/handlers/reverser") {
                 post("""jakob""".toRequestBody())
             }
