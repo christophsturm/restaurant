@@ -31,10 +31,6 @@ class WrappersTest {
         }
         pending("calls the wrapper") {
             expectThat(getCalls(wrapper)).containsExactly(call(Wrapper::invoke))
-            expectThat(response) {
-                get { code }.isEqualTo(201)
-                get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
-            }
         }
 
     }
