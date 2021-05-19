@@ -11,7 +11,7 @@ val striktVersion = "0.31.0"
 val okhttpVersion = "4.9.1"
 val kotlinVersion = "1.5.0"
 val jacksonVersion = "2.12.3"
-val coroutinesVersion = "1.4.3"
+val coroutinesVersion = "1.5.0"
 val log4j2Version = "2.14.1"
 val pitestVersion = "1.6.5"
 
@@ -37,7 +37,7 @@ dependencies {
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("com.christophsturm.failfast:failfast:$failfastVersion")
-    testImplementation("org.junit.platform:junit-platform-launcher:1.7.1")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.7.2")
     testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-jul:$log4j2Version")

@@ -93,7 +93,6 @@ private fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> Un
 
         override fun jwt(function: RoutingDSL.() -> Unit) {
             function()
-
         }
 
 
