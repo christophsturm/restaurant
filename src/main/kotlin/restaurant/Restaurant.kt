@@ -41,8 +41,9 @@ class Restaurant(
     serviceMapping: RoutingDSL.() -> Unit,
 ) : AutoCloseable {
 
-    private val routing = Routing(RoutesAdder(objectMapper), errorHandler = errorHandler).apply { serviceMapping() }
-    val routes = routing.routes.toList()
+    val routes = routes(RoutesAdder(objectMapper), serviceMapping)
+
+
     private val undertow: Undertow = run {
 
         val routingHandler = routes.fold(RoutingHandler()) { handler, route ->
@@ -78,9 +79,51 @@ class Restaurant(
 
 }
 
+private fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> Unit): List<Route> {
+    val routes = mutableListOf<Route>()
+
+    class Routing(private val prefix: String = "") : RoutingDSL {
+        override fun post(path: String, service: HttpService) {
+            routes.add(Route(Method.POST, path, service))
+        }
+
+        override fun get(path: String, service: HttpService) {
+            routes.add(Route(Method.GET, path, service))
+        }
+
+        override fun jwt(function: RoutingDSL.() -> Unit) {
+            function()
+
+        }
+
+
+        override fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit) {
+            function()
+        }
+
+        override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
+            val resolvedPath = this.prefix + path
+            routes.addAll(routesAdder.routesFor(service, resolvedPath))
+            ResourceDSL(resolvedPath).function()
+        }
+
+        override fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
+            val routing = Routing(this.prefix + prefix + "/")
+            routing.function()
+        }
+
+        override fun resource(service: RestService) {
+
+        }
+    }
+    Routing("").apply(serviceMapping)
+    return routes
+}
+
 private fun path(service: RestService) =
     service::class.simpleName!!.toLowerCase(Locale.getDefault()).removeSuffix("service")
 
+@RestDSL
 interface RoutingDSL {
     fun post(path: String, service: HttpService)
     fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
@@ -95,44 +138,6 @@ interface Wrapper {
     suspend fun invoke()
 }
 
-@RestDSL
-class Routing(
-    private val routesAdder: RoutesAdder,
-    private val prefix: String = "",
-    private val errorHandler: ThrowableToErrorReply
-) : RoutingDSL {
-    val routes = mutableListOf<Route>()
-    override fun post(path: String, service: HttpService) {
-        routes.add(Route(Method.POST, path, service))
-    }
-
-    override fun get(path: String, service: HttpService) {
-        routes.add(Route(Method.GET, path, service))
-    }
-
-    override fun jwt(function: RoutingDSL.() -> Unit) {
-        function()
-
-    }
-
-    override fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit) {
-        function()
-    }
-
-    override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
-        val resolvedPath = prefix + path
-        routes.addAll(routesAdder.routesFor(service, resolvedPath))
-        ResourceDSL(resolvedPath).function()
-    }
-
-    override fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
-        routes.addAll(Routing(routesAdder, this.prefix + prefix + "/", errorHandler).apply(function).routes)
-    }
-
-    override fun resource(service: RestService) {
-
-    }
-}
 
 @DslMarker
 annotation class RestDSL
