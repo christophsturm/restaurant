@@ -22,7 +22,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven("https://s01.oss.sonatype.org/content/repositories/devfailgood-1000/")
+//    maven("https://s01.oss.sonatype.org/content/repositories/devfailgood-1000/")
 }
 
 dependencies {
