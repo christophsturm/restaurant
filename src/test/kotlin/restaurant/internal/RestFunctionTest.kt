@@ -1,13 +1,13 @@
 package restaurant.internal
 
-import failfast.FailFast
-import failfast.describe
+import failgood.FailGood
+import failgood.describe
 import restaurant.RestService
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 fun main() {
-    FailFast.runTest()
+    FailGood.runTest()
 }
 object RestFunctionTest {
     val context = describe(RestFunction::class) {

@@ -1,7 +1,7 @@
 package restaurant
 
-import failfast.FailFast
-import failfast.describe
+import failgood.FailGood
+import failgood.describe
 import kotlinx.coroutines.delay
 import okhttp3.Request
 import strikt.api.expectThat
@@ -11,7 +11,7 @@ import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 
 fun main() {
-    FailFast.runTest()
+    FailGood.runTest()
 }
 
 object CoroutinesTest {

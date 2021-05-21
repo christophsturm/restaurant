@@ -1,8 +1,8 @@
 package restaurant.internal
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import failfast.FailFast
-import failfast.describe
+import failgood.FailGood
+import failgood.describe
 import kotlinx.coroutines.runBlocking
 import strikt.api.expectThat
 import strikt.assertions.getValue
@@ -12,7 +12,7 @@ import strikt.assertions.single
 import java.nio.charset.Charset
 
 fun main() {
-    FailFast.runTest()
+    FailGood.runTest()
 }
 object RoutesAdderTest {
     val context = describe(RoutesAdder::class) {

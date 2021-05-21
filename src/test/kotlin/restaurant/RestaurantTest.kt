@@ -2,7 +2,7 @@
 
 package restaurant
 
-import failfast.describe
+import failgood.describe
 import okhttp3.RequestBody.Companion.toRequestBody
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService

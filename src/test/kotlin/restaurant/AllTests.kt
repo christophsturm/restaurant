@@ -1,6 +1,6 @@
 package restaurant
 
-import failfast.FailFast.runAllTests
+import failgood.FailGood.runAllTests
 
 fun main() {
     runAllTests(true)

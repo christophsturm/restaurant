@@ -1,9 +1,9 @@
 package restaurant
 
-import failfast.describe
-import failfast.mock.call
-import failfast.mock.getCalls
-import failfast.mock.mock
+import failgood.describe
+import failgood.mock.call
+import failgood.mock.getCalls
+import failgood.mock.mock
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat

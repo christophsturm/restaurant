@@ -6,7 +6,7 @@ plugins {
     id("info.solidsoft.pitest") version "1.6.0"
 
 }
-val failfastVersion = "0.4.2"
+val failgoodVersion = "0.4.3"
 val striktVersion = "0.31.0"
 val okhttpVersion = "4.9.1"
 val kotlinVersion = "1.5.0"
@@ -22,7 +22,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven("https://oss.sonatype.org/content/repositories/comchristophsturmfailfast-1004/")
+    maven("https://s01.oss.sonatype.org/content/repositories/devfailgood-1000/")
 }
 
 dependencies {
@@ -36,7 +36,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
-    testImplementation("com.christophsturm.failfast:failfast:$failfastVersion")
+    testImplementation("dev.failgood:failgood:$failgoodVersion")
     testImplementation("org.junit.platform:junit-platform-launcher:1.7.2")
     testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
@@ -84,7 +84,7 @@ plugins.withId("info.solidsoft.pitest") {
     configure<info.solidsoft.gradle.pitest.PitestPluginExtension> {
         //        verbose.set(true)
         jvmArgs.set(listOf("-Xmx512m")) // necessary on CI
-        testPlugin.set("failfast")
+        testPlugin.set("failgood")
         targetClasses.set(setOf("restaurant.*")) //by default "${project.group}.*"
         targetTests.set(setOf("restaurant.*Test", "restaurant.**.*Test"))
         pitestVersion.set(this@Build_gradle.pitestVersion)
