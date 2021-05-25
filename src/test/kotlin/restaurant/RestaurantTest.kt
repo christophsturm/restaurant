@@ -4,6 +4,7 @@ package restaurant
 
 import failgood.describe
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.junit.platform.commons.annotation.Testable
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService
 import strikt.api.expectThat
@@ -17,7 +18,8 @@ class ReverserService : HttpService {
 }
 
 
-object RestaurantTest {
+@Testable
+class RestaurantTest {
     @Suppress()
     val context = describe(Restaurant::class) {
         describe("routing") {

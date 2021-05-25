@@ -1,15 +1,13 @@
 package restaurant.internal
 
-import failgood.FailGood
 import failgood.describe
+import org.junit.platform.commons.annotation.Testable
 import restaurant.RestService
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
-fun main() {
-    FailGood.runTest()
-}
-object RestFunctionTest {
+@Testable
+class RestFunctionTest {
     val context = describe(RestFunction::class) {
         data class Body(val field: String)
         describe("parameter type") {

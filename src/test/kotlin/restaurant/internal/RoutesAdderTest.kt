@@ -1,9 +1,9 @@
 package restaurant.internal
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import failgood.FailGood
 import failgood.describe
 import kotlinx.coroutines.runBlocking
+import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.getValue
 import strikt.assertions.hasSize
@@ -11,10 +11,8 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.single
 import java.nio.charset.Charset
 
-fun main() {
-    FailGood.runTest()
-}
-object RoutesAdderTest {
+@Testable
+class RoutesAdderTest {
     val context = describe(RoutesAdder::class) {
         val routesAdder = RoutesAdder(jacksonObjectMapper())
         listOf(

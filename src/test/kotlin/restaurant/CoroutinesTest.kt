@@ -1,20 +1,17 @@
 package restaurant
 
-import failgood.FailGood
 import failgood.describe
 import kotlinx.coroutines.delay
 import okhttp3.Request
+import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isFalse
 import java.io.InterruptedIOException
 import java.util.concurrent.TimeUnit
 
-fun main() {
-    FailGood.runTest()
-}
-
-object CoroutinesTest {
+@Testable
+class CoroutinesTest {
     val context = describe("coroutine handling") {
         pending("cancels coroutine scope when the client disconnects") {
             // it seems undertow does not close the exchange when the client disconnects, so we have no way of detecting
