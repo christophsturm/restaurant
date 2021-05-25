@@ -48,14 +48,14 @@ class Restaurant(
 
     private val undertow: Undertow = run {
 
-        val routingHandler = routes.fold(RoutingHandler()) { handler, route ->
+        val routingHandler = routes.fold(RoutingHandler()) { routingHandler, route ->
             val httpHandler = if (route.method == Method.GET) NoBodyServiceHandler(
                 route.handler,
                 errorHandler
             ) else HttpServiceHandler(route.handler, if (route.method == Method.POST) 201 else 200, errorHandler)
             val wrappedHandler =
-                route.wrappers.fold(httpHandler) { handler, wrapper -> WrapperHandler(handler, wrapper) }
-            handler.add(
+                route.wrappers.foldRight(httpHandler) { wrapper, handler -> WrapperHandler(handler, wrapper) }
+            routingHandler.add(
                 route.toHttpString(),
                 route.path,
                 wrappedHandler

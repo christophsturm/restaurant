@@ -30,7 +30,7 @@ class WrappersTest {
                 get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
             }
         }
-        pending("calls the wrappers") {
+        it("calls the wrappers") {
             expectThat(events).containsExactly("outer", "inner")
         }
     }
