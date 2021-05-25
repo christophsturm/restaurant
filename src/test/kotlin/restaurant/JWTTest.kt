@@ -43,6 +43,16 @@ class JWTTest {
     }
 }
 
+private fun RoutingDSL.jwt(function: RoutingDSL.() -> Unit) {
+    wrap(JWTWrapper(), function)
+}
+
+class JWTWrapper : Wrapper {
+    override fun invoke() {
+    }
+
+}
+
 object JWTConfig {
     private const val issuer = "https://the.io/restaurant"
     const val audience = "jwtAudience"
