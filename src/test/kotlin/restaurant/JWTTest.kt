@@ -43,10 +43,20 @@ class JWTTest {
     }
 }
 
+private fun RoutingDSL.jwt(function: RoutingDSL.() -> Unit) {
+    wrap(JWTWrapper(), function)
+}
+
+class JWTWrapper : Wrapper {
+    override fun invoke() {
+        JWTConfig.makeJwtVerifier().verify(JWTConfig.makeToken(1))
+    }
+
+}
+
 object JWTConfig {
     private const val issuer = "https://the.io/restaurant"
     const val audience = "jwtAudience"
-    const val realm = "rest-test"
     private val algorithm = Algorithm.HMAC256("psst, secret")!!
     fun makeToken(userId: Long): String = JWT.create()
         .withAudience(audience)

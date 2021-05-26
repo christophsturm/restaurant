@@ -3,6 +3,7 @@ package restaurant.internal
 import com.fasterxml.jackson.databind.ObjectMapper
 import restaurant.HttpService
 import restaurant.RestService
+import restaurant.Wrapper
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
@@ -69,7 +70,7 @@ enum class Method {
     DELETE
 }
 
-data class Route(val method: Method, val path: String, val handler: HttpService)
+data class Route(val method: Method, val path: String, val handler: HttpService, val wrappers: List<Wrapper> = listOf())
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(

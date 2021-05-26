@@ -7,6 +7,7 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
+import io.undertow.util.HttpString
 import io.undertow.util.Methods
 import io.undertow.util.SameThreadExecutor
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +18,7 @@ import mu.KotlinLogging
 import restaurant.internal.Method
 import restaurant.internal.Route
 import restaurant.internal.RoutesAdder
+import restaurant.internal.routes
 import java.net.ServerSocket
 import java.nio.ByteBuffer
 import java.util.*
@@ -46,19 +48,17 @@ class Restaurant(
 
     private val undertow: Undertow = run {
 
-        val routingHandler = routes.fold(RoutingHandler()) { handler, route ->
-            handler.add(
-                when (route.method) {
-                    Method.GET -> Methods.GET
-                    Method.PUT -> Methods.PUT
-                    Method.POST -> Methods.POST
-                    Method.DELETE -> Methods.DELETE
-                },
+        val routingHandler = routes.fold(RoutingHandler()) { routingHandler, route ->
+            val httpHandler = if (route.method == Method.GET) NoBodyServiceHandler(
+                route.handler,
+                errorHandler
+            ) else HttpServiceHandler(route.handler, if (route.method == Method.POST) 201 else 200, errorHandler)
+            val wrappedHandler =
+                route.wrappers.foldRight(httpHandler) { wrapper, handler -> WrapperHandler(handler, wrapper) }
+            routingHandler.add(
+                route.toHttpString(),
                 route.path,
-                if (route.method == Method.GET) NoBodyServiceHandler(
-                    route.handler,
-                    errorHandler
-                ) else HttpServiceHandler(route.handler, if (route.method == Method.POST) 201 else 200, errorHandler)
+                wrappedHandler
             )
         }
 
@@ -68,6 +68,7 @@ class Restaurant(
             .setHandler(SimpleErrorPageHandler(routingHandler))
             .build()
     }
+
 
     init {
         undertow.start()
@@ -79,48 +80,16 @@ class Restaurant(
 
 }
 
-private fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> Unit): List<Route> {
-    val routes = mutableListOf<Route>()
-
-    class Routing(private val prefix: String = "") : RoutingDSL {
-        override fun post(path: String, service: HttpService) {
-            routes.add(Route(Method.POST, path, service))
-        }
-
-        override fun get(path: String, service: HttpService) {
-            routes.add(Route(Method.GET, path, service))
-        }
-
-        override fun jwt(function: RoutingDSL.() -> Unit) {
-            function()
-        }
-
-
-        override fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit) {
-            function()
-        }
-
-        override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
-            val resolvedPath = this.prefix + path
-            routes.addAll(routesAdder.routesFor(service, resolvedPath))
-            ResourceDSL(resolvedPath).function()
-        }
-
-        override fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
-            val routing = Routing(this.prefix + prefix + "/")
-            routing.function()
-        }
-
-        override fun resource(service: RestService) {
-
-        }
+class WrapperHandler(val next: HttpHandler, val wrapper: Wrapper) : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange?) {
+        wrapper.invoke()
+        next.handleRequest(exchange)
     }
-    Routing("").apply(serviceMapping)
-    return routes
+
 }
 
 private fun path(service: RestService) =
-    service::class.simpleName!!.toLowerCase(Locale.getDefault()).removeSuffix("service")
+    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
 @RestDSL
 interface RoutingDSL {
@@ -129,12 +98,18 @@ interface RoutingDSL {
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
     fun resource(service: RestService)
     fun get(path: String, service: HttpService)
-    fun jwt(function: RoutingDSL.() -> Unit)
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
 }
 
-interface Wrapper {
-    suspend fun invoke()
+fun Route.toHttpString(): HttpString = when (method) {
+    Method.GET -> Methods.GET
+    Method.PUT -> Methods.PUT
+    Method.POST -> Methods.POST
+    Method.DELETE -> Methods.DELETE
+}
+
+fun interface Wrapper {
+    fun invoke()
 }
 
 
@@ -201,7 +176,7 @@ private class HttpServiceHandler(
 
 interface RestService
 
-interface HttpService {
+fun interface HttpService {
     suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray?
 }
 
