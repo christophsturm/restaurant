@@ -89,7 +89,7 @@ class WrapperHandler(val next: HttpHandler, val wrapper: Wrapper) : HttpHandler 
 }
 
 private fun path(service: RestService) =
-    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
+    service::class.simpleName!!.toLowerCase(Locale.getDefault()).removeSuffix("service")
 
 @RestDSL
 interface RoutingDSL {
@@ -176,7 +176,7 @@ private class HttpServiceHandler(
 
 interface RestService
 
-fun interface HttpService {
+interface HttpService {
     suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray?
 }
 
