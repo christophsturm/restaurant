@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.5.10"
     id("com.github.ben-manes.versions") version "0.38.0"
     id("info.solidsoft.pitest") version "1.6.0"
 
@@ -9,7 +9,7 @@ plugins {
 val failgoodVersion = "0.4.3"
 val striktVersion = "0.31.0"
 val okhttpVersion = "4.9.1"
-val kotlinVersion = "1.5.0"
+val kotlinVersion = "1.5.10"
 val jacksonVersion = "2.12.3"
 val coroutinesVersion = "1.5.0"
 val log4j2Version = "2.14.1"
