@@ -47,10 +47,12 @@ dependencies {
 
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
-    kotlinOptions.freeCompilerArgs =
-        listOf("-Xopt-in=kotlin.RequiresOptIn")
-
+    kotlinOptions {
+        jvmTarget = "11"
+        freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+//        languageVersion = "1.4" this triggers a compiler bug that generates code that throws.
+        apiVersion = "1.4"
+    }
 }
 
 val testMain = tasks.register("testMain", JavaExec::class) {
