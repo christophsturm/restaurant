@@ -35,10 +35,8 @@ class Restaurant(
     val routes = routes(RoutesAdder(objectMapper), serviceMapping)
 
     private val rootHandlers = routes.map { route ->
-        val needsBody = route.method != Method.GET
 
-        val restHandler = RestHandler(route.handler, needsBody, if (route.method == Method.POST) 201 else 200)
-        Pair(RootHandler(route.wrappers, errorHandler, restHandler), route)
+        Pair(RootHandler(route.wrappers, errorHandler, route.handler), route)
     }
 
     private val undertow: Undertow = buildUndertow(rootHandlers, port).apply { start() }
@@ -55,10 +53,10 @@ private fun path(service: RestService) =
 
 @RestDSL
 interface RoutingDSL {
-    fun post(path: String, service: HttpService)
+    fun post(path: String, service: SuspendingHandler)
     fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
-    fun get(path: String, service: HttpService)
+    fun get(path: String, service: SuspendingHandler)
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
 }
 
@@ -84,7 +82,7 @@ interface SuspendingHandler {
 class RootHandler(
     private val wrappers: List<Wrapper>,
     private val errorHandler: ThrowableToErrorReply,
-    private val restHandler: RestHandler
+    private val restHandler: SuspendingHandler
 ) : SuspendingHandler {
     override suspend fun handle(exchange: Exchange): Response {
         return try {
@@ -140,7 +138,12 @@ enum class Method {
     DELETE
 }
 
-data class Route(val method: Method, val path: String, val handler: HttpService, val wrappers: List<Wrapper> = listOf())
+data class Route(
+    val method: Method,
+    val path: String,
+    val handler: SuspendingHandler,
+    val wrappers: List<Wrapper> = listOf()
+)
 
 
 interface RestService

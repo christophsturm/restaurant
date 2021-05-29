@@ -11,10 +11,12 @@ import strikt.api.expectThat
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
+import java.nio.ByteBuffer
 
-class ReverserService : HttpService {
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? =
-        requestBody?.reversedArray()
+class ReverserService : SuspendingHandler {
+    override suspend fun handle(exchange: Exchange): Response {
+        return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
+    }
 }
 
 
@@ -36,21 +38,22 @@ class RestaurantTest {
             it("calls handlers with body and returns result") {
                 val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
                 expectThat(response) {
-                    get { code }.isEqualTo(201)
+                    get { code }.isEqualTo(200)
                     get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
                 }
             }
         }
         describe("empty responses return 204")
         {
-            class EmptyReplyService : HttpService {
-                override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): Nothing? =
-                    null
+            class EmptyReplyService : RestService {
+                fun index(): String? {
+                    return null
+                }
             }
 
             val restaurant = autoClose(
                 Restaurant {
-                    get("/handlers/empty", EmptyReplyService())
+                    resources(EmptyReplyService(), "/handlers/empty")
                 }
             )
             val response = request(restaurant, "/handlers/empty")

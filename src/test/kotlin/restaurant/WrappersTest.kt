@@ -36,7 +36,7 @@ class WrappersTest {
         }
         it("calls the wrapped handler") {
             expectThat(response) {
-                get { code }.isEqualTo(201)
+                get { code }.isEqualTo(200)
                 get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
             }
         }

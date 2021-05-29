@@ -41,7 +41,7 @@ class JWTTest {
                 addHeader("Authorization", "Bearer ${JWTConfig.makeToken(1)}")
             }
             expectThat(response) {
-                get { code }.isEqualTo(201)
+                get { code }.isEqualTo(200)
                 get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
             }
         }

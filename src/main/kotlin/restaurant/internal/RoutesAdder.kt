@@ -111,8 +111,9 @@ private class GetRestServiceHandler(
 private class GetListRestServiceHandler(
     private val objectMapper: ObjectMapper, val function: RestFunction
 ) : HttpService {
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
-        return objectMapper.writeValueAsBytes(function.callSuspend(null, null))
+    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? {
+        val result = function.callSuspend(null, null)
+        return result?.let { objectMapper.writeValueAsBytes(it) }
     }
 }
 

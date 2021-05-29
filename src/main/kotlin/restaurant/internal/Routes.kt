@@ -7,11 +7,11 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
     class Routing(private val prefix: String = "") : RoutingDSL {
         val routes = mutableListOf<Route>()
 
-        override fun post(path: String, service: HttpService) {
+        override fun post(path: String, service: SuspendingHandler) {
             routes.add(Route(Method.POST, path, service))
         }
 
-        override fun get(path: String, service: HttpService) {
+        override fun get(path: String, service: SuspendingHandler) {
             routes.add(Route(Method.GET, path, service))
         }
 
@@ -25,7 +25,11 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
         override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
             val resolvedPath = this.prefix + path
             routes.addAll(routesAdder.routesFor(service, resolvedPath).map { restRoute ->
-                Route(restRoute.method, restRoute.path, restRoute.handler, listOf())
+                val needsBody = restRoute.method != Method.GET
+                val restHandler =
+                    RestHandler(restRoute.handler, needsBody, if (restRoute.method == Method.POST) 201 else 200)
+
+                Route(restRoute.method, restRoute.path, restHandler, listOf())
             }
             )
             ResourceDSL(resolvedPath).function()

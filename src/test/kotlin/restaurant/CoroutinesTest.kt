@@ -30,12 +30,12 @@ class CoroutinesTest {
     }
 }
 
-class DelayService : HttpService {
+class DelayService : SuspendingHandler {
     var afterDelay = false
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
+    override suspend fun handle(exchange: Exchange): Response {
         delay(100)
         afterDelay = true
-        return "OK".toByteArray()
+        return response()
     }
 }
 
