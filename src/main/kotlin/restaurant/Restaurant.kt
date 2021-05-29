@@ -106,7 +106,7 @@ fun Route.MethodToHttpString(): HttpString = when (method) {
 }
 
 interface Wrapper {
-    suspend fun invoke(exchange: ExchangeWrapper): Response?
+    suspend fun invoke(exchange: Exchange): Response?
 }
 
 fun Response(status: Int) = StatusResponse(status)
@@ -144,7 +144,7 @@ private class CoroutinesHandler(val suspendHandler: SuspendingHandler) : HttpHan
         }
         exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
             requestScope.launch {
-                when (val response = suspendHandler.handle(ExchangeWrapper(exchange))) {
+                when (val response = suspendHandler.handle(UndertowExchange(exchange))) {
                     is ByteBufferResponse -> {
                         exchange.statusCode = response.status
                         exchange.responseSender.send(response.result)
@@ -164,7 +164,7 @@ private class CoroutinesHandler(val suspendHandler: SuspendingHandler) : HttpHan
 }
 
 interface SuspendingHandler {
-    suspend fun handle(exchange: ExchangeWrapper): Response
+    suspend fun handle(exchange: Exchange): Response
 }
 
 class HttpServiceHandler(
@@ -172,7 +172,7 @@ class HttpServiceHandler(
     private val errorHandler: ThrowableToErrorReply,
     private val restHandler: RestHandler
 ) : SuspendingHandler {
-    override suspend fun handle(exchange: ExchangeWrapper): Response {
+    override suspend fun handle(exchange: Exchange): Response {
         return try {
             wrappers.forEach {
                 it.invoke(exchange)?.let { reply ->
@@ -190,7 +190,7 @@ class HttpServiceHandler(
 
 class RestHandler(private val service: HttpService, private val readBody: Boolean, private val statusCode: Int) :
     SuspendingHandler {
-    override suspend fun handle(exchange: ExchangeWrapper): Response {
+    override suspend fun handle(exchange: Exchange): Response {
         val body = if (readBody) exchange.readBody() else null
         val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
         return if (response == null) {
@@ -202,8 +202,14 @@ class RestHandler(private val service: HttpService, private val readBody: Boolea
 }
 
 
-class ExchangeWrapper(private val exchange: HttpServerExchange) {
-    suspend fun readBody(): ByteArray {
+interface Exchange {
+    val headers: HeaderMap
+    val queryParameters: Map<String, Deque<String>>
+    suspend fun readBody(): ByteArray
+}
+
+class UndertowExchange(private val exchange: HttpServerExchange) : Exchange {
+    override suspend fun readBody(): ByteArray {
         return suspendCoroutine {
             exchange.requestReceiver.receiveFullBytes { _, body ->
                 it.resume(body)
@@ -211,8 +217,8 @@ class ExchangeWrapper(private val exchange: HttpServerExchange) {
         }
     }
 
-    val headers: HeaderMap = HeaderMap(exchange.requestHeaders)
-    val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
+    override val headers: HeaderMap = HeaderMap(exchange.requestHeaders)
+    override val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
 
 class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {

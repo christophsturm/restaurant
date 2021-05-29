@@ -9,7 +9,7 @@ fun RoutingDSL.jwt(verifier: JWTVerifier, function: RoutingDSL.() -> Unit) {
 }
 
 class JWTWrapper(private val verifier: JWTVerifier) : Wrapper {
-    override suspend fun invoke(exchange: ExchangeWrapper): StringResponse? {
+    override suspend fun invoke(exchange: Exchange): StringResponse? {
         try {
             val token = exchange.headers[Headers.AUTHORIZATION]?.singleOrNull()?.substringAfter("Bearer ")
                 ?: return StringResponse(401, "Unauthorized: Auth Header not found")

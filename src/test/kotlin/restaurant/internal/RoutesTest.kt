@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import failgood.describe
 import failgood.mock.mock
 import org.junit.platform.commons.annotation.Testable
-import restaurant.ExchangeWrapper
+import restaurant.Exchange
 import restaurant.HttpService
 import restaurant.Wrapper
 import strikt.api.expectThat
@@ -15,10 +15,10 @@ class RoutesTest {
     val context = describe("Routes") {
         test("creates routes for wrapped handlers") {
             val inner = object : Wrapper {
-                override suspend fun invoke(exchange: ExchangeWrapper) = null
+                override suspend fun invoke(exchange: Exchange) = null
             }
             val outer = object : Wrapper {
-                override suspend fun invoke(exchange: ExchangeWrapper) = null
+                override suspend fun invoke(exchange: Exchange) = null
             }
             val handler = mock<HttpService>()
             val routes = routes(RoutesAdder(jacksonObjectMapper())) {
