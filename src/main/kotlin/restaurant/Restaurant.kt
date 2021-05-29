@@ -63,7 +63,7 @@ class Restaurant(
                     restHandler
                 )
             )
-            routingHandler.add(route.MethodToHttpString(), route.path, httpHandler)
+            routingHandler.add(route.methodToHttpString(), route.path, httpHandler)
         }
 
         Undertow.builder()
@@ -93,12 +93,11 @@ interface RoutingDSL {
     fun post(path: String, service: HttpService)
     fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
-    fun resource(service: RestService)
     fun get(path: String, service: HttpService)
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
 }
 
-fun Route.MethodToHttpString(): HttpString = when (method) {
+fun Route.methodToHttpString(): HttpString = when (method) {
     Method.GET -> Methods.GET
     Method.PUT -> Methods.PUT
     Method.POST -> Methods.POST

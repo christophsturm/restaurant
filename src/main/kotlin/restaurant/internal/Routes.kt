@@ -34,9 +34,6 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
             routes += routing.routes
         }
 
-        override fun resource(service: RestService) {
-
-        }
     }
     return Routing("").apply(serviceMapping).routes
 }

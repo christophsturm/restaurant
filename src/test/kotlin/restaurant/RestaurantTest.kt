@@ -171,6 +171,10 @@ class RestaurantTest {
 
 }
 
+@Suppress("unused")
+private fun RoutingDSL.resource(@Suppress("UNUSED_PARAMETER") service: RestService) {
+}
+
 
 
 
