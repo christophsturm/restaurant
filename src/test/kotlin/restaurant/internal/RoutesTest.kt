@@ -13,8 +13,12 @@ import strikt.assertions.containsExactly
 class RoutesTest {
     val context = describe("Routes") {
         test("creates routes for wrapped handlers") {
-            val inner = Wrapper {}
-            val outer = Wrapper {}
+            val inner = object : Wrapper {
+                override suspend fun invoke() {}
+            }
+            val outer = object : Wrapper {
+                override suspend fun invoke() {}
+            }
             val handler = mock<HttpService>()
             val routes = routes(RoutesAdder(jacksonObjectMapper())) {
                 wrap(outer) {

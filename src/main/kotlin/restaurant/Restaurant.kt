@@ -53,15 +53,19 @@ class Restaurant(
         val routingHandler = routes.fold(RoutingHandler()) { routingHandler, route ->
             val needsBody = route.method != Method.GET
 
-            val httpHandler: HttpHandler = NoBodyServiceHandler(
-                SuspendHandler(route.handler, errorHandler, needsBody, if (route.method == Method.POST) 201 else 200)
+            val httpHandler: HttpHandler = CoroutinesHandler(
+                HttpServiceHandler(
+                    route.handler,
+                    route.wrappers,
+                    errorHandler,
+                    needsBody,
+                    if (route.method == Method.POST) 201 else 200
+                )
             )
-            val wrappedHandler =
-                route.wrappers.foldRight(httpHandler) { wrapper, handler -> WrapperHandler(handler, wrapper) }
             routingHandler.add(
                 route.toHttpString(),
                 route.path,
-                wrappedHandler
+                httpHandler
             )
         }
 
@@ -83,13 +87,6 @@ class Restaurant(
 
 }
 
-class WrapperHandler(val next: HttpHandler, val wrapper: Wrapper) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange?) {
-        wrapper.invoke()
-        next.handleRequest(exchange)
-    }
-
-}
 
 private fun path(service: RestService) =
     service::class.simpleName!!.toLowerCase(Locale.getDefault()).removeSuffix("service")
@@ -111,8 +108,8 @@ fun Route.toHttpString(): HttpString = when (method) {
     Method.DELETE -> Methods.DELETE
 }
 
-fun interface Wrapper {
-    fun invoke()
+interface Wrapper {
+    suspend fun invoke()
 }
 
 
@@ -126,7 +123,7 @@ class ResourceDSL(resolvedPath: String) {
     }
 }
 
-private class NoBodyServiceHandler(val suspendHandler: SuspendHandler) : HttpHandler {
+private class CoroutinesHandler(val suspendHandler: SuspendingHandler) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         val requestScope = CoroutineScope(Dispatchers.Unconfined)
         exchange.addExchangeCompleteListener { _, nextListener ->
@@ -146,14 +143,22 @@ private class NoBodyServiceHandler(val suspendHandler: SuspendHandler) : HttpHan
 
 }
 
-class SuspendHandler(
+interface SuspendingHandler {
+    suspend fun handle(exchange: ExchangeWrapper)
+}
+
+class HttpServiceHandler(
     private val service: HttpService,
+    private val wrappers: List<Wrapper>,
     val errorHandler: ThrowableToErrorReply,
-    val readBody: Boolean = false,
-    val statusCode: Int
-) {
-    suspend fun handle(exchange: ExchangeWrapper) {
+    private val readBody: Boolean = false,
+    private val statusCode: Int
+) : SuspendingHandler {
+    override suspend fun handle(exchange: ExchangeWrapper) {
         try {
+            wrappers.forEach {
+                it.invoke()
+            }
             val body = if (readBody) exchange.readBody() else null
             val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
             if (response == null) {

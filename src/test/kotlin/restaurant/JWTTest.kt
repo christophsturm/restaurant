@@ -48,7 +48,7 @@ private fun RoutingDSL.jwt(function: RoutingDSL.() -> Unit) {
 }
 
 class JWTWrapper : Wrapper {
-    override fun invoke() {
+    override suspend fun invoke() {
         JWTConfig.makeJwtVerifier().verify(JWTConfig.makeToken(1))
     }
 
