@@ -57,6 +57,7 @@ val restaurant = Restaurant(errorHandler = { ex ->
 })
 ```
 
+### Authentication via JWT
 
 ## coming next:
 Readme driven development: all features below this point are not yet implemented.
@@ -73,7 +74,6 @@ namespace("/api") {
 
 will generate routes like `GET /api/users/10/hobbies/20` or `POST /api/users/10/hobbies`
 
-### Authentication via JWT
 
 ### Developer friendly
 

@@ -175,10 +175,11 @@ interface SuspendingHandler {
 class HttpServiceHandler(
     private val service: HttpService,
     private val wrappers: List<Wrapper>,
-    val errorHandler: ThrowableToErrorReply,
+    private val errorHandler: ThrowableToErrorReply,
     private val readBody: Boolean = false,
     private val statusCode: Int
 ) : SuspendingHandler {
+    val restHandler: SuspendingHandler = RestHandler(service, readBody, statusCode)
     override suspend fun handle(exchange: ExchangeWrapper): Response {
         return try {
             wrappers.forEach {
@@ -186,18 +187,28 @@ class HttpServiceHandler(
                     return reply
                 }
             }
-            val body = if (readBody) exchange.readBody() else null
-            val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
-            if (response == null) {
-                Response(204)
-            } else
-                Response(statusCode, ByteBuffer.wrap(response))
+            restHandler.handle(exchange)
         } catch (e: Exception) {
             val result = errorHandler(e)
             Response(result.status, result.body)
         }
     }
+
 }
+
+class RestHandler(private val service: HttpService, private val readBody: Boolean, private val statusCode: Int) :
+    SuspendingHandler {
+    override suspend fun handle(exchange: ExchangeWrapper): Response {
+        val body = if (readBody) exchange.readBody() else null
+        val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
+        return if (response == null) {
+            Response(204)
+        } else
+            Response(statusCode, ByteBuffer.wrap(response))
+    }
+
+}
+
 
 class ExchangeWrapper(private val exchange: HttpServerExchange) {
     suspend fun readBody(): ByteArray {
