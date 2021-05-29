@@ -22,6 +22,8 @@ import restaurant.internal.routes
 import java.net.ServerSocket
 import java.nio.ByteBuffer
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 internal fun findFreePort(): Int = ServerSocket(0).use {
     it.reuseAddress = true
@@ -49,10 +51,11 @@ class Restaurant(
     private val undertow: Undertow = run {
 
         val routingHandler = routes.fold(RoutingHandler()) { routingHandler, route ->
-            val httpHandler = if (route.method == Method.GET) NoBodyServiceHandler(
-                route.handler,
-                errorHandler
-            ) else HttpServiceHandler(route.handler, if (route.method == Method.POST) 201 else 200, errorHandler)
+            val needsBody = route.method != Method.GET
+
+            val httpHandler: HttpHandler = NoBodyServiceHandler(
+                SuspendHandler(route.handler, errorHandler, needsBody, if (route.method == Method.POST) 201 else 200)
+            )
             val wrappedHandler =
                 route.wrappers.foldRight(httpHandler) { wrapper, handler -> WrapperHandler(handler, wrapper) }
             routingHandler.add(
@@ -123,41 +126,7 @@ class ResourceDSL(resolvedPath: String) {
     }
 }
 
-private fun callSuspend(
-    exchange: HttpServerExchange,
-    service: HttpService,
-    requestBody: ByteArray?,
-    errorHandler: ThrowableToErrorReply
-) {
-    val requestScope = CoroutineScope(Dispatchers.Unconfined)
-    exchange.addExchangeCompleteListener { _, nextListener ->
-        try {
-            requestScope.cancel()
-        } catch (e: Exception) {
-            logger.error(e) { "error closing coroutine context" }
-        }
-        nextListener.proceed()
-    }
-    exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
-        requestScope.launch {
-            try {
-                val r = service.handle(requestBody, exchange.queryParameters.mapValues { it.value.single() })
-                if (r == null) {
-                    exchange.statusCode = 204
-                    exchange.endExchange()
-                } else
-                    exchange.responseSender.send(ByteBuffer.wrap(r))
-            } catch (e: Exception) {
-                val result = errorHandler(e)
-                exchange.statusCode = result.status
-                exchange.responseSender.send(result.body)
-            }
-        }
-    })
-}
-
-private class NoBodyServiceHandler(private val service: HttpService, private val errorHandler: ThrowableToErrorReply) :
-    HttpHandler {
+private class NoBodyServiceHandler(val suspendHandler: SuspendHandler) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         val requestScope = CoroutineScope(Dispatchers.Unconfined)
         exchange.addExchangeCompleteListener { _, nextListener ->
@@ -170,18 +139,27 @@ private class NoBodyServiceHandler(private val service: HttpService, private val
         }
         exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
             requestScope.launch {
-                handle(ExchangeWrapper(exchange))
+                suspendHandler.handle(ExchangeWrapper(exchange))
             }
         })
     }
 
-    private suspend fun handle(exchange: ExchangeWrapper) {
+}
+
+class SuspendHandler(
+    private val service: HttpService,
+    val errorHandler: ThrowableToErrorReply,
+    val readBody: Boolean = false,
+    val statusCode: Int
+) {
+    suspend fun handle(exchange: ExchangeWrapper) {
         try {
-            val response = service.handle(null, exchange.queryParameters.mapValues { it.value.single() })
+            val body = if (readBody) exchange.readBody() else null
+            val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
             if (response == null) {
                 exchange.reply(204)
             } else
-                exchange.reply(body = response)
+                exchange.reply(statusCode, body = response)
         } catch (e: Exception) {
             val result = errorHandler(e)
             exchange.reply(result.status, result.body)
@@ -205,20 +183,15 @@ class ExchangeWrapper(private val exchange: HttpServerExchange) {
         exchange.endExchange()
     }
 
-    val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
-}
-
-private class HttpServiceHandler(
-    private val service: HttpService,
-    private val statusCode: Int,
-    private val errorHandler: ThrowableToErrorReply
-) : HttpHandler {
-    override fun handleRequest(ex: HttpServerExchange) {
-        ex.requestReceiver.receiveFullBytes { exchange, body ->
-            exchange.statusCode = statusCode
-            callSuspend(exchange, service, body, errorHandler)
+    suspend fun readBody(): ByteArray {
+        return suspendCoroutine<ByteArray> {
+            exchange.requestReceiver.receiveFullBytes { _, body ->
+                it.resume(body)
+            }
         }
     }
+
+    val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
 
 interface RestService
