@@ -15,7 +15,7 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
             functions["create"]?.let {
                 add(
                     Route(
-                        Method.POST, path, CreateRestServiceHandler(
+                        Method.POST, path, PostRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
                         )
@@ -89,7 +89,7 @@ private class PutRestServiceHandler(
 
 @Suppress("CanBeParameter")
 @OptIn(ExperimentalStdlibApi::class)
-private class CreateRestServiceHandler(
+private class PostRestServiceHandler(
     private val objectMapper: ObjectMapper,
     val restFunction: RestFunction
 ) : HttpService {
