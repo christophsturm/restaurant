@@ -158,7 +158,54 @@ private fun callSuspend(
 
 private class NoBodyServiceHandler(private val service: HttpService, private val errorHandler: ThrowableToErrorReply) :
     HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) = callSuspend(exchange, service, null, errorHandler)
+    override fun handleRequest(exchange: HttpServerExchange) {
+        val requestScope = CoroutineScope(Dispatchers.Unconfined)
+        exchange.addExchangeCompleteListener { _, nextListener ->
+            try {
+                requestScope.cancel()
+            } catch (e: Exception) {
+                logger.error(e) { "error closing coroutine context" }
+            }
+            nextListener.proceed()
+        }
+        exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
+            requestScope.launch {
+                handle(ExchangeWrapper(exchange))
+            }
+        })
+    }
+
+    private suspend fun handle(exchange: ExchangeWrapper) {
+        try {
+            val response = service.handle(null, exchange.queryParameters.mapValues { it.value.single() })
+            if (response == null) {
+                exchange.reply(204)
+            } else
+                exchange.reply(body = response)
+        } catch (e: Exception) {
+            val result = errorHandler(e)
+            exchange.reply(result.status, result.body)
+        }
+    }
+}
+
+class ExchangeWrapper(private val exchange: HttpServerExchange) {
+    fun reply(status: Int = 200, body: String) {
+        exchange.statusCode = status
+        exchange.responseSender.send(body)
+    }
+
+    fun reply(status: Int = 200, body: ByteArray) {
+        exchange.statusCode = status
+        exchange.responseSender.send(ByteBuffer.wrap(body))
+    }
+
+    fun reply(status: Int) {
+        exchange.statusCode = status
+        exchange.endExchange()
+    }
+
+    val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
 
 private class HttpServiceHandler(
