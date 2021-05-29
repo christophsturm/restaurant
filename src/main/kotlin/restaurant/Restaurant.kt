@@ -111,8 +111,10 @@ fun Route.toHttpString(): HttpString = when (method) {
 }
 
 interface Wrapper {
-    suspend fun invoke(exchange: ExchangeWrapper)
+    suspend fun invoke(exchange: ExchangeWrapper): RequestResult?
 }
+
+data class RequestResult(val status: Int, val result: String)
 
 
 @DslMarker
@@ -158,16 +160,14 @@ class HttpServiceHandler(
 ) : SuspendingHandler {
     override suspend fun handle(exchange: ExchangeWrapper) {
         try {
-            val response = try {
-                wrappers.forEach {
-                    it.invoke(exchange)
+            wrappers.forEach {
+                it.invoke(exchange)?.let { reply ->
+                    exchange.reply(reply.status, reply.result)
+                    return
                 }
-                val body = if (readBody) exchange.readBody() else null
-                service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
-            } catch (e: ResponseAvailableException) {
-                exchange.reply(e.status, e.body)
-                return
             }
+            val body = if (readBody) exchange.readBody() else null
+            val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
             if (response == null) {
                 exchange.reply(204)
             } else

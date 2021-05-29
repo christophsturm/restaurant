@@ -15,10 +15,10 @@ class RoutesTest {
     val context = describe("Routes") {
         test("creates routes for wrapped handlers") {
             val inner = object : Wrapper {
-                override suspend fun invoke(exchange: ExchangeWrapper) {}
+                override suspend fun invoke(exchange: ExchangeWrapper) = null
             }
             val outer = object : Wrapper {
-                override suspend fun invoke(exchange: ExchangeWrapper) {}
+                override suspend fun invoke(exchange: ExchangeWrapper) = null
             }
             val handler = mock<HttpService>()
             val routes = routes(RoutesAdder(jacksonObjectMapper())) {
