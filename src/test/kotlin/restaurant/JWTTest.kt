@@ -2,8 +2,10 @@ package restaurant
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.interfaces.JWTVerifier
 import failgood.describe
+import io.undertow.util.Headers
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
@@ -29,8 +31,7 @@ class JWTTest {
             }
         }
 
-        pending("returns 401 for unauthorized requests") {
-            // first we need wrappers.
+        it("returns 401 for unauthorized requests") {
             val response = request(restaurant, "/handlers/reverser") {
                 post("""jakob""".toRequestBody())
             }
@@ -48,15 +49,21 @@ private fun RoutingDSL.jwt(function: RoutingDSL.() -> Unit) {
 }
 
 class JWTWrapper : Wrapper {
-    override suspend fun invoke() {
-        JWTConfig.makeJwtVerifier().verify(JWTConfig.makeToken(1))
+    override suspend fun invoke(exchange: ExchangeWrapper) {
+        try {
+            val token = exchange.headers[Headers.AUTHORIZATION]?.singleOrNull()?.substringAfter("Bearer ")
+                ?: throw ResponseAvailableException(401, "Unauthorized: Auth Heder not found")
+            JWTConfig.makeJwtVerifier().verify(token)
+        } catch (e: JWTVerificationException) {
+            throw ResponseAvailableException(401, "Unauthorized: " + e.message)
+        }
     }
 
 }
 
 object JWTConfig {
     private const val issuer = "https://the.io/restaurant"
-    const val audience = "jwtAudience"
+    private const val audience = "jwtAudience"
     private val algorithm = Algorithm.HMAC256("psst, secret")!!
     fun makeToken(userId: Long): String = JWT.create()
         .withAudience(audience)

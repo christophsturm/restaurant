@@ -36,7 +36,9 @@ data class ErrorReply(val status: Int, val body: String)
 
 typealias ThrowableToErrorReply = (Throwable) -> ErrorReply
 
-val defaultErrorHandler: ThrowableToErrorReply = { ErrorReply(500, "internal server error") }
+val defaultErrorHandler: ThrowableToErrorReply = {
+    ErrorReply(500, "internal server error")
+}
 
 class Restaurant(
     val port: Int = findFreePort(),
@@ -109,7 +111,7 @@ fun Route.toHttpString(): HttpString = when (method) {
 }
 
 interface Wrapper {
-    suspend fun invoke()
+    suspend fun invoke(exchange: ExchangeWrapper)
 }
 
 
@@ -156,11 +158,16 @@ class HttpServiceHandler(
 ) : SuspendingHandler {
     override suspend fun handle(exchange: ExchangeWrapper) {
         try {
-            wrappers.forEach {
-                it.invoke()
+            val response = try {
+                wrappers.forEach {
+                    it.invoke(exchange)
+                }
+                val body = if (readBody) exchange.readBody() else null
+                service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
+            } catch (e: ResponseAvailableException) {
+                exchange.reply(e.status, e.body)
+                return
             }
-            val body = if (readBody) exchange.readBody() else null
-            val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
             if (response == null) {
                 exchange.reply(204)
             } else
@@ -189,15 +196,28 @@ class ExchangeWrapper(private val exchange: HttpServerExchange) {
     }
 
     suspend fun readBody(): ByteArray {
-        return suspendCoroutine<ByteArray> {
+        return suspendCoroutine {
             exchange.requestReceiver.receiveFullBytes { _, body ->
                 it.resume(body)
             }
         }
     }
 
+    val headers: HeaderMap = HeaderMap(exchange.requestHeaders)
     val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
+
+class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
+    operator fun get(header: String): List<String>? {
+        return requestHeaders.get(header)
+    }
+
+    operator fun get(header: HttpString): List<String>? {
+        return requestHeaders.get(header)
+    }
+
+}
+
 
 interface RestService
 
