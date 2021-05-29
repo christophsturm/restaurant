@@ -111,10 +111,19 @@ fun Route.toHttpString(): HttpString = when (method) {
 }
 
 interface Wrapper {
-    suspend fun invoke(exchange: ExchangeWrapper): RequestResult?
+    suspend fun invoke(exchange: ExchangeWrapper): Response?
 }
 
-data class RequestResult(val status: Int, val result: String)
+fun Response(status: Int) = StatusResponse(status)
+fun Response(status: Int, result: String) = StringResponse(status, result)
+fun Response(status: Int, result: ByteBuffer) = ByteBufferResponse(status, result)
+sealed class Response {
+    abstract val status: Int
+}
+
+data class StatusResponse(override val status: Int) : Response()
+data class StringResponse(override val status: Int, val result: String) : Response()
+data class ByteBufferResponse(override val status: Int, val result: ByteBuffer) : Response()
 
 
 @DslMarker
@@ -140,15 +149,27 @@ private class CoroutinesHandler(val suspendHandler: SuspendingHandler) : HttpHan
         }
         exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
             requestScope.launch {
-                suspendHandler.handle(ExchangeWrapper(exchange))
+                when (val response = suspendHandler.handle(ExchangeWrapper(exchange))) {
+                    is ByteBufferResponse -> {
+                        exchange.statusCode = response.status
+                        exchange.responseSender.send(response.result)
+                    }
+                    is StatusResponse -> {
+                        exchange.statusCode = response.status
+                        exchange.endExchange()
+                    }
+                    is StringResponse -> {
+                        exchange.statusCode = response.status
+                        exchange.responseSender.send(response.result)
+                    }
+                }
             }
         })
     }
-
 }
 
 interface SuspendingHandler {
-    suspend fun handle(exchange: ExchangeWrapper)
+    suspend fun handle(exchange: ExchangeWrapper): Response
 }
 
 class HttpServiceHandler(
@@ -158,43 +179,27 @@ class HttpServiceHandler(
     private val readBody: Boolean = false,
     private val statusCode: Int
 ) : SuspendingHandler {
-    override suspend fun handle(exchange: ExchangeWrapper) {
-        try {
+    override suspend fun handle(exchange: ExchangeWrapper): Response {
+        return try {
             wrappers.forEach {
                 it.invoke(exchange)?.let { reply ->
-                    exchange.reply(reply.status, reply.result)
-                    return
+                    return reply
                 }
             }
             val body = if (readBody) exchange.readBody() else null
             val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
             if (response == null) {
-                exchange.reply(204)
+                Response(204)
             } else
-                exchange.reply(statusCode, body = response)
+                Response(statusCode, ByteBuffer.wrap(response))
         } catch (e: Exception) {
             val result = errorHandler(e)
-            exchange.reply(result.status, result.body)
+            Response(result.status, result.body)
         }
     }
 }
 
 class ExchangeWrapper(private val exchange: HttpServerExchange) {
-    fun reply(status: Int = 200, body: String) {
-        exchange.statusCode = status
-        exchange.responseSender.send(body)
-    }
-
-    fun reply(status: Int = 200, body: ByteArray) {
-        exchange.statusCode = status
-        exchange.responseSender.send(ByteBuffer.wrap(body))
-    }
-
-    fun reply(status: Int) {
-        exchange.statusCode = status
-        exchange.endExchange()
-    }
-
     suspend fun readBody(): ByteArray {
         return suspendCoroutine {
             exchange.requestReceiver.receiveFullBytes { _, body ->
