@@ -108,9 +108,9 @@ interface Wrapper {
     suspend fun invoke(exchange: Exchange): Response?
 }
 
-fun Response(status: Int) = StatusResponse(status)
-fun Response(status: Int, result: String) = StringResponse(status, result)
-fun Response(status: Int, result: ByteBuffer) = ByteBufferResponse(status, result)
+fun response(status: Int) = StatusResponse(status)
+fun response(status: Int, result: String) = StringResponse(status, result)
+fun response(status: Int, result: ByteBuffer) = ByteBufferResponse(status, result)
 sealed class Response {
     abstract val status: Int
 }
@@ -181,7 +181,7 @@ class HttpServiceHandler(
             restHandler.handle(exchange)
         } catch (e: Exception) {
             val result = errorHandler(e)
-            Response(result.status, result.body)
+            response(result.status, result.body)
         }
     }
 
@@ -193,9 +193,9 @@ class RestHandler(private val service: HttpService, private val readBody: Boolea
         val body = if (readBody) exchange.readBody() else null
         val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
         return if (response == null) {
-            Response(204)
+            response(204)
         } else
-            Response(statusCode, ByteBuffer.wrap(response))
+            response(statusCode, ByteBuffer.wrap(response))
     }
 
 }
