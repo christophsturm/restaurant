@@ -12,8 +12,16 @@ import strikt.assertions.isNotNull
 class WrappersTest {
     val context = describe("Wrapper Support") {
         val events = mutableListOf<String>()
-        val inner = Wrapper { events.add("inner") }
-        val outer = Wrapper { events.add("outer") }
+        val inner = object : Wrapper {
+            override suspend fun invoke() {
+                events.add("inner")
+            }
+        }
+        val outer = object : Wrapper {
+            override suspend fun invoke() {
+                events.add("outer")
+            }
+        }
         val restaurant = autoClose(Restaurant {
             wrap(outer) {
                 wrap(inner) {

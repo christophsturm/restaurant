@@ -22,6 +22,8 @@ import restaurant.internal.routes
 import java.net.ServerSocket
 import java.nio.ByteBuffer
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 internal fun findFreePort(): Int = ServerSocket(0).use {
     it.reuseAddress = true
@@ -49,16 +51,21 @@ class Restaurant(
     private val undertow: Undertow = run {
 
         val routingHandler = routes.fold(RoutingHandler()) { routingHandler, route ->
-            val httpHandler = if (route.method == Method.GET) NoBodyServiceHandler(
-                route.handler,
-                errorHandler
-            ) else HttpServiceHandler(route.handler, if (route.method == Method.POST) 201 else 200, errorHandler)
-            val wrappedHandler =
-                route.wrappers.foldRight(httpHandler) { wrapper, handler -> WrapperHandler(handler, wrapper) }
+            val needsBody = route.method != Method.GET
+
+            val httpHandler: HttpHandler = CoroutinesHandler(
+                HttpServiceHandler(
+                    route.handler,
+                    route.wrappers,
+                    errorHandler,
+                    needsBody,
+                    if (route.method == Method.POST) 201 else 200
+                )
+            )
             routingHandler.add(
                 route.toHttpString(),
                 route.path,
-                wrappedHandler
+                httpHandler
             )
         }
 
@@ -80,13 +87,6 @@ class Restaurant(
 
 }
 
-class WrapperHandler(val next: HttpHandler, val wrapper: Wrapper) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange?) {
-        wrapper.invoke()
-        next.handleRequest(exchange)
-    }
-
-}
 
 private fun path(service: RestService) =
     service::class.simpleName!!.toLowerCase(Locale.getDefault()).removeSuffix("service")
@@ -108,8 +108,8 @@ fun Route.toHttpString(): HttpString = when (method) {
     Method.DELETE -> Methods.DELETE
 }
 
-fun interface Wrapper {
-    fun invoke()
+interface Wrapper {
+    suspend fun invoke()
 }
 
 
@@ -123,55 +123,80 @@ class ResourceDSL(resolvedPath: String) {
     }
 }
 
-private fun callSuspend(
-    exchange: HttpServerExchange,
-    service: HttpService,
-    requestBody: ByteArray?,
-    errorHandler: ThrowableToErrorReply
-) {
-    val requestScope = CoroutineScope(Dispatchers.Unconfined)
-    exchange.addExchangeCompleteListener { _, nextListener ->
-        try {
-            requestScope.cancel()
-        } catch (e: Exception) {
-            logger.error(e) { "error closing coroutine context" }
-        }
-        nextListener.proceed()
-    }
-    exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
-        requestScope.launch {
+private class CoroutinesHandler(val suspendHandler: SuspendingHandler) : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange) {
+        val requestScope = CoroutineScope(Dispatchers.Unconfined)
+        exchange.addExchangeCompleteListener { _, nextListener ->
             try {
-                val r = service.handle(requestBody, exchange.queryParameters.mapValues { it.value.single() })
-                if (r == null) {
-                    exchange.statusCode = 204
-                    exchange.endExchange()
-                } else
-                    exchange.responseSender.send(ByteBuffer.wrap(r))
+                requestScope.cancel()
             } catch (e: Exception) {
-                val result = errorHandler(e)
-                exchange.statusCode = result.status
-                exchange.responseSender.send(result.body)
+                logger.error(e) { "error closing coroutine context" }
+            }
+            nextListener.proceed()
+        }
+        exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
+            requestScope.launch {
+                suspendHandler.handle(ExchangeWrapper(exchange))
+            }
+        })
+    }
+
+}
+
+interface SuspendingHandler {
+    suspend fun handle(exchange: ExchangeWrapper)
+}
+
+class HttpServiceHandler(
+    private val service: HttpService,
+    private val wrappers: List<Wrapper>,
+    val errorHandler: ThrowableToErrorReply,
+    private val readBody: Boolean = false,
+    private val statusCode: Int
+) : SuspendingHandler {
+    override suspend fun handle(exchange: ExchangeWrapper) {
+        try {
+            wrappers.forEach {
+                it.invoke()
+            }
+            val body = if (readBody) exchange.readBody() else null
+            val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
+            if (response == null) {
+                exchange.reply(204)
+            } else
+                exchange.reply(statusCode, body = response)
+        } catch (e: Exception) {
+            val result = errorHandler(e)
+            exchange.reply(result.status, result.body)
+        }
+    }
+}
+
+class ExchangeWrapper(private val exchange: HttpServerExchange) {
+    fun reply(status: Int = 200, body: String) {
+        exchange.statusCode = status
+        exchange.responseSender.send(body)
+    }
+
+    fun reply(status: Int = 200, body: ByteArray) {
+        exchange.statusCode = status
+        exchange.responseSender.send(ByteBuffer.wrap(body))
+    }
+
+    fun reply(status: Int) {
+        exchange.statusCode = status
+        exchange.endExchange()
+    }
+
+    suspend fun readBody(): ByteArray {
+        return suspendCoroutine<ByteArray> {
+            exchange.requestReceiver.receiveFullBytes { _, body ->
+                it.resume(body)
             }
         }
-    })
-}
-
-private class NoBodyServiceHandler(private val service: HttpService, private val errorHandler: ThrowableToErrorReply) :
-    HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) = callSuspend(exchange, service, null, errorHandler)
-}
-
-private class HttpServiceHandler(
-    private val service: HttpService,
-    private val statusCode: Int,
-    private val errorHandler: ThrowableToErrorReply
-) : HttpHandler {
-    override fun handleRequest(ex: HttpServerExchange) {
-        ex.requestReceiver.receiveFullBytes { exchange, body ->
-            exchange.statusCode = statusCode
-            callSuspend(exchange, service, body, errorHandler)
-        }
     }
+
+    val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
 
 interface RestService
