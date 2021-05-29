@@ -57,10 +57,6 @@ val restaurant = Restaurant(errorHandler = { ex ->
 })
 ```
 
-## coming next:
-
-Readme driven development: all features below this point are not yet implemented.
-
 ### Authentication via JWT
 
 JWT Authentication is super simple, first you need the usual JWT stuff:
@@ -84,16 +80,30 @@ object JWTConfig {
 }
 ```
 
-and in your Restaurant routing DSL you just wrap the protected resources or handlers:
+In your Restaurant routing DSL you just wrap the protected resources or handlers:
 
-````kotlin
+```kotlin
         val restaurant = Restaurant {
     jwt(JWTConfig.makeJwtVerifier()) {
-        post("/handlers/reverser", ReverserService())
+        get("/handlers/welcome", JWTWelcomeHandler())
     }
 }
 
-````
+```
+
+Wrapped handlers can get the jwt info:
+
+```kotlin
+class JWTWelcomeHandler : SuspendingHandler {
+    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
+        return (response("welcome user " + context[JWTWrapper].getClaim("jti")))
+    }
+}
+```
+
+## coming next:
+
+Readme driven development: all features below this point are not yet implemented.
 
 ### nested resources:
 
