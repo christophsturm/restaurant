@@ -24,7 +24,10 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
 
         override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
             val resolvedPath = this.prefix + path
-            routes.addAll(routesAdder.routesFor(service, resolvedPath))
+            routes.addAll(routesAdder.routesFor(service, resolvedPath).map { restRoute ->
+                Route(restRoute.method, restRoute.path, restRoute.handler, listOf())
+            }
+            )
             ResourceDSL(resolvedPath).function()
         }
 

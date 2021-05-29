@@ -4,9 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import failgood.describe
 import failgood.mock.mock
 import org.junit.platform.commons.annotation.Testable
-import restaurant.Exchange
-import restaurant.HttpService
-import restaurant.Wrapper
+import restaurant.*
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 

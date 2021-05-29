@@ -2,19 +2,19 @@ package restaurant.internal
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import restaurant.HttpService
+import restaurant.Method
 import restaurant.RestService
-import restaurant.Wrapper
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
 class RoutesAdder(private val objectMapper: ObjectMapper) {
     @OptIn(ExperimentalStdlibApi::class)
-    fun routesFor(restService: RestService, path: String): List<Route> {
+    fun routesFor(restService: RestService, path: String): List<RestRoute> {
         val functions = restService::class.functions.associateBy { it.name }
         return buildList {
             functions["create"]?.let {
                 add(
-                    Route(
+                    RestRoute(
                         Method.POST, path, PostRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -25,7 +25,7 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
 
             functions["show"]?.let {
                 add(
-                    Route(
+                    RestRoute(
                         Method.GET, "$path/{id}", GetRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -35,12 +35,12 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
             }
 
             functions["index"]?.let {
-                add(Route(Method.GET, path, GetListRestServiceHandler(objectMapper, RestFunction(it, restService))))
+                add(RestRoute(Method.GET, path, GetListRestServiceHandler(objectMapper, RestFunction(it, restService))))
             }
 
             functions["update"]?.let {
                 add(
-                    Route(
+                    RestRoute(
                         Method.PUT, "$path/{id}", PutRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -51,7 +51,7 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
 
             functions["delete"]?.let<KFunction<*>, Unit> {
                 add(
-                    Route(
+                    RestRoute(
                         Method.DELETE, "$path/{id}", GetRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -63,14 +63,8 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
     }
 }
 
-enum class Method {
-    GET,
-    PUT,
-    POST,
-    DELETE
-}
 
-data class Route(val method: Method, val path: String, val handler: HttpService, val wrappers: List<Wrapper> = listOf())
+data class RestRoute(val method: Method, val path: String, val handler: HttpService)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(

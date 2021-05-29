@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
 import io.undertow.util.HttpString
-import restaurant.internal.Method
 import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
@@ -133,6 +132,15 @@ class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
     }
 
 }
+
+enum class Method {
+    GET,
+    PUT,
+    POST,
+    DELETE
+}
+
+data class Route(val method: Method, val path: String, val handler: HttpService, val wrappers: List<Wrapper> = listOf())
 
 
 interface RestService

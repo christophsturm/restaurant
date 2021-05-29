@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import failgood.describe
 import kotlinx.coroutines.runBlocking
 import org.junit.platform.commons.annotation.Testable
+import restaurant.Method
 import strikt.api.expectThat
 import strikt.assertions.getValue
 import strikt.assertions.hasSize
@@ -23,7 +24,8 @@ class RoutesAdderTest {
         ).forEach { (service, description) ->
             describe("for a $description") {
                 val rootPath = "root"
-                val routes: Map<Method, List<Route>> = routesAdder.routesFor(service, rootPath).groupBy { it.method }
+                val routes: Map<Method, List<RestRoute>> =
+                    routesAdder.routesFor(service, rootPath).groupBy { it.method }
                 it("adds a post route") {
                     expectThat(routes).getValue(Method.POST).single()
                         .and {
