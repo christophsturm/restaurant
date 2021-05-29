@@ -61,7 +61,7 @@ interface RoutingDSL {
 }
 
 interface Wrapper {
-    suspend fun invoke(exchange: Exchange): Response?
+    suspend fun invoke(exchange: Exchange): WrapperResult?
 }
 
 
@@ -76,7 +76,7 @@ class ResourceDSL(resolvedPath: String) {
 }
 
 interface SuspendingHandler {
-    suspend fun handle(exchange: Exchange): Response
+    suspend fun handle(exchange: Exchange, context: RequestContext): Response
 }
 
 class RootHandler(
@@ -84,14 +84,17 @@ class RootHandler(
     private val errorHandler: ThrowableToErrorReply,
     private val restHandler: SuspendingHandler
 ) : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange): Response {
+    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
         return try {
-            wrappers.forEach {
-                it.invoke(exchange)?.let { reply ->
-                    return reply
+            // wrappers can add request constants, finish the request, or do nothing
+            val requestContext = wrappers.fold(context) { wrapperContext, wrapper ->
+                when (val wrapperResult = wrapper.invoke(exchange)) {
+                    is AddRequestConstant<*> -> wrapperContext.apply { add(wrapperResult.key, wrapperResult.value) }
+                    is FinishRequest -> return wrapperResult.response
+                    null -> wrapperContext
                 }
             }
-            restHandler.handle(exchange)
+            restHandler.handle(exchange, requestContext)
         } catch (e: Exception) {
             val result = errorHandler(e)
             response(result.status, result.body)
@@ -100,9 +103,20 @@ class RootHandler(
 
 }
 
+class RequestContext {
+    private val map = mutableMapOf<Key<*>, Any>()
+    fun <T : Any> add(key: Key<T>, value: Any) {
+        map[key] = value
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    operator fun <T> get(key: Key<T>): T = map[key] as T
+
+}
+
 class RestHandler(private val service: HttpService, private val readBody: Boolean, private val statusCode: Int) :
     SuspendingHandler {
-    override suspend fun handle(exchange: Exchange): Response {
+    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
         val body = if (readBody) exchange.readBody() else null
         val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
         return if (response == null) {

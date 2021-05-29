@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.JWTVerifier
 import failgood.describe
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -27,29 +26,32 @@ object JWTConfig {
         .build()
 }
 
+class JWTWelcomeHandler : SuspendingHandler {
+    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
+        return (response("welcome user " + context[JWTWrapper].getClaim("jti")))
+    }
+}
+
 @Testable
 class JWTTest {
     val context = describe("JWT Support") {
         val restaurant = autoClose(Restaurant {
             jwt(JWTConfig.makeJwtVerifier()) {
-                post("/handlers/reverser", ReverserService())
+                get("/handlers/welcome", JWTWelcomeHandler())
             }
         })
         it("allows authorized requests") {
-            val response = request(restaurant, "/handlers/reverser") {
-                post("""jakob""".toRequestBody())
-                addHeader("Authorization", "Bearer ${JWTConfig.makeToken(1)}")
+            val response = request(restaurant, "/handlers/welcome") {
+                addHeader("Authorization", "Bearer ${JWTConfig.makeToken(42)}")
             }
             expectThat(response) {
                 get { code }.isEqualTo(200)
-                get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
+                get { body }.isNotNull().get { string() }.isEqualTo("welcome user 42")
             }
         }
 
         it("returns 401 for unauthorized requests") {
-            val response = request(restaurant, "/handlers/reverser") {
-                post("""jakob""".toRequestBody())
-            }
+            val response = request(restaurant, "/handlers/welcome")
             expectThat(response) {
                 get { code }.isEqualTo(401)
             }

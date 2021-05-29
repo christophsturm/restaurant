@@ -8,10 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import restaurant.ByteBufferResponse
-import restaurant.StatusResponse
-import restaurant.StringResponse
-import restaurant.SuspendingHandler
+import restaurant.*
 
 private val logger = KotlinLogging.logger {}
 
@@ -28,7 +25,7 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
         }
         exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
             requestScope.launch {
-                when (val response = suspendHandler.handle(UndertowExchange(exchange))) {
+                when (val response = suspendHandler.handle(UndertowExchange(exchange), RequestContext())) {
                     is ByteBufferResponse -> {
                         exchange.statusCode = response.status
                         exchange.responseSender.send(response.result)

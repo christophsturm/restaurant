@@ -6,6 +6,7 @@ fun response(status: Int = 200) = StatusResponse(status)
 fun response(status: Int, result: String) = StringResponse(status, result)
 fun response(status: Int, result: ByteBuffer) = ByteBufferResponse(status, result)
 fun response(result: ByteBuffer) = ByteBufferResponse(200, result)
+fun response(result: String) = StringResponse(200, result)
 sealed class Response {
     abstract val status: Int
 }

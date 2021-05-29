@@ -13,13 +13,13 @@ class WrappersTest {
     val context = describe("Wrapper Support") {
         val events = mutableListOf<String>()
         val inner = object : Wrapper {
-            override suspend fun invoke(exchange: Exchange): StringResponse? {
+            override suspend fun invoke(exchange: Exchange): WrapperResult? {
                 events.add("inner")
                 return null
             }
         }
         val outer = object : Wrapper {
-            override suspend fun invoke(exchange: Exchange): StringResponse? {
+            override suspend fun invoke(exchange: Exchange): WrapperResult? {
                 events.add("outer")
                 return null
             }
