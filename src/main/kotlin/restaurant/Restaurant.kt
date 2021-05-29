@@ -55,20 +55,15 @@ class Restaurant(
         val routingHandler = routes.fold(RoutingHandler()) { routingHandler, route ->
             val needsBody = route.method != Method.GET
 
+            val restHandler = RestHandler(route.handler, needsBody, if (route.method == Method.POST) 201 else 200)
             val httpHandler: HttpHandler = CoroutinesHandler(
                 HttpServiceHandler(
-                    route.handler,
                     route.wrappers,
                     errorHandler,
-                    needsBody,
-                    if (route.method == Method.POST) 201 else 200
+                    restHandler
                 )
             )
-            routingHandler.add(
-                route.toHttpString(),
-                route.path,
-                httpHandler
-            )
+            routingHandler.add(route.MethodToHttpString(), route.path, httpHandler)
         }
 
         Undertow.builder()
@@ -103,7 +98,7 @@ interface RoutingDSL {
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
 }
 
-fun Route.toHttpString(): HttpString = when (method) {
+fun Route.MethodToHttpString(): HttpString = when (method) {
     Method.GET -> Methods.GET
     Method.PUT -> Methods.PUT
     Method.POST -> Methods.POST
@@ -173,13 +168,10 @@ interface SuspendingHandler {
 }
 
 class HttpServiceHandler(
-    private val service: HttpService,
     private val wrappers: List<Wrapper>,
     private val errorHandler: ThrowableToErrorReply,
-    private val readBody: Boolean = false,
-    private val statusCode: Int
+    private val restHandler: RestHandler
 ) : SuspendingHandler {
-    val restHandler: SuspendingHandler = RestHandler(service, readBody, statusCode)
     override suspend fun handle(exchange: ExchangeWrapper): Response {
         return try {
             wrappers.forEach {
