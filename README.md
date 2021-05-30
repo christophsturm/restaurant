@@ -103,7 +103,7 @@ class JWTWelcomeHandler : SuspendingHandler {
 
 ## coming next:
 
-Readme driven development: all features below this point are not yet implemented.
+Readme driven development: The features below this point are not ready yet.
 
 ### nested resources:
 
@@ -121,5 +121,5 @@ will generate routes like `GET /api/users/10/hobbies/20` or `POST /api/users/10/
 ### Developer friendly
 
 * Show a list of defined routes when a 404 error occurs in development mode.
-* Friendly error messages when json can be serialized or deserialized.
-* Any stacktrace in undertow or restaurant code that does not show a useful error message should be reported as a bug.
+* Friendly error messages when json can not be serialized or deserialized.
+* Any stacktrace in undertow or restaurant code that does not show a useful error message is a bug.
