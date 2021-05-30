@@ -79,8 +79,8 @@ private class PutRestServiceHandler(
     ): ByteArray {
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        val parameter = objectMapper.readValue(requestBody, function.parameterType)
-        val result = function.callSuspend(parameter, id)
+        val payload = objectMapper.readValue(requestBody, function.payloadType)
+        val result = function.callSuspend(payload, id)
         return objectMapper.writeValueAsBytes(result)
     }
 }
@@ -91,15 +91,15 @@ private class PostRestServiceHandler(
     private val objectMapper: ObjectMapper,
     val restFunction: RestFunction
 ) : HttpService {
-    private val parameterType = restFunction.parameterType
+    private val payloadType = restFunction.payloadType
 
     override suspend fun handle(
         requestBody: ByteArray?,
         pathVariables: Map<String, String>,
         requestContext: RequestContext
     ): ByteArray {
-        val parameter = objectMapper.readValue(requestBody, parameterType)
-        val result = restFunction.callSuspend(parameter, null)
+        val payload = objectMapper.readValue(requestBody, payloadType)
+        val result = restFunction.callSuspend(payload, null)
         return objectMapper.writeValueAsBytes(result)
     }
 }

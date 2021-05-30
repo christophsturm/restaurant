@@ -15,18 +15,18 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
         return javaType == String::class.java || javaType == Int::class.java || javaType == Long::class.java
     }
 
-    val parameterType: Class<*>? = parameters.singleOrNull { !it.isId() }?.type?.javaType as? Class<*>
+    val payloadType: Class<*>? = parameters.singleOrNull { !it.isId() }?.type?.javaType as? Class<*>
     private val idParameter = parameters.singleOrNull { it.isId() }?.type?.classifier
     private val idFirst = parameters.firstOrNull()?.isId() ?: false
 
 
-    suspend fun callSuspend(parameter: Any? = null, id: String?): Any? =
+    suspend fun callSuspend(payload: Any? = null, id: String?): Any? =
         when {
-            parameter == null && id == null -> function.callSuspend(service)
-            parameter == null && id != null -> function.callSuspend(service, id(id))
-            id == null -> function.callSuspend(service, parameter)
-            idFirst -> function.callSuspend(service, id(id), parameter)
-            else -> function.callSuspend(service, parameter, id(id))
+            payload == null && id == null -> function.callSuspend(service)
+            payload == null && id != null -> function.callSuspend(service, id(id))
+            id == null -> function.callSuspend(service, payload)
+            idFirst -> function.callSuspend(service, id(id), payload)
+            else -> function.callSuspend(service, payload, id(id))
         }
 
     private fun id(id: String): Any {

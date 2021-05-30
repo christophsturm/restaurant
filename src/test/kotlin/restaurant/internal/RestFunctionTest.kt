@@ -16,7 +16,7 @@ class RestFunctionTest {
                     @Suppress("UNUSED_PARAMETER")
                     fun create(body: Body) = Unit
                 }
-                expectThat(RestFunction(A::create, A())).get { parameterType }.isEqualTo(Body::class.java)
+                expectThat(RestFunction(A::create, A())).get { payloadType }.isEqualTo(Body::class.java)
             }
             describe("detects parameter type for methods with body parameter and id") {
                 it("when body is first") {
@@ -24,14 +24,14 @@ class RestFunctionTest {
                     class A : RestService {
                         fun update(body: Body, id: String) = Unit
                     }
-                    expectThat(RestFunction(A::update, A())).get { parameterType }.isEqualTo(Body::class.java)
+                    expectThat(RestFunction(A::update, A())).get { payloadType }.isEqualTo(Body::class.java)
                 }
                 it("when id is first") {
                     @Suppress("UNUSED_PARAMETER")
                     class A : RestService {
                         fun update(id: String, body: Body) = Unit
                     }
-                    expectThat(RestFunction(A::update, A())).get { parameterType }.isEqualTo(Body::class.java)
+                    expectThat(RestFunction(A::update, A())).get { payloadType }.isEqualTo(Body::class.java)
                 }
             }
         }
