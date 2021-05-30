@@ -114,7 +114,11 @@ class RequestContext {
 
 }
 
-class RestHandler(private val service: HttpService, private val readBody: Boolean, private val statusCode: Int) :
+internal class HttpServiceHandler(
+    private val service: HttpService,
+    private val readBody: Boolean,
+    private val statusCode: Int
+) :
     SuspendingHandler {
     override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
         val body = if (readBody) exchange.readBody() else null

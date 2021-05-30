@@ -27,7 +27,11 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
             routes.addAll(routesAdder.routesFor(service, resolvedPath).map { restRoute ->
                 val needsBody = restRoute.method != Method.GET
                 val restHandler =
-                    RestHandler(restRoute.handler, needsBody, if (restRoute.method == Method.POST) 201 else 200)
+                    HttpServiceHandler(
+                        restRoute.httpService,
+                        needsBody,
+                        if (restRoute.method == Method.POST) 201 else 200
+                    )
 
                 Route(restRoute.method, restRoute.path, restHandler, listOf())
             }

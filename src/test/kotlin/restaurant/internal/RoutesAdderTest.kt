@@ -32,7 +32,7 @@ class RoutesAdderTest {
                             get { path }.isEqualTo(rootPath)
                             get {
                                 runBlocking {
-                                    handler.handle("""{"name":"userName"}""".toByteArray(), mapOf())
+                                    httpService.handle("""{"name":"userName"}""".toByteArray(), mapOf())
                                 }!!.decodeToString()
                             }.isEqualTo("""{"id":"userId","name":"userName"}""")
                         }
@@ -43,7 +43,7 @@ class RoutesAdderTest {
                     it("adds a get detail route") {
                         expectThat(
                             String(
-                                getRoutes.single { it.path == "$rootPath/{id}" }.handler.handle(
+                                getRoutes.single { it.path == "$rootPath/{id}" }.httpService.handle(
                                     null,
                                     mapOf("id" to "5")
                                 )!!,
@@ -54,7 +54,7 @@ class RoutesAdderTest {
                     it("adds a get list route") {
                         expectThat(
                             String(
-                                getRoutes.single { it.path == rootPath }.handler.handle(null, mapOf())!!,
+                                getRoutes.single { it.path == rootPath }.httpService.handle(null, mapOf())!!,
                                 Charset.defaultCharset()
                             )
                         ).isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
@@ -66,7 +66,7 @@ class RoutesAdderTest {
                             get { path }.isEqualTo("$rootPath/{id}")
                             get {
                                 runBlocking {
-                                    handler.handle(
+                                    httpService.handle(
                                         """{"name":"userName"}""".toByteArray(),
                                         mapOf("id" to "5")
                                     )
@@ -81,7 +81,7 @@ class RoutesAdderTest {
                             get { path }.isEqualTo("$rootPath/{id}")
                             get {
                                 runBlocking {
-                                    handler.handle(
+                                    httpService.handle(
                                         null,
                                         mapOf("id" to "5")
                                     )

@@ -64,7 +64,7 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
 }
 
 
-data class RestRoute(val method: Method, val path: String, val handler: HttpService)
+data class RestRoute(val method: Method, val path: String, val httpService: HttpService)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(
