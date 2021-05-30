@@ -27,8 +27,8 @@ object JWTConfig {
 }
 
 class JWTWelcomeHandler : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
-        return (response("welcome user " + context[JWTWrapper].getClaim("jti")))
+    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
+        return (response("welcome user " + requestContext[JWTWrapper].getClaim("jti")))
     }
 }
 

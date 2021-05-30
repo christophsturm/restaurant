@@ -75,7 +75,7 @@ class ResourceDSL(resolvedPath: String) {
 }
 
 interface SuspendingHandler {
-    suspend fun handle(exchange: Exchange, context: RequestContext): Response
+    suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response
 }
 
 class RootHandler(
@@ -83,10 +83,10 @@ class RootHandler(
     private val errorHandler: ThrowableToErrorReply,
     private val restHandler: SuspendingHandler
 ) : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
+    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
         return try {
             // wrappers can add request constants, finish the request, or do nothing
-            val requestContext = wrappers.fold(context) { wrapperContext, wrapper ->
+            val requestContext = wrappers.fold(requestContext as MutableRequestContext) { wrapperContext, wrapper ->
                 when (val wrapperResult = wrapper.invoke(exchange)) {
                     is AddRequestConstant<*> -> wrapperContext.apply { add(wrapperResult.key, wrapperResult.value) }
                     is FinishRequest -> return wrapperResult.response
@@ -102,14 +102,18 @@ class RootHandler(
 
 }
 
-class RequestContext {
+interface RequestContext {
+    operator fun <T> get(key: Key<T>): T
+}
+
+internal class MutableRequestContext : RequestContext {
     private val map = mutableMapOf<Key<*>, Any>()
     fun <T : Any> add(key: Key<T>, value: Any) {
         map[key] = value
     }
 
     @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(key: Key<T>): T = map[key] as T
+    override operator fun <T> get(key: Key<T>): T = map[key] as T
 
 }
 

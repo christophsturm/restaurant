@@ -14,7 +14,7 @@ import strikt.assertions.isNotNull
 import java.nio.ByteBuffer
 
 class ReverserService : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
+    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
         return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
     }
 }

@@ -5,6 +5,7 @@ import failgood.describe
 import kotlinx.coroutines.runBlocking
 import org.junit.platform.commons.annotation.Testable
 import restaurant.Method
+import restaurant.MutableRequestContext
 import strikt.api.expectThat
 import strikt.assertions.getValue
 import strikt.assertions.hasSize
@@ -15,6 +16,7 @@ import java.nio.charset.Charset
 @Testable
 class RoutesAdderTest {
     val context = describe(RoutesAdder::class) {
+        val requestContext = MutableRequestContext()
         val routesAdder = RoutesAdder(jacksonObjectMapper())
         listOf(
             Pair(UsersService(), "service with suspend functions and Int primary keys"),
@@ -32,7 +34,7 @@ class RoutesAdderTest {
                             get { path }.isEqualTo(rootPath)
                             get {
                                 runBlocking {
-                                    httpService.handle("""{"name":"userName"}""".toByteArray(), mapOf())
+                                    httpService.handle("""{"name":"userName"}""".toByteArray(), mapOf(), requestContext)
                                 }!!.decodeToString()
                             }.isEqualTo("""{"id":"userId","name":"userName"}""")
                         }
@@ -45,7 +47,8 @@ class RoutesAdderTest {
                             String(
                                 getRoutes.single { it.path == "$rootPath/{id}" }.httpService.handle(
                                     null,
-                                    mapOf("id" to "5")
+                                    mapOf("id" to "5"),
+                                    requestContext
                                 )!!,
                                 Charset.defaultCharset()
                             )
@@ -54,7 +57,11 @@ class RoutesAdderTest {
                     it("adds a get list route") {
                         expectThat(
                             String(
-                                getRoutes.single { it.path == rootPath }.httpService.handle(null, mapOf())!!,
+                                getRoutes.single { it.path == rootPath }.httpService.handle(
+                                    null,
+                                    mapOf(),
+                                    requestContext
+                                )!!,
                                 Charset.defaultCharset()
                             )
                         ).isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
@@ -68,7 +75,8 @@ class RoutesAdderTest {
                                 runBlocking {
                                     httpService.handle(
                                         """{"name":"userName"}""".toByteArray(),
-                                        mapOf("id" to "5")
+                                        mapOf("id" to "5"),
+                                        requestContext
                                     )
                                 }!!.decodeToString()
                             }
@@ -83,7 +91,8 @@ class RoutesAdderTest {
                                 runBlocking {
                                     httpService.handle(
                                         null,
-                                        mapOf("id" to "5")
+                                        mapOf("id" to "5"),
+                                        requestContext
                                     )
                                 }!!.decodeToString()
                             }.isEqualTo("""{"status":"user 5 deleted"}""")

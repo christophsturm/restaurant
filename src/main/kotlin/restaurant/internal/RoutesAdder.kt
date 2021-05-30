@@ -2,6 +2,7 @@ package restaurant.internal
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import restaurant.Method
+import restaurant.RequestContext
 import restaurant.RestService
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
@@ -71,7 +72,11 @@ private class PutRestServiceHandler(
     val function: RestFunction
 ) : HttpService {
 
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
+    override suspend fun handle(
+        requestBody: ByteArray?,
+        pathVariables: Map<String, String>,
+        requestContext: RequestContext
+    ): ByteArray {
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
         val parameter = objectMapper.readValue(requestBody, function.parameterType)
@@ -88,7 +93,11 @@ private class PostRestServiceHandler(
 ) : HttpService {
     private val parameterType = restFunction.parameterType
 
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
+    override suspend fun handle(
+        requestBody: ByteArray?,
+        pathVariables: Map<String, String>,
+        requestContext: RequestContext
+    ): ByteArray {
         val parameter = objectMapper.readValue(requestBody, parameterType)
         val result = restFunction.callSuspend(parameter, null)
         return objectMapper.writeValueAsBytes(result)
@@ -99,7 +108,11 @@ private class GetRestServiceHandler(
     private val objectMapper: ObjectMapper,
     val function: RestFunction
 ) : HttpService {
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray {
+    override suspend fun handle(
+        requestBody: ByteArray?,
+        pathVariables: Map<String, String>,
+        requestContext: RequestContext
+    ): ByteArray {
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
         return objectMapper.writeValueAsBytes(function.callSuspend(null, id))
@@ -110,7 +123,11 @@ private class GetRestServiceHandler(
 private class GetListRestServiceHandler(
     private val objectMapper: ObjectMapper, val function: RestFunction
 ) : HttpService {
-    override suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray? {
+    override suspend fun handle(
+        requestBody: ByteArray?,
+        pathVariables: Map<String, String>,
+        requestContext: RequestContext
+    ): ByteArray? {
         val result = function.callSuspend(null, null)
         return result?.let { objectMapper.writeValueAsBytes(it) }
     }
