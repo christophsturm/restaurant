@@ -8,7 +8,6 @@ import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
-import java.nio.ByteBuffer
 import java.util.*
 
 internal fun findFreePort(): Int = ServerSocket(0).use {
@@ -114,23 +113,6 @@ class RequestContext {
 
 }
 
-internal class HttpServiceHandler(
-    private val service: HttpService,
-    private val readBody: Boolean,
-    private val statusCode: Int
-) :
-    SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, context: RequestContext): Response {
-        val body = if (readBody) exchange.readBody() else null
-        val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() })
-        return if (response == null) {
-            response(204)
-        } else
-            response(statusCode, ByteBuffer.wrap(response))
-    }
-
-}
-
 
 interface Exchange {
     val headers: HeaderMap
@@ -165,8 +147,4 @@ data class Route(
 
 
 interface RestService
-
-interface HttpService {
-    suspend fun handle(requestBody: ByteArray?, pathVariables: Map<String, String>): ByteArray?
-}
 

@@ -1,13 +1,12 @@
 package restaurant.internal
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import restaurant.HttpService
 import restaurant.Method
 import restaurant.RestService
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
-class RoutesAdder(private val objectMapper: ObjectMapper) {
+internal class RoutesAdder(private val objectMapper: ObjectMapper) {
     @OptIn(ExperimentalStdlibApi::class)
     fun routesFor(restService: RestService, path: String): List<RestRoute> {
         val functions = restService::class.functions.associateBy { it.name }
@@ -64,7 +63,7 @@ class RoutesAdder(private val objectMapper: ObjectMapper) {
 }
 
 
-data class RestRoute(val method: Method, val path: String, val httpService: HttpService)
+internal data class RestRoute(val method: Method, val path: String, val httpService: HttpService)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(
