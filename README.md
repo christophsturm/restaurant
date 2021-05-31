@@ -49,12 +49,7 @@ serialized and deserialized with jackson.
 Exceptions thrown by the service handler are converted to a http error reply via a lambda.
 
 ```kotlin
-val restaurant = Restaurant(errorHandler = { ex ->
-    ErrorReply(
-        status = 500,
-        body = "sorry"
-    )
-})
+val restaurant = Restaurant(errorHandler = { ex -> response(500, "sorry") })
 ```
 
 ### Authentication via JWT
@@ -116,7 +111,6 @@ namespace("/api") {
 ```
 
 will generate routes like `GET /api/users/10/hobbies/20` or `POST /api/users/10/hobbies`
-
 
 ### Developer friendly
 
