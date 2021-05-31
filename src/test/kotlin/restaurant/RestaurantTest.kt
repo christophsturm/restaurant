@@ -133,10 +133,10 @@ class RestaurantTest {
 
                 }
                 it("calls error handler to create error reply") {
-                    val restaurant = Restaurant(errorHandler = { ex ->
-                        ErrorReply(
+                    val restaurant = Restaurant(exceptionHandler = { ex ->
+                        response(
                             status = 418,
-                            body = "sorry: " + ex.cause!!.message
+                            result = "sorry: " + ex.cause!!.message
                         )
                     }) { resources(ExceptionsService()) }
                     expectThat(request(restaurant, "/exceptions")) {

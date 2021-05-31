@@ -16,17 +16,15 @@ internal fun findFreePort(): Int = ServerSocket(0).use {
 }
 
 
-data class ErrorReply(val status: Int, val body: String)
+typealias ExceptionHandler = (Throwable) -> Response
 
-typealias ThrowableToErrorReply = (Throwable) -> ErrorReply
-
-val defaultErrorHandler: ThrowableToErrorReply = {
-    ErrorReply(500, "internal server error")
+val defaultExceptionHandler: ExceptionHandler = {
+    response(500, "internal server error")
 }
 
 class Restaurant(
     val port: Int = findFreePort(),
-    val errorHandler: ThrowableToErrorReply = defaultErrorHandler,
+    val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
     objectMapper: ObjectMapper = jacksonObjectMapper(),
     serviceMapping: RoutingDSL.() -> Unit,
 ) : AutoCloseable {
@@ -35,7 +33,7 @@ class Restaurant(
 
     private val rootHandlers = routes.map { route ->
 
-        Pair(RootHandler(route.wrappers, errorHandler, route.handler), route)
+        Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
     }
 
     private val undertow: Undertow = buildUndertow(rootHandlers, port).apply { start() }
@@ -78,9 +76,14 @@ interface SuspendingHandler {
     suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response
 }
 
+/**
+ * the Root Handler is the main request entry point after the coroutine context is created.
+ * It executes the wrappers, and the real handler for this route. It also catches exception and
+ * translates them to http replies via [ExceptionHandler]
+ */
 class RootHandler(
     private val wrappers: List<Wrapper>,
-    private val errorHandler: ThrowableToErrorReply,
+    private val exceptionHandler: ExceptionHandler,
     private val restHandler: SuspendingHandler
 ) : SuspendingHandler {
     override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
@@ -95,8 +98,7 @@ class RootHandler(
             }
             restHandler.handle(exchange, requestContext)
         } catch (e: Exception) {
-            val result = errorHandler(e)
-            response(result.status, result.body)
+            return exceptionHandler(e)
         }
     }
 
