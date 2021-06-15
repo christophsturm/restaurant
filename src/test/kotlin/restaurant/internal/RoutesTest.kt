@@ -22,7 +22,7 @@ class RoutesTest {
             val routes = routes(RoutesAdder(jacksonObjectMapper())) {
                 wrap(outer) {
                     wrap(inner) {
-                        get("/url", handler)
+                        route(Method.GET, "/url", handler)
                     }
                 }
             }

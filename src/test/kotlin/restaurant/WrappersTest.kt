@@ -27,7 +27,7 @@ class WrappersTest {
         val restaurant = autoClose(Restaurant {
             wrap(outer) {
                 wrap(inner) {
-                    post("/handlers/reverser", ReverserService())
+                    route(Method.POST, "/handlers/reverser", ReverserService())
                 }
             }
         })

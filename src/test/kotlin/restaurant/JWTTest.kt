@@ -37,7 +37,7 @@ class JWTTest {
     val context = describe("JWT Support") {
         val restaurant = autoClose(Restaurant {
             jwt(JWTConfig.makeJwtVerifier()) {
-                get("/handlers/welcome", JWTWelcomeHandler())
+                route(Method.GET, "/handlers/welcome", JWTWelcomeHandler())
             }
         })
         it("allows authorized requests") {

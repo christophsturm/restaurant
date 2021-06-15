@@ -19,7 +19,7 @@ class CoroutinesTest {
             val client = okhttp3.OkHttpClient.Builder().callTimeout(30, TimeUnit.MILLISECONDS).build()
             val delayService = DelayService()
             val restaurant = Restaurant {
-                get("/delay", delayService)
+                route(Method.GET, "/delay", delayService)
             }
             expectThrows<InterruptedIOException> {
                 client.newCall(Request.Builder().url("http://localhost:${restaurant.port}/delay").build()).execute()

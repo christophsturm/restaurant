@@ -19,7 +19,7 @@ class ExchangeTest {
 
         val restaurant = autoClose(
             Restaurant {
-                get("/path", TestHandler())
+                route(Method.GET, "/path", TestHandler())
             }
         )
 

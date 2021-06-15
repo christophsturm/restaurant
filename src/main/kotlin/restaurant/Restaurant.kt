@@ -50,10 +50,8 @@ private fun path(service: RestService) =
 
 @RestDSL
 interface RoutingDSL {
-    fun post(path: String, service: SuspendingHandler)
     fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
-    fun get(path: String, service: SuspendingHandler)
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
     fun route(method: Method, path: String, service: SuspendingHandler)
 }

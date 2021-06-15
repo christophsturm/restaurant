@@ -28,7 +28,7 @@ class RestaurantTest {
 
             val restaurant = autoClose(
                 Restaurant {
-                    post("/handlers/reverser", ReverserService())
+                    route(Method.POST, "/handlers/reverser", ReverserService())
                 }
             )
             it("returns 404 if the route is not found") {
