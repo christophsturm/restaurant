@@ -16,20 +16,19 @@ fun main() {
 }
 
 data class User(val id: String?, val name: String/*..all kinds of user fields..*/)
+
+@Suppress("RedundantSuspendModifier")
 class UsersService : RestService {
     suspend fun index(): List<User> {
 
     }
     suspend fun create(user: User): User {
-        //...
     }
 
     suspend fun show(userId: Int): User {
-        //....
     }
 
     suspend fun update(userId: Int, user: User): User {
-        //..
     }
 }
 ```
@@ -52,9 +51,32 @@ Exceptions thrown by the service handler are converted to a http error reply via
 val restaurant = Restaurant(errorHandler = { ex -> response(500, "sorry") })
 ```
 
+### The Low Level API
+
+There is also a really nice low level api if you need more flexibility.
+
+```kotlin
+class ReverserService : SuspendingHandler {
+    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
+        return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
+    }
+}
+//...
+Restaurant {
+    route(Method.POST, "/handlers/reverser", ReverserService())
+}
+
+val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
+expectThat(response) {
+    get { code }.isEqualTo(200)
+    get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
+}
+
+```
+
 ### Authentication via JWT
 
-JWT Authentication is super simple, first you need the usual JWT stuff:
+JWT Authentication is super simple, first you need the usual JWT stuff.
 
 ```kotlin
 object JWTConfig {

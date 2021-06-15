@@ -46,7 +46,7 @@ class Restaurant(
 
 
 private fun path(service: RestService) =
-    service::class.simpleName!!.toLowerCase(Locale.getDefault()).removeSuffix("service")
+    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
 @RestDSL
 interface RoutingDSL {
@@ -56,7 +56,7 @@ interface RoutingDSL {
     fun route(method: Method, path: String, service: SuspendingHandler)
 }
 
-interface Wrapper {
+fun interface Wrapper {
     suspend fun invoke(exchange: Exchange): WrapperResult?
 }
 
@@ -71,7 +71,7 @@ class ResourceDSL(resolvedPath: String) {
     }
 }
 
-interface SuspendingHandler {
+fun interface SuspendingHandler {
     suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response
 }
 
@@ -100,7 +100,6 @@ class RootHandler(
             return exceptionHandler(e)
         }
     }
-
 }
 
 interface RequestContext {
@@ -120,8 +119,19 @@ internal class MutableRequestContext : RequestContext {
 
 
 interface Exchange {
+    /**
+     * The Request Path. Everything before the query string
+     */
     val requestPath: String
+
+    /**
+     * The Query String. Everything after the ?
+     */
     val queryString: String
+
+    /**
+     * The Headers.
+     */
     val headers: HeaderMap
     val queryParameters: Map<String, Deque<String>>
     suspend fun readBody(): ByteArray
@@ -135,7 +145,6 @@ class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
     operator fun get(header: HttpString): List<String>? {
         return requestHeaders.get(header)
     }
-
 }
 
 enum class Method {
