@@ -121,6 +121,8 @@ internal class MutableRequestContext : RequestContext {
 
 
 interface Exchange {
+    val requestPath: String
+    val queryString: String
     val headers: HeaderMap
     val queryParameters: Map<String, Deque<String>>
     suspend fun readBody(): ByteArray

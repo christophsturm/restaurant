@@ -19,6 +19,7 @@ fun Route.methodToHttpString(): HttpString = when (method) {
 }
 
 class UndertowExchange(private val exchange: HttpServerExchange) : Exchange {
+
     override suspend fun readBody(): ByteArray {
         return suspendCoroutine {
             exchange.requestReceiver.receiveFullBytes { _, body ->
@@ -26,6 +27,10 @@ class UndertowExchange(private val exchange: HttpServerExchange) : Exchange {
             }
         }
     }
+
+    override val requestPath: String = exchange.requestPath
+
+    override val queryString: String = exchange.queryString
 
     override val headers: HeaderMap = HeaderMap(exchange.requestHeaders)
     override val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
