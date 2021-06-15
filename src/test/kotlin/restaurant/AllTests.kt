@@ -2,6 +2,6 @@ package restaurant
 
 import failgood.FailGood.runAllTests
 
-fun main() {
+suspend fun main() {
     runAllTests(true)
 }

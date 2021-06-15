@@ -14,6 +14,7 @@ val jacksonVersion = "2.12.3"
 val coroutinesVersion = "1.5.0"
 val log4j2Version = "2.14.1"
 val pitestVersion = "1.6.5"
+val undertowVersion = "2.2.8.Final"
 
 
 
@@ -22,15 +23,14 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-//    maven("https://s01.oss.sonatype.org/content/repositories/devfailgood-1000/")
 }
 
 dependencies {
     implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     implementation(kotlin("reflect"))
-    implementation("io.undertow:undertow-core:2.2.7.Final")
+    implementation("io.undertow:undertow-core:$undertowVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("io.github.microutils:kotlin-logging:2.0.6")
+    implementation("io.github.microutils:kotlin-logging:2.0.8")
     implementation("com.auth0:java-jwt:3.16.0")
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
