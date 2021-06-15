@@ -55,6 +55,7 @@ interface RoutingDSL {
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
     fun get(path: String, service: SuspendingHandler)
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
+    fun route(method: Method, path: String, service: SuspendingHandler)
 }
 
 interface Wrapper {

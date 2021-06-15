@@ -8,11 +8,15 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
         val routes = mutableListOf<Route>()
 
         override fun post(path: String, service: SuspendingHandler) {
-            routes.add(Route(Method.POST, path, service))
+            route(Method.POST, path, service)
         }
 
         override fun get(path: String, service: SuspendingHandler) {
-            routes.add(Route(Method.GET, path, service))
+            route(Method.GET, path, service)
+        }
+
+        override fun route(method: Method, path: String, service: SuspendingHandler) {
+            routes.add(Route(method, path, service))
         }
 
 

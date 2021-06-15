@@ -23,14 +23,12 @@ class ExchangeTest {
             }
         )
 
+        val response = request(restaurant, "/path?query=string")
+        expectThat(response).get { code }.isEqualTo(200)
         it("exposes the query string") {
-            val response = request(restaurant, "/path?query=string")
-            expectThat(response).get { code }.isEqualTo(200)
             expectThat(exch.queryString).isEqualTo("query=string")
         }
         it("exposes the request path") {
-            val response = request(restaurant, "/path?query=string")
-            expectThat(response).get { code }.isEqualTo(200)
             expectThat(exch.requestPath).isEqualTo("/path")
         }
 
