@@ -4,9 +4,10 @@ plugins {
     kotlin("jvm") version "1.5.10"
     id("com.github.ben-manes.versions") version "0.38.0"
     id("info.solidsoft.pitest") version "1.6.0"
-
+    `maven-publish`
+    signing
 }
-val failgoodVersion = "0.4.3"
+val failgoodVersion = "0.4.4"
 val striktVersion = "0.31.0"
 val okhttpVersion = "4.9.1"
 val kotlinVersion = "1.5.10"
@@ -18,15 +19,15 @@ val undertowVersion = "2.2.8.Final"
 
 
 
-group = "com.christophsturm"
-version = "1.0-SNAPSHOT"
+group = "com.christophsturm.restaurant"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     implementation(kotlin("reflect"))
     implementation("io.undertow:undertow-core:$undertowVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
@@ -95,4 +96,57 @@ plugins.withId("info.solidsoft.pitest") {
         )
         outputFormats.set(setOf("XML", "HTML"))
     }
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+
+publishing {
+    repositories {
+        maven {
+            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = project.properties["ossrhUsername"] as String?
+                password = project.properties["ossrhPassword"] as String?
+            }
+        }
+    }
+
+
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            groupId = project.group as String
+            artifactId = "restaurant"
+            version = project.version as String
+            pom {
+                description.set("rest without boilerplate")
+                name.set("randolf")
+                url.set("https://github.com/christophsturm/restaurant")
+                licenses {
+                    license {
+                        name.set("The MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                        distribution.set("repo")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("christophsturm")
+                        name.set("Christoph Sturm")
+                        email.set("me@christophsturm.com")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/christophsturm/restaurant.git")
+                }
+            }
+        }
+    }
+}
+signing {
+    sign(publishing.publications["mavenJava"])
 }
