@@ -43,29 +43,29 @@ class RestaurantTest {
                 }
             }
         }
-        describe("empty responses return 204")
-        {
-            class EmptyReplyService : RestService {
-                fun index(): String? {
-                    return null
-                }
-            }
-
-            val restaurant = autoClose(
-                Restaurant {
-                    resources(EmptyReplyService(), "/handlers/empty")
-                }
-            )
-            val response = request(restaurant, "/handlers/empty")
-            expectThat(response) {
-                get { code }.isEqualTo(204)
-                get { body }.isNotNull().get { string() }.isEmpty()
-            }
-
-        }
 
         describe("rest services")
         {
+            it("empty responses return 204")
+            {
+                class EmptyReplyService : RestService {
+                    fun index(): String? {
+                        return null
+                    }
+                }
+
+                val restaurant = autoClose(
+                    Restaurant {
+                        resources(EmptyReplyService(), "/handlers/empty")
+                    }
+                )
+                val response = request(restaurant, "/handlers/empty")
+                expectThat(response) {
+                    get { code }.isEqualTo(204)
+                    get { body }.isNotNull().get { string() }.isEmpty()
+                }
+            }
+
             describe("rest routes") {
                 val restaurant = autoClose(
                     Restaurant {
