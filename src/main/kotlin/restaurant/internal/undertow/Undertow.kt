@@ -36,7 +36,7 @@ class UndertowExchange(private val exchange: HttpServerExchange) : Exchange {
     override val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
 
-fun buildUndertow(
+internal fun buildUndertow(
     rootHandlers: List<Pair<RootHandler, Route>>,
     defaultHandler: SuspendingHandler,
     port: Int

@@ -18,7 +18,7 @@ internal fun findFreePort(): Int = ServerSocket(0).use {
 
 typealias ExceptionHandler = (Throwable) -> Response
 
-val defaultExceptionHandler: ExceptionHandler = {
+private val defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
 class Restaurant(
@@ -80,7 +80,7 @@ fun interface SuspendingHandler {
  * It executes the wrappers, and the real handler for this route. It also catches exception and
  * translates them to http replies via [ExceptionHandler]
  */
-class RootHandler(
+internal class RootHandler(
     private val wrappers: List<Wrapper>,
     private val exceptionHandler: ExceptionHandler,
     private val restHandler: SuspendingHandler
