@@ -36,11 +36,16 @@ class UndertowExchange(private val exchange: HttpServerExchange) : Exchange {
     override val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
 
-fun buildUndertow(rootHandlers: List<Pair<RootHandler, Route>>, port: Int): Undertow {
+fun buildUndertow(
+    rootHandlers: List<Pair<RootHandler, Route>>,
+    defaultHandler: SuspendingHandler,
+    port: Int
+): Undertow {
     val routingHandler = rootHandlers.fold(RoutingHandler()) { routingHandler, (handler, route) ->
         val httpHandler = CoroutinesHandler(handler)
         routingHandler.add(route.methodToHttpString(), route.path, httpHandler)
     }
+    routingHandler.fallbackHandler = CoroutinesHandler(defaultHandler)
 
     return Undertow.builder()
         //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)

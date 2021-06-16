@@ -143,7 +143,14 @@ class RestaurantTest {
                         get { code }.isEqualTo(418)
                         get { body }.isNotNull().get { string() }.isEqualTo("sorry: error message")
                     }
-
+                }
+                it("calls default handler if no suitable route is found") {
+                    val restaurant =
+                        Restaurant(defaultHandler = { _, _ -> response(418, "not found but anyway I'm teapot") }) { }
+                    expectThat(request(restaurant, "/not-found")) {
+                        get { code }.isEqualTo(418)
+                        get { body }.isNotNull().get { string() }.isEqualTo("not found but anyway I'm teapot")
+                    }
                 }
             }
             pending("nested routes") {

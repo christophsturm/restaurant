@@ -21,12 +21,12 @@ typealias ExceptionHandler = (Throwable) -> Response
 val defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
-
 class Restaurant(
     val port: Int = findFreePort(),
     val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
     objectMapper: ObjectMapper = jacksonObjectMapper(),
-    serviceMapping: RoutingDSL.() -> Unit,
+    defaultHandler: SuspendingHandler = SuspendingHandler { _, _ -> response(404) },
+    serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
 
     val routes = routes(RoutesAdder(objectMapper), serviceMapping)
@@ -36,7 +36,7 @@ class Restaurant(
         Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
     }
 
-    private val undertow: Undertow = buildUndertow(rootHandlers, port).apply { start() }
+    private val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, port).apply { start() }
 
     override fun close() {
         undertow.stop()
@@ -88,13 +88,14 @@ class RootHandler(
     override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
         return try {
             // wrappers can add request constants, finish the request, or do nothing
-            val requestContext = wrappers.fold(requestContext as MutableRequestContext) { wrapperContext, wrapper ->
-                when (val wrapperResult = wrapper.invoke(exchange)) {
-                    is AddRequestConstant<*> -> wrapperContext.apply { add(wrapperResult.key, wrapperResult.value) }
-                    is FinishRequest -> return wrapperResult.response
-                    null -> wrapperContext
+            @Suppress("NAME_SHADOWING") val requestContext =
+                wrappers.fold(requestContext as MutableRequestContext) { wrapperContext, wrapper ->
+                    when (val wrapperResult = wrapper.invoke(exchange)) {
+                        is AddRequestConstant<*> -> wrapperContext.apply { add(wrapperResult.key, wrapperResult.value) }
+                        is FinishRequest -> return wrapperResult.response
+                        null -> wrapperContext
+                    }
                 }
-            }
             restHandler.handle(exchange, requestContext)
         } catch (e: Exception) {
             return exceptionHandler(e)
