@@ -1,9 +1,11 @@
 ### Restaurant - Rest without boilerplate
 
-A small web server for REST apis.q
+A small web server with focus on testability. Supports coroutines, has a nice low-level-api, and a high-level-api for
+rest services. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
 
+### High Level API
 There is clear consensus how a good REST api should look like. Restaurant helps you implement it in a simple way that is
-easy to test. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
+easy to test.
 
 ```kotlin
 
@@ -43,6 +45,29 @@ This will create these routes
 methods can be `suspend` or not, and can declare their incoming and outgoing parameters as data classes that will be
 serialized and deserialized with jackson.
 
+### The Low Level API
+
+There is also a really nice low level api if you need more flexibility.
+
+```kotlin
+class ReverserService : SuspendingHandler {
+    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
+        return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
+    }
+}
+//...
+Restaurant {
+    route(Method.POST, "/handlers/reverser", ReverserService())
+}
+
+val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
+expectThat(response) {
+    get { code }.isEqualTo(200)
+    get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
+}
+
+```
+
 ### error handling
 
 Exceptions thrown by the service handler are converted to a http error reply via a lambda.
@@ -66,28 +91,6 @@ it("calls default handler if no suitable route is found") {
 
 ```
 
-### The Low Level API
-
-There is also a really nice low level api if you need more flexibility.
-
-```kotlin
-class ReverserService : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
-        return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
-    }
-}
-//...
-Restaurant {
-    route(Method.POST, "/handlers/reverser", ReverserService())
-}
-
-val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
-expectThat(response) {
-    get { code }.isEqualTo(200)
-    get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
-}
-
-```
 
 ### Authentication via JWT
 
