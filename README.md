@@ -3,7 +3,7 @@
 A small web server with focus on testability. Supports coroutines, has a nice low-level-api, and a high-level-api for
 rest services. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
 
-### High Level API
+### High level API
 There is clear consensus how a good REST api should look like. Restaurant helps you implement it in a simple way that is
 easy to test.
 
@@ -43,7 +43,8 @@ This will create these routes
 * `PUT /api/users/{id}` calling `suspend fun update(userId: Int, user: User)`
 
 methods can be `suspend` or not, and can declare their incoming and outgoing parameters as data classes that will be
-serialized and deserialized with jackson.
+serialized and deserialized with jackson. Your service class has no dependencies on any http server, and should be super
+easy to test.
 
 ### The Low Level API
 
@@ -68,7 +69,7 @@ expectThat(response) {
 
 ```
 
-### error handling
+### Exception Handling
 
 Exceptions thrown by the service handler are converted to a http error reply via a lambda.
 
@@ -76,7 +77,7 @@ Exceptions thrown by the service handler are converted to a http error reply via
 val restaurant = Restaurant(errorHandler = { ex -> response(500, "sorry") })
 ```
 
-### routing error handling
+### Default Routing
 
 You can install a default handler that is invoked when no other route is found.
 ```kotlin
@@ -91,8 +92,7 @@ it("calls default handler if no suitable route is found") {
 
 ```
 
-
-### Authentication via JWT
+### Authentication Via JWT
 
 JWT Authentication is super simple, first you need the usual JWT stuff.
 
@@ -136,11 +136,11 @@ class JWTWelcomeHandler : SuspendingHandler {
 }
 ```
 
-## coming next:
+## Coming Next:
 
 Readme driven development: The features below this point are not ready yet.
 
-### nested resources:
+### Nested Resources:
 
 ```kotlin
 namespace("/api") {
@@ -152,7 +152,7 @@ namespace("/api") {
 
 will generate routes like `GET /api/users/10/hobbies/20` or `POST /api/users/10/hobbies`
 
-### Developer friendly
+### Developer Friendly
 
 * Show a list of defined routes when a 404 error occurs in development mode.
 * Friendly error messages when json can not be serialized or deserialized.
