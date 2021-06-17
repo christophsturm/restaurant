@@ -1,6 +1,6 @@
 ### Restaurant - Rest without boilerplate
 
-A small web server for REST apis.
+A small web server for REST apis.q
 
 There is clear consensus how a good REST api should look like. Restaurant helps you implement it in a simple way that is
 easy to test. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
@@ -53,8 +53,9 @@ val restaurant = Restaurant(errorHandler = { ex -> response(500, "sorry") })
 
 ### routing error handling
 
+You can install a default handler that is invoked when no other route is found.
 ```kotlin
-                it("calls default handler if no suitable route is found") {
+it("calls default handler if no suitable route is found") {
     val restaurant =
         Restaurant(defaultHandler = { _, _ -> response(418, "not found but anyway I'm teapot") }) { }
     expectThat(request(restaurant, "/not-found")) {
