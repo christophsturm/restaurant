@@ -10,7 +10,7 @@ import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
 import java.util.*
 
-internal fun findFreePort(): Int = ServerSocket(0).use {
+fun findFreePort(): Int = ServerSocket(0).use {
     it.reuseAddress = true
     it.localPort
 }
