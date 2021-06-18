@@ -23,7 +23,7 @@ internal class HttpServiceHandler(
         return if (response == null) {
             response(204)
         } else
-            response(statusCode, ByteBuffer.wrap(response))
+            response(statusCode, ByteBuffer.wrap(response), mapOf("Content-Type" to "application/json"))
     }
 
 }

@@ -2,6 +2,7 @@ package restaurant.internal.undertow
 
 import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
+import io.undertow.util.HttpString
 import io.undertow.util.SameThreadExecutor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +28,9 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
             requestScope.launch {
                 val response = suspendHandler.handle(UndertowExchange(exchange), MutableRequestContext())
                 exchange.statusCode = response.status
-                exchange.responseHeaders
+                response.headers.forEach {
+                    exchange.responseHeaders.add(HttpString(it.key), it.value)
+                }
                 when (response) {
                     is ByteBufferResponse -> {
                         exchange.responseSender.send(response.result)

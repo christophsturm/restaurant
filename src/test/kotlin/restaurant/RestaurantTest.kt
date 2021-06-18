@@ -117,7 +117,7 @@ class RestaurantTest {
                         get { body }.isNotNull().get { string() }.isEqualTo("""{"status":"user 5 deleted"}""")
                     }
                 }
-                pending("sets json content type") {
+                it("sets json content type") {
                     val response = request(restaurant, "/api/users")
                     expectThat(response).get { header("Content-Type") }.isEqualTo("application/json")
                 }
