@@ -25,17 +25,17 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
         }
         exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
             requestScope.launch {
-                when (val response = suspendHandler.handle(UndertowExchange(exchange), MutableRequestContext())) {
+                val response = suspendHandler.handle(UndertowExchange(exchange), MutableRequestContext())
+                exchange.statusCode = response.status
+                exchange.responseHeaders
+                when (response) {
                     is ByteBufferResponse -> {
-                        exchange.statusCode = response.status
                         exchange.responseSender.send(response.result)
                     }
                     is StatusResponse -> {
-                        exchange.statusCode = response.status
                         exchange.endExchange()
                     }
                     is StringResponse -> {
-                        exchange.statusCode = response.status
                         exchange.responseSender.send(response.result)
                     }
                 }
