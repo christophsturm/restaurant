@@ -26,6 +26,7 @@ class Restaurant(
     val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
     objectMapper: ObjectMapper = jacksonObjectMapper(),
     defaultHandler: SuspendingHandler = SuspendingHandler { _, _ -> response(404) },
+    host: String = "127.0.0.1",
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
 
@@ -36,7 +37,7 @@ class Restaurant(
         Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
     }
 
-    private val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, port).apply { start() }
+    private val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, port, host).apply { start() }
 
     override fun close() {
         undertow.stop()

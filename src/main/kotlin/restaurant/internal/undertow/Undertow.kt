@@ -39,7 +39,8 @@ class UndertowExchange(private val exchange: HttpServerExchange) : Exchange {
 internal fun buildUndertow(
     rootHandlers: List<Pair<RootHandler, Route>>,
     defaultHandler: SuspendingHandler,
-    port: Int
+    port: Int,
+    host: String
 ): Undertow {
     val routingHandler = rootHandlers.fold(RoutingHandler()) { routingHandler, (handler, route) ->
         val httpHandler = CoroutinesHandler(handler)
@@ -49,7 +50,7 @@ internal fun buildUndertow(
 
     return Undertow.builder()
         //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-        .addHttpListener(port, "127.0.0.1")
+        .addHttpListener(port, host)
         .setHandler(SimpleErrorPageHandler(routingHandler))
         .build()
 }
