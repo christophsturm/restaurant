@@ -1,7 +1,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant)
 [![Github CI](https://github.com/christophsturm/restaurant/workflows/CI/badge.svg)](https://github.com/christophsturm/restaurant/actions)
 
-### Restaurant - Rest without boilerplate
+### Restaurant - Rest Without Boilerplate
 
 A small web server with focus on testability. Supports coroutines, has a nice low-level-api, and a high-level-api for
 rest services. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
@@ -14,7 +14,7 @@ dependencies {
 }
 ```
 
-### High level API
+### High Level API
 
 There is clear consensus how a good REST api should look like. Restaurant helps you implement it in a simple way that is
 easy to test.
