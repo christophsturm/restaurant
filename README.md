@@ -130,7 +130,7 @@ object JWTConfig {
 In your Restaurant routing DSL you just wrap the protected resources or handlers:
 
 ```kotlin
-        val restaurant = Restaurant {
+val restaurant = Restaurant {
     jwt(JWTConfig.makeJwtVerifier()) {
         get("/handlers/welcome", JWTWelcomeHandler())
     }
