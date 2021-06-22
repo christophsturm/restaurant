@@ -18,7 +18,7 @@ class RoutesTest {
             val inner = Wrapper { null }
             val outer = Wrapper { null }
             val handler = mock<SuspendingHandler>()
-            val routes = routes(RoutesAdder(jacksonObjectMapper())) {
+            val routes = routes(RoutesAdder(mock())) {
                 wrap(outer) {
                     wrap(inner) {
                         route(Method.GET, "/url", handler)

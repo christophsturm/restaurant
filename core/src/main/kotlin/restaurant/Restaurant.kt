@@ -30,7 +30,7 @@ class Restaurant(
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
 
-    val routes = routes(RoutesAdder(objectMapper), serviceMapping)
+    val routes = routes(RoutesAdder(JacksonMapper(objectMapper)), serviceMapping)
 
     private val rootHandlers = routes.map { route ->
 

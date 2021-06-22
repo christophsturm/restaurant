@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import failgood.describe
 import kotlinx.coroutines.runBlocking
 import org.junit.platform.commons.annotation.Testable
+import restaurant.JacksonMapper
 import restaurant.Method
 import restaurant.MutableRequestContext
 import strikt.api.expectThat
@@ -17,7 +18,7 @@ import java.nio.charset.Charset
 class RoutesAdderTest {
     val context = describe(RoutesAdder::class) {
         val requestContext = MutableRequestContext()
-        val routesAdder = RoutesAdder(jacksonObjectMapper())
+        val routesAdder = RoutesAdder(JacksonMapper(jacksonObjectMapper()))
         listOf(
             Pair(UsersService(), "service with suspend functions and Int primary keys"),
             Pair(NonSuspendUsersService(), "service with blocking functions and Int primary keys"),

@@ -1,13 +1,12 @@
 package restaurant.internal
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import restaurant.Method
 import restaurant.RequestContext
 import restaurant.RestService
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
-internal class RoutesAdder(private val objectMapper: ObjectMapper) {
+internal class RoutesAdder(private val objectMapper: Mapper) {
     @OptIn(ExperimentalStdlibApi::class)
     fun routesFor(restService: RestService, path: String): List<RestRoute> {
         val functions = restService::class.functions.associateBy { it.name }
@@ -68,7 +67,7 @@ internal data class RestRoute(val method: Method, val path: String, val httpServ
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: Mapper,
     val function: RestFunction
 ) : HttpService {
 
@@ -79,7 +78,7 @@ private class PutRestServiceHandler(
     ): ByteArray {
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        val payload = objectMapper.readValue(requestBody, function.payloadType)
+        val payload = objectMapper.readValue(requestBody, function.payloadType!!)
         val result = function.callSuspend(payload, id)
         return objectMapper.writeValueAsBytes(result)
     }
@@ -88,7 +87,7 @@ private class PutRestServiceHandler(
 @Suppress("CanBeParameter")
 @OptIn(ExperimentalStdlibApi::class)
 private class PostRestServiceHandler(
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: Mapper,
     val restFunction: RestFunction
 ) : HttpService {
     private val payloadType = restFunction.payloadType
@@ -98,14 +97,14 @@ private class PostRestServiceHandler(
         pathVariables: Map<String, String>,
         requestContext: RequestContext
     ): ByteArray {
-        val payload = objectMapper.readValue(requestBody, payloadType)
+        val payload = objectMapper.readValue(requestBody, payloadType!!)
         val result = restFunction.callSuspend(payload, null)
         return objectMapper.writeValueAsBytes(result)
     }
 }
 
 private class GetRestServiceHandler(
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: Mapper,
     val function: RestFunction
 ) : HttpService {
     override suspend fun handle(
@@ -121,7 +120,7 @@ private class GetRestServiceHandler(
 
 @OptIn(ExperimentalStdlibApi::class)
 private class GetListRestServiceHandler(
-    private val objectMapper: ObjectMapper, val function: RestFunction
+    private val objectMapper: Mapper, val function: RestFunction
 ) : HttpService {
     override suspend fun handle(
         requestBody: ByteArray?,
