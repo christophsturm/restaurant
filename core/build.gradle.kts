@@ -107,7 +107,7 @@ publishing {
             version = project.version as String
             pom {
                 description.set("rest without boilerplate")
-                name.set("randolf")
+                name.set("restaurant")
                 url.set("https://github.com/christophsturm/restaurant")
                 licenses {
                     license {
