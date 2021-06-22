@@ -25,10 +25,11 @@ class RestaurantTest {
     @Suppress()
     val context = describe(Restaurant::class) {
         describe("routing") {
-
             val restaurant = autoClose(
                 Restaurant {
-                    route(Method.POST, "/handlers/reverser", ReverserService())
+                    namespace("/handlers") {
+                        route(Method.POST, "reverser", ReverserService())
+                    }
                 }
             )
             it("returns 404 if the route is not found") {

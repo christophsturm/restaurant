@@ -9,7 +9,7 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
 
 
         override fun route(method: Method, path: String, service: SuspendingHandler) {
-            routes.add(Route(method, path, service))
+            routes.add(Route(method, prefix+path, service))
         }
 
 
@@ -20,8 +20,7 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
         }
 
         override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
-            val resolvedPath = this.prefix + path
-            routes.addAll(routesAdder.routesFor(service, resolvedPath).map { restRoute ->
+            routesAdder.routesFor(service, path).forEach { restRoute ->
                 val needsBody = restRoute.method != Method.GET
                 val restHandler =
                     HttpServiceHandler(
@@ -30,10 +29,9 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
                         if (restRoute.method == Method.POST) 201 else 200
                     )
 
-                Route(restRoute.method, restRoute.path, restHandler, listOf())
+                route(restRoute.method, restRoute.path, restHandler)
             }
-            )
-            ResourceDSL(resolvedPath).function()
+            ResourceDSL(path).function()
         }
 
         override fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {

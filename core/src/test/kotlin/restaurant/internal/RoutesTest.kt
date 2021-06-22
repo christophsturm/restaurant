@@ -1,6 +1,5 @@
 package restaurant.internal
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import failgood.describe
 import failgood.mock.mock
 import org.junit.platform.commons.annotation.Testable

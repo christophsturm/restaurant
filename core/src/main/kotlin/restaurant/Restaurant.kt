@@ -8,7 +8,8 @@ import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
-import java.util.*
+import java.util.Deque
+import java.util.Locale
 
 fun findFreePort(): Int = ServerSocket(0).use {
     it.reuseAddress = true
@@ -21,11 +22,22 @@ typealias ExceptionHandler = (Throwable) -> Response
 private val defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
+val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
+fun TinyRestaurant(
+    port: Int = findFreePort(),
+    exceptionHandler: ExceptionHandler,
+    defaultHandler: SuspendingHandler = defaultDefaultHandler,
+    host: String = "127.0.0.1",
+    serviceMapping: CoreRoutingDSL.() -> Unit
+): Restaurant {
+    return Restaurant(port, exceptionHandler, jacksonObjectMapper(), defaultHandler, host, serviceMapping)
+}
+
 class Restaurant(
     val port: Int = findFreePort(),
     val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
     objectMapper: ObjectMapper = jacksonObjectMapper(),
-    defaultHandler: SuspendingHandler = SuspendingHandler { _, _ -> response(404) },
+    defaultHandler: SuspendingHandler = defaultDefaultHandler,
     host: String = "127.0.0.1",
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
@@ -49,12 +61,15 @@ class Restaurant(
 private fun path(service: RestService) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
-@RestDSL
-interface RoutingDSL {
-    fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
+interface CoreRoutingDSL {
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
     fun route(method: Method, path: String, service: SuspendingHandler)
+}
+
+@RestDSL
+interface RoutingDSL : CoreRoutingDSL {
+    fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
 }
 
 fun interface Wrapper {
