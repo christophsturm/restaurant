@@ -33,9 +33,9 @@ dependencies {
 
     implementation(kotlin("reflect"))
     implementation("io.undertow:undertow-core:$undertowVersion")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("io.github.microutils:kotlin-logging:2.0.8")
     implementation("com.auth0:java-jwt:3.16.0")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
