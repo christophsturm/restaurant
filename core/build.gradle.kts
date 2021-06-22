@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("info.solidsoft.pitest")
-    `maven-publish`
-    signing
+    id("restaurant.common")
+
 }
 val failgoodVersion = "0.4.4"
 val striktVersion = "0.31.0"
@@ -16,10 +16,6 @@ val log4j2Version = "2.14.1"
 val pitestVersion = "1.6.5"
 val undertowVersion = "2.2.8.Final"
 
-
-
-group = "com.christophsturm.restaurant"
-version = "0.0.2"
 
 repositories {
     mavenCentral()
@@ -81,55 +77,3 @@ plugins.withId("info.solidsoft.pitest") {
     }
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-
-publishing {
-    repositories {
-        maven {
-            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = project.properties["ossrhUsername"] as String?
-                password = project.properties["ossrhPassword"] as String?
-            }
-        }
-    }
-
-
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            groupId = project.group as String
-            artifactId = "restaurant"
-            version = project.version as String
-            pom {
-                description.set("rest without boilerplate")
-                name.set("restaurant")
-                url.set("https://github.com/christophsturm/restaurant")
-                licenses {
-                    license {
-                        name.set("The MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                        distribution.set("repo")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("christophsturm")
-                        name.set("Christoph Sturm")
-                        email.set("me@christophsturm.com")
-                    }
-                }
-                scm {
-                    url.set("https://github.com/christophsturm/restaurant.git")
-                }
-            }
-        }
-    }
-}
-signing {
-    sign(publishing.publications["mavenJava"])
-}
