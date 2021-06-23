@@ -6,7 +6,7 @@ import restaurant.RestService
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
-internal class RoutesAdder(private val objectMapper: Mapper) {
+class RoutesAdder(private val objectMapper: Mapper) {
     @OptIn(ExperimentalStdlibApi::class)
     fun routesFor(restService: RestService, path: String): List<RestRoute> {
         val functions = restService::class.functions.associateBy { it.name }
@@ -63,7 +63,7 @@ internal class RoutesAdder(private val objectMapper: Mapper) {
 }
 
 
-internal data class RestRoute(val method: Method, val path: String, val httpService: HttpService)
+data class RestRoute(val method: Method, val path: String, val httpService: HttpService)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(

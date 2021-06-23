@@ -7,6 +7,7 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
+import java.nio.ByteBuffer
 
 @Testable
 class WrappersTest {
@@ -23,7 +24,9 @@ class WrappersTest {
         val restaurant = autoClose(restaurant {
             wrap(outer) {
                 wrap(inner) {
-                    route(Method.POST, "/handlers/reverser", ReverserService())
+                    route(Method.POST, "/handlers/reverser") { exchange, _ ->
+                        response(ByteBuffer.wrap(exchange.readBody().reversedArray()))
+                    }
                 }
             }
         })

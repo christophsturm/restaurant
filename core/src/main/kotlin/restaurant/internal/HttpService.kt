@@ -1,9 +1,13 @@
 package restaurant.internal
 
-import restaurant.*
+import restaurant.Exchange
+import restaurant.RequestContext
+import restaurant.Response
+import restaurant.SuspendingHandler
+import restaurant.response
 import java.nio.ByteBuffer
 
-internal interface HttpService {
+interface HttpService {
     suspend fun handle(
         requestBody: ByteArray?,
         pathVariables: Map<String, String>,

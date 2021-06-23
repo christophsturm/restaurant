@@ -1,7 +1,5 @@
 package restaurant
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
 import io.undertow.util.HttpString
 import restaurant.internal.Mapper
@@ -20,14 +18,14 @@ fun findFreePort(): Int = ServerSocket(0).use {
 
 typealias ExceptionHandler = (Throwable) -> Response
 
-private val defaultExceptionHandler: ExceptionHandler = {
+val __defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
 val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 fun tinyRestaurant(
     host: String = "127.0.0.1",
     port: Int = findFreePort(),
-    exceptionHandler: ExceptionHandler,
+    exceptionHandler: ExceptionHandler = __defaultExceptionHandler,
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
     serviceMapping: CoreRoutingDSL.() -> Unit
 ): Restaurant {
@@ -47,20 +45,12 @@ object NullMapper : Mapper {
 
 }
 
-fun restaurant(
-    host: String = "127.0.0.1",
-    port: Int = findFreePort(),
-    exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-    jackson: ObjectMapper = jacksonObjectMapper(),
-    defaultHandler: SuspendingHandler = defaultDefaultHandler,
-    serviceMapping: RoutingDSL.() -> Unit
-) = Restaurant(host, port, exceptionHandler, JacksonMapper(jackson), defaultHandler, serviceMapping)
 
 class Restaurant(
     host: String = "127.0.0.1",
     val port: Int = findFreePort(),
-    private val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-    mapper: Mapper = JacksonMapper(jacksonObjectMapper()),
+    private val exceptionHandler: ExceptionHandler = __defaultExceptionHandler,
+    mapper: Mapper,
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
@@ -152,7 +142,7 @@ interface RequestContext {
     operator fun <T> get(key: Key<T>): T
 }
 
-internal class MutableRequestContext : RequestContext {
+class MutableRequestContext : RequestContext {
     private val map = mutableMapOf<Key<*>, Any>()
     fun <T : Any> add(key: Key<T>, value: Any) {
         map[key] = value
