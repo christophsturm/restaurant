@@ -16,11 +16,6 @@ val log4j2Version = "2.14.1"
 val pitestVersion = "1.6.5"
 val undertowVersion = "2.2.8.Final"
 
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     implementation(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
