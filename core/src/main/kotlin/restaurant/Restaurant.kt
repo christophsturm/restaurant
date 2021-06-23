@@ -30,16 +30,18 @@ fun tinyRestaurant(
     host: String = "127.0.0.1",
     serviceMapping: CoreRoutingDSL.() -> Unit
 ): Restaurant {
-    return Restaurant(port, exceptionHandler, NullMapper(), defaultHandler, host, serviceMapping)
+    return Restaurant(port, exceptionHandler, NullMapper, defaultHandler, host, serviceMapping)
 }
 
-class NullMapper : Mapper {
+object NullMapper : Mapper {
+    private const val errorMessage = "No Json mapping defined, please use a dependency that contains a json lib"
+
     override fun <T : Any> readValue(requestBody: ByteArray?, clazz: Class<T>): T {
-        TODO("No Json mapping defined, please use a dependency that contains a json lib")
+        TODO(errorMessage)
     }
 
     override fun writeValueAsBytes(value: Any?): ByteArray {
-        TODO("No Json mapping defined, please use a dependency that contains a json lib")
+        TODO(errorMessage)
     }
 
 }
