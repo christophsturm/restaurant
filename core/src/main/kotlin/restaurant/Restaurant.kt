@@ -1,9 +1,9 @@
 package restaurant
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
 import io.undertow.util.HttpString
+import restaurant.internal.Mapper
 import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
@@ -23,26 +23,46 @@ private val defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
 val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
-fun TinyRestaurant(
+fun tinyRestaurant(
     port: Int = findFreePort(),
     exceptionHandler: ExceptionHandler,
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
     host: String = "127.0.0.1",
     serviceMapping: CoreRoutingDSL.() -> Unit
 ): Restaurant {
-    return Restaurant(port, exceptionHandler, jacksonObjectMapper(), defaultHandler, host, serviceMapping)
+    return Restaurant(port, exceptionHandler, NullMapper(), defaultHandler, host, serviceMapping)
 }
+
+class NullMapper : Mapper {
+    override fun <T : Any> readValue(requestBody: ByteArray?, clazz: Class<T>): T {
+        TODO("No Json mapping defined, please use a dependency that contains a json lib")
+    }
+
+    override fun writeValueAsBytes(value: Any?): ByteArray {
+        TODO("No Json mapping defined, please use a dependency that contains a json lib")
+    }
+
+}
+
+fun restaurant(
+    port: Int = findFreePort(),
+    exceptionHandler: ExceptionHandler = defaultExceptionHandler,
+    mapper: Mapper = JacksonMapper(jacksonObjectMapper()),
+    defaultHandler: SuspendingHandler = defaultDefaultHandler,
+    host: String = "127.0.0.1",
+    serviceMapping: RoutingDSL.() -> Unit
+) = Restaurant(port, exceptionHandler, mapper, defaultHandler, host, serviceMapping)
 
 class Restaurant(
     val port: Int = findFreePort(),
     val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-    objectMapper: ObjectMapper = jacksonObjectMapper(),
+    mapper: Mapper = JacksonMapper(jacksonObjectMapper()),
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
     host: String = "127.0.0.1",
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
 
-    val routes = routes(RoutesAdder(JacksonMapper(objectMapper)), serviceMapping)
+    val routes = routes(RoutesAdder(mapper), serviceMapping)
 
     private val rootHandlers = routes.map { route ->
 

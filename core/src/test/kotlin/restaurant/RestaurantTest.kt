@@ -26,7 +26,7 @@ class RestaurantTest {
     val context = describe(Restaurant::class) {
         describe("routing") {
             val restaurant = autoClose(
-                Restaurant {
+                restaurant {
                     namespace("/handlers") {
                         route(Method.POST, "reverser", ReverserService())
                     }
@@ -56,7 +56,7 @@ class RestaurantTest {
                 }
 
                 val restaurant = autoClose(
-                    Restaurant {
+                    restaurant {
                         resources(EmptyReplyService(), "/handlers/empty")
                     }
                 )
@@ -69,7 +69,7 @@ class RestaurantTest {
 
             describe("rest routes") {
                 val restaurant = autoClose(
-                    Restaurant {
+                    restaurant {
                         namespace("/api") {
                             resources(UsersService())
                         }
@@ -130,7 +130,7 @@ class RestaurantTest {
                     }
                 }
                 it("returns status 500 per default on error") {
-                    val restaurant = autoClose(Restaurant { resources(ExceptionsService()) })
+                    val restaurant = autoClose(restaurant { resources(ExceptionsService()) })
                     expectThat(request(restaurant, "/exceptions")) {
                         get { code }.isEqualTo(500)
                         get { body }.isNotNull().get { string() }.isEqualTo("internal server error")
@@ -138,7 +138,7 @@ class RestaurantTest {
 
                 }
                 it("calls error handler to create error reply") {
-                    val restaurant = Restaurant(exceptionHandler = { ex ->
+                    val restaurant = restaurant(exceptionHandler = { ex ->
                         response(
                             status = 418,
                             result = "sorry: " + ex.cause!!.message
@@ -151,7 +151,7 @@ class RestaurantTest {
                 }
                 it("calls default handler if no suitable route is found") {
                     val restaurant =
-                        Restaurant(defaultHandler = { _, _ -> response(418, "not found but anyway I'm teapot") }) { }
+                        restaurant(defaultHandler = { _, _ -> response(418, "not found but anyway I'm teapot") }) { }
                     expectThat(request(restaurant, "/not-found")) {
                         get { code }.isEqualTo(418)
                         get { body }.isNotNull().get { string() }.isEqualTo("not found but anyway I'm teapot")
@@ -160,7 +160,7 @@ class RestaurantTest {
             }
             pending("nested routes") {
                 val restaurant = autoClose(
-                    Restaurant {
+                    restaurant {
                         namespace("/api") {
                             resources(UsersService()) {
                                 resources(HobbiesService()) // user has many hobbies
@@ -174,7 +174,7 @@ class RestaurantTest {
                 class CartService : RestService
 
                 val restaurant = autoClose(
-                    Restaurant {
+                    restaurant {
                         namespace("/api") {
                             resource(CartService()) // singular resource
                         }

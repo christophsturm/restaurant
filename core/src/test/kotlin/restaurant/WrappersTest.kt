@@ -20,7 +20,7 @@ class WrappersTest {
             events.add("outer")
             null
         }
-        val restaurant = autoClose(Restaurant {
+        val restaurant = autoClose(restaurant {
             wrap(outer) {
                 wrap(inner) {
                     route(Method.POST, "/handlers/reverser", ReverserService())
