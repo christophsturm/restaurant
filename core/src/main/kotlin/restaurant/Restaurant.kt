@@ -1,5 +1,6 @@
 package restaurant
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.undertow.Undertow
 import io.undertow.util.HttpString
@@ -24,13 +25,13 @@ private val defaultExceptionHandler: ExceptionHandler = {
 }
 val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 fun tinyRestaurant(
+    host: String = "127.0.0.1",
     port: Int = findFreePort(),
     exceptionHandler: ExceptionHandler,
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
-    host: String = "127.0.0.1",
     serviceMapping: CoreRoutingDSL.() -> Unit
 ): Restaurant {
-    return Restaurant(port, exceptionHandler, NullMapper, defaultHandler, host, serviceMapping)
+    return Restaurant(host, port, exceptionHandler, NullMapper, defaultHandler, serviceMapping)
 }
 
 object NullMapper : Mapper {
@@ -47,20 +48,20 @@ object NullMapper : Mapper {
 }
 
 fun restaurant(
+    host: String = "127.0.0.1",
     port: Int = findFreePort(),
     exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-    mapper: Mapper = JacksonMapper(jacksonObjectMapper()),
+    jackson: ObjectMapper = jacksonObjectMapper(),
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
-    host: String = "127.0.0.1",
     serviceMapping: RoutingDSL.() -> Unit
-) = Restaurant(port, exceptionHandler, mapper, defaultHandler, host, serviceMapping)
+) = Restaurant(host, port, exceptionHandler, JacksonMapper(jackson), defaultHandler, serviceMapping)
 
 class Restaurant(
+    host: String = "127.0.0.1",
     val port: Int = findFreePort(),
-    val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
+    private val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
     mapper: Mapper = JacksonMapper(jacksonObjectMapper()),
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
-    host: String = "127.0.0.1",
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
 
@@ -93,6 +94,12 @@ interface CoreRoutingDSL {
 interface RoutingDSL : CoreRoutingDSL {
     fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
 }
+
+sealed class WrapperResult
+data class FinishRequest(val response: Response) : WrapperResult()
+data class AddRequestConstant<T : Any>(val key: Key<T>, val value: T) : WrapperResult()
+
+interface Key<T>
 
 fun interface Wrapper {
     suspend fun invoke(exchange: Exchange): WrapperResult?

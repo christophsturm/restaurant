@@ -9,11 +9,6 @@ fun RoutingDSL.jwt(verifier: JWTVerifier, function: RoutingDSL.() -> Unit) {
     wrap(JWTWrapper(verifier), function)
 }
 
-sealed class WrapperResult
-data class FinishRequest(val response: Response) : WrapperResult()
-data class AddRequestConstant<T : Any>(val key: Key<T>, val value: T) : WrapperResult()
-
-interface Key<T>
 
 class JWTWrapper(private val verifier: JWTVerifier) : Wrapper {
     companion object DecodedJWTKey : Key<DecodedJWT>

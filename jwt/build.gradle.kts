@@ -18,16 +18,8 @@ val undertowVersion = "2.2.8.Final"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
-    implementation(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
-    implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
-
-    implementation(kotlin("reflect"))
-    // temp api deps
-    api("io.undertow:undertow-core:$undertowVersion")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("io.github.microutils:kotlin-logging:2.0.8")
-
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    api(project(":restaurant-core"))
+    implementation("com.auth0:java-jwt:3.16.0")
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
