@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import restaurant.versions.*
 
 plugins {
     kotlin("jvm")
@@ -6,15 +7,6 @@ plugins {
     id("restaurant.common")
 
 }
-val failgoodVersion = "0.4.4"
-val striktVersion = "0.31.0"
-val okhttpVersion = "4.9.1"
-val kotlinVersion = "1.5.10"
-val jacksonVersion = "2.12.3"
-val coroutinesVersion = "1.5.0"
-val log4j2Version = "2.14.1"
-val pitestVersion = "1.6.5"
-val undertowVersion = "2.2.8.Final"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
@@ -64,7 +56,7 @@ plugins.withId("info.solidsoft.pitest") {
         testPlugin.set("failgood")
         targetClasses.set(setOf("restaurant.*")) //by default "${project.group}.*"
         targetTests.set(setOf("restaurant.*Test", "restaurant.**.*Test"))
-        pitestVersion.set(this@Build_gradle.pitestVersion)
+        pitestVersion.set(pitestVersion)
         threads.set(
             System.getenv("PITEST_THREADS")?.toInt() ?: Runtime.getRuntime().availableProcessors()
         )
