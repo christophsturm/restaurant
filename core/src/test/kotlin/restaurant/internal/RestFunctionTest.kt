@@ -2,6 +2,7 @@ package restaurant.internal
 
 import failgood.describe
 import org.junit.platform.commons.annotation.Testable
+import restaurant.MutableRequestContext
 import restaurant.RestService
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -10,6 +11,7 @@ import strikt.assertions.isEqualTo
 class RestFunctionTest {
     val context = describe(RestFunction::class) {
         data class Body(val field: String)
+        val requestContext = MutableRequestContext()
         describe("parameter type") {
             it("detects parameter type for methods with only the body parameter") {
                 class A : RestService {
@@ -42,7 +44,7 @@ class RestFunctionTest {
                 }
 
                 val subject = RestFunction(A::get, A())
-                expectThat(subject.callSuspend(null, "id")).isEqualTo("id")
+                expectThat(subject.callSuspend(null, "id", requestContext)).isEqualTo("id")
             }
             describe("id parameter type") {
                 it("can be Int") {
@@ -50,14 +52,14 @@ class RestFunctionTest {
                         fun get(id: Int) = id
                     }
 
-                    expectThat(RestFunction(A::get, A()).callSuspend(null, "123")).isEqualTo(123)
+                    expectThat(RestFunction(A::get, A()).callSuspend(null, "123", requestContext)).isEqualTo(123)
                 }
                 it("can be Long") {
                     class A : RestService {
                         fun get(id: Long) = id
                     }
 
-                    expectThat(RestFunction(A::get, A()).callSuspend(null, "123")).isEqualTo(123L)
+                    expectThat(RestFunction(A::get, A()).callSuspend(null, "123", requestContext)).isEqualTo(123L)
                 }
             }
             it("can invoke a method with only a body parameter") {
@@ -66,7 +68,7 @@ class RestFunctionTest {
                 }
 
                 val subject = RestFunction(A::create, A())
-                expectThat(subject.callSuspend(Body("value"), null)).isEqualTo(Body("value"))
+                expectThat(subject.callSuspend(Body("value"), null, requestContext)).isEqualTo(Body("value"))
             }
             describe("invoking a method with body and a id parameter") {
                 it("supports declaring the body before the id") {
@@ -75,7 +77,7 @@ class RestFunctionTest {
                     }
 
                     val subject = RestFunction(A::update, A())
-                    expectThat(subject.callSuspend(Body("value"), "10")).isEqualTo(Body("value with id 10"))
+                    expectThat(subject.callSuspend(Body("value"), "10", requestContext)).isEqualTo(Body("value with id 10"))
                 }
                 it("supports declaring the id before the body") {
                     class A : RestService {
@@ -83,7 +85,7 @@ class RestFunctionTest {
                     }
 
                     val subject = RestFunction(A::update, A())
-                    expectThat(subject.callSuspend(Body("value"), "10")).isEqualTo(Body("value with id 10"))
+                    expectThat(subject.callSuspend(Body("value"), "10", requestContext)).isEqualTo(Body("value with id 10"))
                 }
             }
         }

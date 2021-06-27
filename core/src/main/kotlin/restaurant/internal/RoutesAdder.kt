@@ -79,7 +79,7 @@ private class PutRestServiceHandler(
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
         val payload = objectMapper.readValue(requestBody, function.payloadType!!)
-        val result = function.callSuspend(payload, id)
+        val result = function.callSuspend(payload, id, requestContext)
         return objectMapper.writeValueAsBytes(result)
     }
 }
@@ -98,7 +98,7 @@ private class PostRestServiceHandler(
         requestContext: RequestContext
     ): ByteArray {
         val payload = objectMapper.readValue(requestBody, payloadType!!)
-        val result = restFunction.callSuspend(payload, null)
+        val result = restFunction.callSuspend(payload, null, requestContext)
         return objectMapper.writeValueAsBytes(result)
     }
 }
@@ -114,7 +114,7 @@ private class GetRestServiceHandler(
     ): ByteArray {
         val id = pathVariables["id"]
             ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        return objectMapper.writeValueAsBytes(function.callSuspend(null, id))
+        return objectMapper.writeValueAsBytes(function.callSuspend(null, id, requestContext))
     }
 }
 
@@ -127,7 +127,7 @@ private class GetListRestServiceHandler(
         pathVariables: Map<String, String>,
         requestContext: RequestContext
     ): ByteArray? {
-        val result = function.callSuspend(null, null)
+        val result = function.callSuspend(null, null, requestContext)
         return result?.let { objectMapper.writeValueAsBytes(it) }
     }
 }

@@ -1,5 +1,6 @@
 package restaurant.internal
 
+import restaurant.RequestContext
 import restaurant.RestService
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -20,7 +21,7 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
     private val idFirst = parameters.firstOrNull()?.isId() ?: false
 
 
-    suspend fun callSuspend(payload: Any? = null, id: String?): Any? =
+    suspend fun callSuspend(payload: Any? = null, id: String?, requestContext: RequestContext): Any? =
         when {
             payload == null && id == null -> function.callSuspend(service)
             payload == null && id != null -> function.callSuspend(service, id(id))
