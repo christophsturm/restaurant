@@ -2,11 +2,14 @@ package restaurant.internal
 
 import restaurant.RequestContext
 import restaurant.RestService
+import kotlin.reflect.KCallable
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
+import kotlin.reflect.KType
 import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.instanceParameter
-import kotlin.reflect.javaType
+import kotlin.reflect.jvm.javaType
 
 @OptIn(ExperimentalStdlibApi::class)
 class RestFunction(private val function: KFunction<*>, private val service: RestService) {
@@ -22,7 +25,10 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
         return !(javaType == String::class.java || javaType == Int::class.java || javaType == Long::class.java || javaType == RequestContext::class.java)
     }
 
-    val payloadType: Class<*>? = parameters.singleOrNull { it.isPayload() }?.type?.javaType as? Class<*>
+    val payloadType: Class<*>? =
+        parameters.filter { it.isPayload() }
+            .also { if (it.size > 1) throw MultiplePossibleBodyTypesException(service.javaClass, function, it) }
+            .singleOrNull()?.type?.javaType as? Class<*>
     private val idParameter = parameters.singleOrNull { it.isId() }?.type?.classifier
     private val instanceParameter = function.instanceParameter!!
 
@@ -35,7 +41,7 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
                 payloadType -> payload!!
                 RequestContext::class.java -> requestContext
 
-                else -> throw RuntimeException("unexpected type $javaType payLoad type was: $payloadType")
+                else -> throw RuntimeException("unexpected type $javaType. ")
             }
             value
         }
@@ -49,6 +55,20 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
             else -> id
         }
     }
+}
 
+class MultiplePossibleBodyTypesException(clazz: Class<RestService>, function: KFunction<*>, it: List<KParameter>) :
+    RestaurantException("Rest method ${function.niceName()} has multiple possible body types: ${it.map { it.type.shortName() }}") {
 
 }
+
+private fun <R> KCallable<R>.niceName(): String {
+    return this.parameters.first().type.shortName() + "#" + this.name + "(${
+        parameters.drop(1).joinToString { it.type.shortName() ?: "" }
+    })"
+}
+
+private fun KType.shortName(): String? = (this.classifier as KClass<*>).simpleName
+
+
+open class RestaurantException(value: String) : RuntimeException(value)

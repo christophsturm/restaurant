@@ -6,7 +6,10 @@ import restaurant.MutableRequestContext
 import restaurant.RequestContext
 import restaurant.RestService
 import strikt.api.expectThat
+import strikt.api.expectThrows
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
+import strikt.assertions.message
 
 @Testable
 class RestFunctionTest {
@@ -117,10 +120,28 @@ class RestFunctionTest {
                             requestContext
                         )
                     ).isEqualTo(Body("value with id 10"))
-
-
                 }
             }
+            describe("error handling") {
+                it("fails fast when body type cannot be determined") {
+                    data class OtherPossibleBodyType(val s: String)
+                    class A : RestService {
+                        fun update(
+                            id: Int,
+                            body: Body,
+                            otherPossibleBodyType: OtherPossibleBodyType,
+                            requestContext: RequestContext
+                        ) =
+                            Body(body.field + " with id " + id)
+                    }
+                    expectThrows<RuntimeException> {
+                        RestFunction(A::update, A())
+                    }.message.isNotNull().and {
+                        isEqualTo("Rest method A#update(Int, Body, OtherPossibleBodyType, RequestContext) has multiple possible body types: [Body, OtherPossibleBodyType]")
+                    }
+                }
+            }
+
         }
     }
 }
