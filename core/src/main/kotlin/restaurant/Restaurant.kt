@@ -151,7 +151,7 @@ interface Exchange {
     val requestPath: String
 
     /**
-     * The Query String. Everything after the ?
+     * The Query String. Everything after the "?"
      */
     val queryString: String
 
