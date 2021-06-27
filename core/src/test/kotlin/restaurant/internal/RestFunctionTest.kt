@@ -3,6 +3,7 @@ package restaurant.internal
 import failgood.describe
 import org.junit.platform.commons.annotation.Testable
 import restaurant.MutableRequestContext
+import restaurant.RequestContext
 import restaurant.RestService
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -11,6 +12,7 @@ import strikt.assertions.isEqualTo
 class RestFunctionTest {
     val context = describe(RestFunction::class) {
         data class Body(val field: String)
+
         val requestContext = MutableRequestContext()
         describe("parameter type") {
             it("detects parameter type for methods with only the body parameter") {
@@ -77,7 +79,13 @@ class RestFunctionTest {
                     }
 
                     val subject = RestFunction(A::update, A())
-                    expectThat(subject.callSuspend(Body("value"), "10", requestContext)).isEqualTo(Body("value with id 10"))
+                    expectThat(
+                        subject.callSuspend(
+                            Body("value"),
+                            "10",
+                            requestContext
+                        )
+                    ).isEqualTo(Body("value with id 10"))
                 }
                 it("supports declaring the id before the body") {
                     class A : RestService {
@@ -85,7 +93,32 @@ class RestFunctionTest {
                     }
 
                     val subject = RestFunction(A::update, A())
-                    expectThat(subject.callSuspend(Body("value"), "10", requestContext)).isEqualTo(Body("value with id 10"))
+                    expectThat(
+                        subject.callSuspend(
+                            Body("value"),
+                            "10",
+                            requestContext
+                        )
+                    ).isEqualTo(Body("value with id 10"))
+                }
+            }
+            describe("the request context") {
+                it("is also passed when declared as parameter") {
+                    class A : RestService {
+                        fun update(id: Int, body: Body, requestContext: RequestContext) =
+                            Body(body.field + " with id " + id)
+                    }
+
+                    val subject = RestFunction(A::update, A())
+                    expectThat(
+                        subject.callSuspend(
+                            Body("value"),
+                            "10",
+                            requestContext
+                        )
+                    ).isEqualTo(Body("value with id 10"))
+
+
                 }
             }
         }
