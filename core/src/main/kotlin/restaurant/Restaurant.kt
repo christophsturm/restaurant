@@ -18,10 +18,10 @@ fun findFreePort(): Int = ServerSocket(0).use {
 
 typealias ExceptionHandler = (Throwable) -> Response
 
-internal val defaultExceptionHandler: ExceptionHandler = {
+private val defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
-internal val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
+private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 
 internal object NullMapper : Mapper {
     private const val errorMessage = "No Json mapping defined, please use a dependency that contains a json lib"

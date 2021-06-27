@@ -10,6 +10,7 @@ repositories {
 dependencies {
     // hotfix to make kotlin scratch files work in idea
     implementation(kotlin("script-runtime"))
+
     implementation(kotlin("gradle-plugin", "1.5.20"))
     implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.6.0")}
 
