@@ -56,7 +56,7 @@ plugins.withId("info.solidsoft.pitest") {
         testPlugin.set("failgood")
         targetClasses.set(setOf("restaurant.*")) //by default "${project.group}.*"
         targetTests.set(setOf("restaurant.*Test", "restaurant.**.*Test"))
-        pitestVersion.set(pitestVersion)
+        pitestVersion.set(restaurant.versions.pitestVersion)
         threads.set(
             System.getenv("PITEST_THREADS")?.toInt() ?: Runtime.getRuntime().availableProcessors()
         )

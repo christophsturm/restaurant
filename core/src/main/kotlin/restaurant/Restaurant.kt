@@ -22,15 +22,6 @@ val __defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
 val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
-fun tinyRestaurant(
-    host: String = "127.0.0.1",
-    port: Int = findFreePort(),
-    exceptionHandler: ExceptionHandler = __defaultExceptionHandler,
-    defaultHandler: SuspendingHandler = defaultDefaultHandler,
-    serviceMapping: CoreRoutingDSL.() -> Unit
-): Restaurant {
-    return Restaurant(host, port, exceptionHandler, NullMapper, defaultHandler, serviceMapping)
-}
 
 object NullMapper : Mapper {
     private const val errorMessage = "No Json mapping defined, please use a dependency that contains a json lib"
@@ -45,12 +36,11 @@ object NullMapper : Mapper {
 
 }
 
-
 class Restaurant(
     host: String = "127.0.0.1",
     val port: Int = findFreePort(),
     private val exceptionHandler: ExceptionHandler = __defaultExceptionHandler,
-    mapper: Mapper,
+    mapper: Mapper = NullMapper,
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {

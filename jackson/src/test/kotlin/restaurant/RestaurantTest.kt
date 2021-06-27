@@ -19,6 +19,7 @@ class ReverserService : SuspendingHandler {
     }
 }
 
+fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
 
 @Testable
 class RestaurantTest {
@@ -138,7 +139,7 @@ class RestaurantTest {
 
                 }
                 it("calls error handler to create error reply") {
-                    val restaurant = restaurant(exceptionHandler = { ex ->
+                    val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
                         response(
                             status = 418,
                             result = "sorry: " + ex.cause!!.message
@@ -151,7 +152,7 @@ class RestaurantTest {
                 }
                 it("calls default handler if no suitable route is found") {
                     val restaurant =
-                        restaurant(defaultHandler = { _, _ -> response(418, "not found but anyway I'm teapot") }) { }
+                        Restaurant(defaultHandler = { _: Exchange, _: RequestContext -> response(418, "not found but anyway I'm teapot") }) { }
                     expectThat(request(restaurant, "/not-found")) {
                         get { code }.isEqualTo(418)
                         get { body }.isNotNull().get { string() }.isEqualTo("not found but anyway I'm teapot")

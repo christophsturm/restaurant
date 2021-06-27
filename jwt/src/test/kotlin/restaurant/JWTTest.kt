@@ -35,7 +35,7 @@ class JWTWelcomeHandler : SuspendingHandler {
 @Testable
 class JWTTest {
     val context = describe("JWT Support") {
-        val restaurant = autoClose(tinyRestaurant {
+        val restaurant = autoClose(Restaurant {
             jwt(JWTConfig.makeJwtVerifier()) {
                 route(Method.GET, "/handlers/welcome", JWTWelcomeHandler())
             }

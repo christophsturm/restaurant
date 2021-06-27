@@ -18,7 +18,7 @@ class CoroutinesTest {
             // client disconnects.
             val client = okhttp3.OkHttpClient.Builder().callTimeout(30, TimeUnit.MILLISECONDS).build()
             val delayService = DelayService()
-            val restaurant = restaurant {
+            val restaurant = Restaurant {
                 route(Method.GET, "/delay", delayService)
             }
             expectThrows<InterruptedIOException> {
