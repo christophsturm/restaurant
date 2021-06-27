@@ -27,9 +27,8 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
     private val instanceParameter = function.instanceParameter!!
 
     suspend fun callSuspend(payload: Any? = null, id: String?, requestContext: RequestContext): Any? {
-        val parameterMap = parameters.map { parameter ->
-            val javaType = parameter.type.javaType
-            val value = when (javaType) {
+        val parameterMap = parameters.associateWithTo(mutableMapOf(instanceParameter to service)) { parameter ->
+            val value = when (val javaType = parameter.type.javaType) {
                 Long::class.java, Int::class.java, String::class.java -> {
                     id(id!!)
                 }
@@ -38,8 +37,8 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
 
                 else -> throw RuntimeException("unexpected type $javaType payLoad type was: $payloadType")
             }
-            Pair(parameter, value)
-        }.toMap().plus(instanceParameter to service)
+            value
+        }
         return function.callSuspendBy(parameterMap)
     }
 
