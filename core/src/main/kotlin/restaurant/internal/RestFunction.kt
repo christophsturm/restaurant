@@ -27,7 +27,7 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
 
     val payloadType: Class<*>? =
         parameters.filter { it.isPayload() }
-            .also { if (it.size > 1) throw MultiplePossibleBodyTypesException(service.javaClass, function, it) }
+            .also { if (it.size > 1) throw MultiplePossibleBodyTypesException(function, it) }
             .singleOrNull()?.type?.javaType as? Class<*>
     private val idParameter = parameters.singleOrNull { it.isId() }?.type?.classifier
     private val instanceParameter = function.instanceParameter!!
@@ -57,16 +57,13 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
     }
 }
 
-class MultiplePossibleBodyTypesException(clazz: Class<RestService>, function: KFunction<*>, it: List<KParameter>) :
-    RestaurantException("Rest method ${function.niceName()} has multiple possible body types: ${it.map { it.type.shortName() }}") {
+class MultiplePossibleBodyTypesException(function: KFunction<*>, it: List<KParameter>) :
+    RestaurantException("Rest method ${function.niceName()} has multiple possible body types: ${it.map { it.type.shortName() }}")
 
-}
-
-private fun <R> KCallable<R>.niceName(): String {
-    return this.parameters.first().type.shortName() + "#" + this.name + "(${
+private fun <R> KCallable<R>.niceName(): String =
+    "${this.parameters.first().type.shortName()}#${this.name}(${
         parameters.drop(1).joinToString { it.type.shortName() ?: "" }
     })"
-}
 
 private fun KType.shortName(): String? = (this.classifier as KClass<*>).simpleName
 

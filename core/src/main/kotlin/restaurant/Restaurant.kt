@@ -18,12 +18,12 @@ fun findFreePort(): Int = ServerSocket(0).use {
 
 typealias ExceptionHandler = (Throwable) -> Response
 
-val __defaultExceptionHandler: ExceptionHandler = {
+internal val defaultExceptionHandler: ExceptionHandler = {
     response(500, "internal server error")
 }
-val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
+internal val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 
-object NullMapper : Mapper {
+internal object NullMapper : Mapper {
     private const val errorMessage = "No Json mapping defined, please use a dependency that contains a json lib"
 
     override fun <T : Any> readValue(requestBody: ByteArray?, clazz: Class<T>): T {
@@ -39,7 +39,7 @@ object NullMapper : Mapper {
 class Restaurant(
     host: String = "127.0.0.1",
     val port: Int = findFreePort(),
-    private val exceptionHandler: ExceptionHandler = __defaultExceptionHandler,
+    private val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
     mapper: Mapper = NullMapper,
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
     serviceMapping: RoutingDSL.() -> Unit

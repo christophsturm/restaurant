@@ -1,5 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import restaurant.versions.*
+import restaurant.versions.failgoodVersion
+import restaurant.versions.kotlinVersion
+import restaurant.versions.log4j2Version
+import restaurant.versions.okhttpVersion
+import restaurant.versions.striktVersion
 
 plugins {
     kotlin("jvm")
