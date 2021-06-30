@@ -1,6 +1,5 @@
 import restaurant.versions.coroutinesVersion
 import restaurant.versions.failgoodVersion
-import restaurant.versions.jacksonVersion
 import restaurant.versions.kotlinVersion
 import restaurant.versions.log4j2Version
 import restaurant.versions.okhttpVersion
@@ -17,12 +16,10 @@ plugins {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     implementation(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
-    implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
 
     implementation(kotlin("reflect"))
     // temp api deps
-    api("io.undertow:undertow-core:$undertowVersion")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("io.undertow:undertow-core:$undertowVersion")
     implementation("io.github.microutils:kotlin-logging:2.0.8")
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")

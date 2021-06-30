@@ -1,4 +1,5 @@
 import restaurant.versions.failgoodVersion
+import restaurant.versions.jacksonVersion
 import restaurant.versions.kotlinVersion
 import restaurant.versions.log4j2Version
 import restaurant.versions.okhttpVersion
@@ -12,6 +13,7 @@ plugins {
 }
 
 dependencies {
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api(project(":restaurant-core"))
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")

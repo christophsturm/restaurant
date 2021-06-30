@@ -14,7 +14,7 @@ plugins {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api(project(":restaurant-core"))
-    implementation("com.auth0:java-jwt:3.16.0")
+    implementation("com.auth0:java-jwt:3.17.0")
     testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")

@@ -3,7 +3,6 @@ package restaurant
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.auth0.jwt.interfaces.JWTVerifier
-import io.undertow.util.Headers
 
 fun CoreRoutingDSL.jwt(verifier: JWTVerifier, function: RoutingDSL.() -> Unit) {
     wrap(JWTWrapper(verifier), function)
@@ -15,7 +14,7 @@ class JWTWrapper(private val verifier: JWTVerifier) : Wrapper {
 
     override suspend fun invoke(exchange: Exchange): WrapperResult {
         try {
-            val token = exchange.headers[Headers.AUTHORIZATION]?.singleOrNull()?.substringAfter("Bearer ")
+            val token = exchange.headers["Authorization"]?.singleOrNull()?.substringAfter("Bearer ")
                 ?: return FinishRequest(StringResponse(401, "Unauthorized: Auth Header not found"))
             return AddRequestConstant(DecodedJWTKey, verifier.verify(token))
         } catch (e: JWTVerificationException) {
