@@ -1,7 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.repositories
 
 plugins {
     kotlin("jvm")
@@ -12,15 +9,21 @@ plugins {
 
 val pub = "mavenJava-${project.name}"
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "11"
-        freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
-        languageVersion = "1.5"
-        apiVersion = "1.5"
+tasks {
+    withType<JavaCompile> {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
+
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+            languageVersion = "1.5"
+            apiVersion = "1.5"
+        }
     }
 }
-
 java {
     withJavadocJar()
     withSourcesJar()
