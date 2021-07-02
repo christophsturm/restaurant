@@ -22,30 +22,8 @@ class ReverserService : SuspendingHandler {
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
 
 @Testable
-class RestaurantTest {
-    @Suppress()
+class RestRestaurantTest {
     val context = describe(Restaurant::class) {
-        describe("routing") {
-            val restaurant = autoClose(
-                restaurant {
-                    namespace("/handlers") {
-                        route(Method.POST, "reverser", ReverserService())
-                    }
-                }
-            )
-            it("returns 404 if the route is not found") {
-                val response = request(restaurant, "/unconfigured-url")
-                expectThat(response).get { code }.isEqualTo(404)
-            }
-            it("calls handlers with body and returns result") {
-                val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
-                expectThat(response) {
-                    get { code }.isEqualTo(200)
-                    get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
-                }
-            }
-        }
-
         describe("rest services")
         {
             it("empty responses return 204")
@@ -122,41 +100,6 @@ class RestaurantTest {
                 it("sets json content type") {
                     val response = request(restaurant, "/api/users")
                     expectThat(response).get { header("Content-Type") }.isEqualTo("application/json")
-                }
-            }
-            describe("error handling") {
-                class ExceptionsService : RestService {
-                    fun index() {
-                        throw RuntimeException("error message")
-                    }
-                }
-                it("returns status 500 per default on error") {
-                    val restaurant = autoClose(restaurant { resources(ExceptionsService()) })
-                    expectThat(request(restaurant, "/exceptions")) {
-                        get { code }.isEqualTo(500)
-                        get { body }.isNotNull().get { string() }.isEqualTo("internal server error")
-                    }
-
-                }
-                it("calls error handler to create error reply") {
-                    val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
-                        response(
-                            status = 418,
-                            result = "sorry: " + ex.cause!!.message
-                        )
-                    }) { resources(ExceptionsService()) }
-                    expectThat(request(restaurant, "/exceptions")) {
-                        get { code }.isEqualTo(418)
-                        get { body }.isNotNull().get { string() }.isEqualTo("sorry: error message")
-                    }
-                }
-                it("calls default handler if no suitable route is found") {
-                    val restaurant =
-                        Restaurant(defaultHandler = { _: Exchange, _: RequestContext -> response(418, "not found but anyway I'm teapot") }) { }
-                    expectThat(request(restaurant, "/not-found")) {
-                        get { code }.isEqualTo(418)
-                        get { body }.isNotNull().get { string() }.isEqualTo("not found but anyway I'm teapot")
-                    }
                 }
             }
             pending("nested routes") {
