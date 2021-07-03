@@ -31,12 +31,20 @@ fun ResourcesDSL.request(
 suspend fun req(
     restaurant: Restaurant,
     path: String,
-    config: HttpRequest.Builder.() -> HttpRequest.Builder = { this }
+    config: RequestBuilder.() -> RequestBuilder = { this }
 ): HttpResponse<String> {
-    val request =
+    val builder = RequestBuilder(
         HttpRequest.newBuilder(URI("http://localhost:${restaurant.port}$path")).timeout(Duration.ofSeconds(1))
-            .config()
-            .build()
+    )
+    val request = builder.config().delegate.build()
     return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()!!
+}
+
+class RequestBuilder(val delegate: HttpRequest.Builder) {
+    fun post(body: String): RequestBuilder {
+        delegate.POST(HttpRequest.BodyPublishers.ofString(body))
+        return this
+    }
+
 }
 

@@ -4,7 +4,6 @@ import failgood.describe
 import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import java.net.http.HttpRequest
 import java.nio.ByteBuffer
 
 
@@ -32,7 +31,7 @@ class RestaurantTest {
             }
             it("calls handlers with body and returns result") {
                 val response =
-                    req(restaurant, "/handlers/reverser") { POST(HttpRequest.BodyPublishers.ofString("""jakob""")) }
+                    req(restaurant, "/handlers/reverser") { post("""jakob""") }
                 expectThat(response) {
                     get { statusCode() }.isEqualTo(200)
                     get { body() }.isEqualTo("bokaj")
