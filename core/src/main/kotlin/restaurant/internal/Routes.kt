@@ -21,15 +21,7 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
 
         override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
             routesAdder.routesFor(service, path).forEach { restRoute ->
-                val needsBody = restRoute.method != Method.GET
-                val restHandler =
-                    HttpServiceHandler(
-                        restRoute.httpService,
-                        needsBody,
-                        if (restRoute.method == Method.POST) 201 else 200
-                    )
-
-                route(restRoute.method, restRoute.path, restHandler)
+                route(restRoute.method, restRoute.path, restRoute.handler)
             }
             ResourceDSL(path).function()
         }

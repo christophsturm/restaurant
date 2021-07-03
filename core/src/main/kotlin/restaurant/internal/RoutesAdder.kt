@@ -1,22 +1,26 @@
 package restaurant.internal
 
+import restaurant.HttpStatus
 import restaurant.Method
 import restaurant.RequestContext
 import restaurant.RestService
+import restaurant.Route
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
 class RoutesAdder(private val objectMapper: Mapper) {
     @OptIn(ExperimentalStdlibApi::class)
-    fun routesFor(restService: RestService, path: String): List<RestRoute> {
+    fun routesFor(restService: RestService, path: String): List<Route> {
         val functions = restService::class.functions.associateBy { it.name }
         return buildList {
             functions["create"]?.let {
                 add(
-                    RestRoute(
-                        Method.POST, path, PostRestServiceHandler(
-                            objectMapper,
-                            RestFunction(it, restService)
+                    Route(
+                        Method.POST, path, HttpServiceHandler(
+                            PostRestServiceHandler(
+                                objectMapper,
+                                RestFunction(it, restService)
+                            ), true, HttpStatus.CREATED_201
                         )
                     )
                 )
@@ -24,36 +28,51 @@ class RoutesAdder(private val objectMapper: Mapper) {
 
             functions["show"]?.let {
                 add(
-                    RestRoute(
-                        Method.GET, "$path/{id}", GetRestServiceHandler(
-                            objectMapper,
-                            RestFunction(it, restService)
+                    Route(
+                        Method.GET, "$path/{id}", HttpServiceHandler(
+                            GetRestServiceHandler(
+                                objectMapper,
+                                RestFunction(it, restService)
+                            ), false, HttpStatus.OK_200
                         )
                     )
                 )
             }
 
             functions["index"]?.let {
-                add(RestRoute(Method.GET, path, GetListRestServiceHandler(objectMapper, RestFunction(it, restService))))
-            }
-
-            functions["update"]?.let {
                 add(
-                    RestRoute(
-                        Method.PUT, "$path/{id}", PutRestServiceHandler(
-                            objectMapper,
-                            RestFunction(it, restService)
+                    Route(
+                        Method.GET,
+                        path,
+                        HttpServiceHandler(
+                            GetListRestServiceHandler(objectMapper, RestFunction(it, restService)),
+                            false,
+                            HttpStatus.OK_200
                         )
                     )
                 )
             }
 
+            functions["update"]?.let {
+                add(
+                    Route(
+                        Method.PUT, "$path/{id}", HttpServiceHandler(
+                            PutRestServiceHandler(
+                                objectMapper,
+                                RestFunction(it, restService)
+                            ), true, HttpStatus.OK_200
+                        )
+                    ))
+            }
+
             functions["delete"]?.let<KFunction<*>, Unit> {
                 add(
-                    RestRoute(
-                        Method.DELETE, "$path/{id}", GetRestServiceHandler(
-                            objectMapper,
-                            RestFunction(it, restService)
+                    Route(
+                        Method.DELETE, "$path/{id}", HttpServiceHandler(
+                            GetRestServiceHandler(
+                                objectMapper,
+                                RestFunction(it, restService)
+                            ), false, HttpStatus.OK_200
                         )
                     )
                 )
@@ -62,8 +81,6 @@ class RoutesAdder(private val objectMapper: Mapper) {
     }
 }
 
-
-data class RestRoute(val method: Method, val path: String, val httpService: HttpService)
 
 @OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(

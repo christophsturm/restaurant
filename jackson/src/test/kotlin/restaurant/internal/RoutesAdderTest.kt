@@ -7,12 +7,14 @@ import org.junit.platform.commons.annotation.Testable
 import restaurant.JacksonMapper
 import restaurant.Method
 import restaurant.MutableRequestContext
+import restaurant.Route
+import restaurant.test.MockRequest
 import strikt.api.expectThat
 import strikt.assertions.getValue
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 import strikt.assertions.single
-import java.nio.charset.Charset
+import java.util.LinkedList
 
 @Testable
 class RoutesAdderTest {
@@ -30,7 +32,7 @@ class RoutesAdderTest {
         ).forEach { (service, description) ->
             describe("for a $description") {
                 val rootPath = "root"
-                val routes: Map<Method, List<RestRoute>> =
+                val routes: Map<Method, List<Route>> =
                     routesAdder.routesFor(service, rootPath).groupBy { it.method }
                 it("adds a post route") {
                     expectThat(routes).getValue(Method.POST).single()
@@ -38,8 +40,8 @@ class RoutesAdderTest {
                             get { path }.isEqualTo(rootPath)
                             get {
                                 runBlocking {
-                                    httpService.handle("""{"name":"userName"}""".toByteArray(), mapOf(), requestContext)
-                                }!!.decodeToString()
+                                    handler.handle(MockRequest("""{"name":"userName"}"""), requestContext)
+                                }.bodyString()
                             }.isEqualTo("""{"id":"userId","name":"userName"}""")
                         }
                 }
@@ -48,26 +50,18 @@ class RoutesAdderTest {
                     val getRoutes = routes[Method.GET]!!
                     it("adds a get detail route") {
                         expectThat(
-                            String(
-                                getRoutes.single { it.path == "$rootPath/{id}" }.httpService.handle(
-                                    null,
-                                    mapOf("id" to "5"),
-                                    requestContext
-                                )!!,
-                                Charset.defaultCharset()
-                            )
+                            getRoutes.single { it.path == "$rootPath/{id}" }.handler.handle(
+                                MockRequest(queryParameters = mapOf("id" to LinkedList(listOf("5")))),
+                                requestContext
+                            ).bodyString()
                         ).isEqualTo("""{"id":"5","name":"User 5"}""")
                     }
                     it("adds a get list route") {
                         expectThat(
-                            String(
-                                getRoutes.single { it.path == rootPath }.httpService.handle(
-                                    null,
-                                    mapOf(),
-                                    requestContext
-                                )!!,
-                                Charset.defaultCharset()
-                            )
+                            getRoutes.single { it.path == rootPath }.handler.handle(
+                                MockRequest(),
+                                requestContext
+                            ).bodyString(),
                         ).isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
                     }
                 }
@@ -77,12 +71,11 @@ class RoutesAdderTest {
                             get { path }.isEqualTo("$rootPath/{id}")
                             get {
                                 runBlocking {
-                                    httpService.handle(
-                                        """{"name":"userName"}""".toByteArray(),
-                                        mapOf("id" to "5"),
+                                    handler.handle(
+                                        MockRequest("""{"name":"userName"}""", mapOf("id" to LinkedList(listOf("5")))),
                                         requestContext
-                                    )
-                                }!!.decodeToString()
+                                    ).bodyString()
+                                }
                             }
                                 .isEqualTo("""{"id":"5","name":"userName"}""")
                         }
@@ -93,12 +86,11 @@ class RoutesAdderTest {
                             get { path }.isEqualTo("$rootPath/{id}")
                             get {
                                 runBlocking {
-                                    httpService.handle(
-                                        null,
-                                        mapOf("id" to "5"),
+                                    handler.handle(
+                                        MockRequest(queryParameters = mapOf("id" to LinkedList(listOf("5")))),
                                         requestContext
-                                    )
-                                }!!.decodeToString()
+                                    ).bodyString()
+                                }
                             }.isEqualTo("""{"status":"user 5 deleted"}""")
                         }
                 }
