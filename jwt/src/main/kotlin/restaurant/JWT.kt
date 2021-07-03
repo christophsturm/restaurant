@@ -4,10 +4,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.auth0.jwt.interfaces.JWTVerifier
 
-fun CoreRoutingDSL.jwt(verifier: JWTVerifier, function: RoutingDSL.() -> Unit) {
-    wrap(JWTWrapper(verifier), function)
-}
-
+fun CoreRoutingDSL.jwt(verifier: JWTVerifier, function: RoutingDSL.() -> Unit) = wrap(JWTWrapper(verifier), function)
 
 class JWTWrapper(private val verifier: JWTVerifier) : Wrapper {
     companion object DecodedJWTKey : Key<DecodedJWT>
@@ -15,10 +12,10 @@ class JWTWrapper(private val verifier: JWTVerifier) : Wrapper {
     override suspend fun invoke(exchange: Exchange): WrapperResult {
         try {
             val token = exchange.headers["Authorization"]?.singleOrNull()?.substringAfter("Bearer ")
-                ?: return FinishRequest(StringResponse(401, "Unauthorized: Auth Header not found"))
+                ?: return FinishRequest(response(HttpStatus.UNAUTHORIZED_401, "Unauthorized: Auth Header not found"))
             return AddRequestConstant(DecodedJWTKey, verifier.verify(token))
         } catch (e: JWTVerificationException) {
-            return FinishRequest(StringResponse(401, "Unauthorized: " + e.message))
+            return FinishRequest(StringResponse(HttpStatus.UNAUTHORIZED_401, "Unauthorized: " + e.message))
         }
     }
 
