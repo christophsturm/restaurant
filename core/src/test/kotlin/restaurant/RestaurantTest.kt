@@ -1,11 +1,10 @@
 package restaurant
 
 import failgood.describe
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
+import java.net.http.HttpRequest
 import java.nio.ByteBuffer
 
 
@@ -32,10 +31,11 @@ class RestaurantTest {
                 expectThat(response).get { statusCode() }.isEqualTo(404)
             }
             it("calls handlers with body and returns result") {
-                val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
+                val response =
+                    req(restaurant, "/handlers/reverser") { POST(HttpRequest.BodyPublishers.ofString("""jakob""")) }
                 expectThat(response) {
-                    get { code }.isEqualTo(200)
-                    get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
+                    get { statusCode() }.isEqualTo(200)
+                    get { body() }.isEqualTo("bokaj")
                 }
             }
         }

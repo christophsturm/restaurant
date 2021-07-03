@@ -8,6 +8,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 val client = okhttp3.OkHttpClient.Builder()
@@ -15,7 +16,7 @@ val client = okhttp3.OkHttpClient.Builder()
     .readTimeout(1000, TimeUnit.MILLISECONDS)
     .build()
 
-val httpClient = HttpClient.newHttpClient()
+val httpClient = HttpClient.newHttpClient()!!
 
 fun ResourcesDSL.request(
     restaurant: Restaurant,
@@ -30,9 +31,12 @@ fun ResourcesDSL.request(
 suspend fun req(
     restaurant: Restaurant,
     path: String,
-    config: Request.Builder.() -> Request.Builder = { this }
+    config: HttpRequest.Builder.() -> HttpRequest.Builder = { this }
 ): HttpResponse<String> {
-    val request = HttpRequest.newBuilder(URI("http://localhost:${restaurant.port}$path")).build()
+    val request =
+        HttpRequest.newBuilder(URI("http://localhost:${restaurant.port}$path")).timeout(Duration.ofSeconds(1))
+            .config()
+            .build()
     return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()!!
 }
 
