@@ -2,9 +2,14 @@ package restaurant.internal
 
 import restaurant.HttpStatus
 import restaurant.Method
+import restaurant.Request
 import restaurant.RequestContext
+import restaurant.Response
 import restaurant.RestService
 import restaurant.Route
+import restaurant.SuspendingHandler
+import restaurant.response
+import java.nio.ByteBuffer
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
@@ -16,11 +21,10 @@ class RoutesAdder(private val objectMapper: Mapper) {
             functions["create"]?.let {
                 add(
                     Route(
-                        Method.POST, path, HttpServiceHandler(
-                            PostRestServiceHandler(
-                                objectMapper,
-                                RestFunction(it, restService)
-                            ), true, HttpStatus.CREATED_201
+                        Method.POST, path,
+                        PostRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
                         )
                     )
                 )
@@ -107,17 +111,13 @@ private class PutRestServiceHandler(
 private class PostRestServiceHandler(
     private val objectMapper: Mapper,
     val restFunction: RestFunction
-) : HttpService {
+) : SuspendingHandler {
     private val payloadType = restFunction.payloadType!!
 
-    override suspend fun handle(
-        requestBody: ByteArray?,
-        pathVariables: Map<String, String>,
-        requestContext: RequestContext
-    ): ByteArray {
-        val payload = objectMapper.readValue(requestBody, payloadType)
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val payload = objectMapper.readValue(request.readBody(), payloadType)
         val result = restFunction.callSuspend(payload, null, requestContext)
-        return objectMapper.writeValueAsBytes(result)
+        return response(HttpStatus.CREATED_201, ByteBuffer.wrap(objectMapper.writeValueAsBytes(result)))
     }
 }
 
