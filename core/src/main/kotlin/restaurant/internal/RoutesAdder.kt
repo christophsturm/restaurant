@@ -11,7 +11,6 @@ import restaurant.RestService
 import restaurant.Route
 import restaurant.SuspendingHandler
 import restaurant.response
-import java.nio.ByteBuffer
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
@@ -98,7 +97,7 @@ private class PutRestServiceHandler(
         }
         val payload = objectMapper.readValue(request.readBody(), payloadType)
         val result = function.callSuspend(payload, id, requestContext)
-        return response(objectMapper.writeValueAsBytes(result))
+        return objectMapper.responseOrNull(result)
     }
 }
 
@@ -113,11 +112,7 @@ private class PostRestServiceHandler(
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         val payload = objectMapper.readValue(request.readBody(), payloadType)
         val result = restFunction.callSuspend(payload, null, requestContext)
-        return response(
-            HttpStatus.CREATED_201,
-            ByteBuffer.wrap(objectMapper.writeValueAsBytes(result)),
-            contentTypeJson
-        )
+        return objectMapper.responseOrNull(result, HttpStatus.CREATED_201)
     }
 }
 
@@ -131,7 +126,7 @@ private class GetRestServiceHandler(
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
         }
 
-        return response(objectMapper.writeValueAsBytes(function.callSuspend(null, id, requestContext)), contentTypeJson)
+        return objectMapper.responseOrNull(function.callSuspend(null, id, requestContext))
     }
 }
 
@@ -141,11 +136,14 @@ private class GetListRestServiceHandler(
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         val result = function.callSuspend(null, null, requestContext)
-        return if (result == null)
-            response(HttpStatus.NO_CONTENT_204)
-        else {
-            response(objectMapper.writeValueAsBytes(result), contentTypeJson)
-        }
+        return objectMapper.responseOrNull(result)
     }
+
+}
+
+private fun Mapper.responseOrNull(result: Any?, statusCode: Int = HttpStatus.OK_200) = if (result == null)
+    response(HttpStatus.NO_CONTENT_204)
+else {
+    response(statusCode, writeValueAsBytes(result), contentTypeJson)
 }
 

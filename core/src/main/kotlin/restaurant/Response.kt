@@ -9,6 +9,9 @@ fun response(status: Int, result: String, headers: Map<String, String> = mapOf()
 fun response(status: Int, result: ByteBuffer, headers: Map<String, String> = mapOf()) =
     ByteBufferResponse(status, result, headers)
 
+fun response(status: Int, result: ByteArray, headers: Map<String, String> = mapOf()) =
+    ByteBufferResponse(status, ByteBuffer.wrap(result), headers)
+
 fun response(result: ByteBuffer, headers: Map<String, String> = mapOf()) = ByteBufferResponse(200, result, headers)
 fun response(result: ByteArray, headers: Map<String, String> = mapOf()) =
     ByteBufferResponse(200, ByteBuffer.wrap(result), headers)
