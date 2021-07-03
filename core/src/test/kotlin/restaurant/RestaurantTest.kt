@@ -8,8 +8,6 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import java.nio.ByteBuffer
 
-fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
-    Restaurant(serviceMapping = serviceMapping)
 
 @Testable
 class RestaurantTest {
@@ -17,7 +15,7 @@ class RestaurantTest {
 
         describe("routing") {
             val restaurant = autoClose(
-                restaurant {
+                Restaurant {
                     namespace("/handlers") {
                         route(Method.POST, "reverser") { ex, _ ->
                             response(
@@ -48,7 +46,7 @@ class RestaurantTest {
                 }
             }
             it("returns status 500 per default on error") {
-                val restaurant = autoClose(restaurant { resources(ExceptionsService()) })
+                val restaurant = autoClose(Restaurant { resources(ExceptionsService()) })
                 expectThat(request(restaurant, "/exceptions")) {
                     get { code }.isEqualTo(500)
                     get { body }.isNotNull().get { string() }.isEqualTo("internal server error")
