@@ -57,11 +57,10 @@ class RoutesAdder(private val objectMapper: Mapper) {
             functions["update"]?.let {
                 add(
                     Route(
-                        Method.PUT, "$path/{id}", HttpServiceHandler(
-                            PutRestServiceHandler(
-                                objectMapper,
-                                RestFunction(it, restService)
-                            ), true, HttpStatus.OK_200
+                        Method.PUT, "$path/{id}",
+                        PutRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
                         )
                     )
                 )
@@ -89,19 +88,17 @@ val contentTypeJson = mapOf(HttpHeader.CONTENT_TYPE to ContentType.APPLICATION_J
 private class PutRestServiceHandler(
     private val objectMapper: Mapper,
     val function: RestFunction
-) : HttpService {
+) : SuspendingHandler {
     val payloadType = function.payloadType!!
 
-    override suspend fun handle(
-        requestBody: ByteArray?,
-        pathVariables: Map<String, String>,
-        requestContext: RequestContext
-    ): ByteArray {
-        val id = pathVariables["id"]
-            ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        val payload = objectMapper.readValue(requestBody, payloadType)
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val id = request.queryParameters.let {
+            it["id"]?.singleOrNull()
+                ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
+        }
+        val payload = objectMapper.readValue(request.readBody(), payloadType)
         val result = function.callSuspend(payload, id, requestContext)
-        return objectMapper.writeValueAsBytes(result)
+        return response(objectMapper.writeValueAsBytes(result))
     }
 }
 
