@@ -28,8 +28,8 @@ class RestaurantTest {
                 }
             )
             it("returns 404 if the route is not found") {
-                val response = request(restaurant, "/unconfigured-url")
-                expectThat(response).get { code }.isEqualTo(404)
+                val response = req(restaurant, "/unconfigured-url")
+                expectThat(response).get { statusCode() }.isEqualTo(404)
             }
             it("calls handlers with body and returns result") {
                 val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
@@ -47,9 +47,9 @@ class RestaurantTest {
             }
             it("returns status 500 per default on error") {
                 val restaurant = autoClose(Restaurant { resources(ExceptionsService()) })
-                expectThat(request(restaurant, "/exceptions")) {
-                    get { code }.isEqualTo(500)
-                    get { body }.isNotNull().get { string() }.isEqualTo("internal server error")
+                expectThat(req(restaurant, "/exceptions")) {
+                    get { statusCode() }.isEqualTo(500)
+                    get { body() }.isEqualTo("internal server error")
                 }
 
             }
@@ -60,9 +60,9 @@ class RestaurantTest {
                         result = "sorry: " + ex.cause!!.message
                     )
                 }) { resources(ExceptionsService()) }
-                expectThat(request(restaurant, "/exceptions")) {
-                    get { code }.isEqualTo(418)
-                    get { body }.isNotNull().get { string() }.isEqualTo("sorry: error message")
+                expectThat(req(restaurant, "/exceptions")) {
+                    get { statusCode() }.isEqualTo(418)
+                    get { body() }.isEqualTo("sorry: error message")
                 }
             }
             it("calls default handler if no suitable route is found") {
@@ -73,9 +73,9 @@ class RestaurantTest {
                             "not found but anyway I'm teapot"
                         )
                     }) { }
-                expectThat(request(restaurant, "/not-found")) {
-                    get { code }.isEqualTo(418)
-                    get { body }.isNotNull().get { string() }.isEqualTo("not found but anyway I'm teapot")
+                expectThat(req(restaurant, "/not-found")) {
+                    get { statusCode() }.isEqualTo(418)
+                    get { body() }.isEqualTo("not found but anyway I'm teapot")
                 }
             }
         }
