@@ -2,20 +2,16 @@ package restaurant
 
 import failgood.describe
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import java.nio.ByteBuffer
 
-class ReverserService : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
-        return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
-    }
-}
-
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
     Restaurant(serviceMapping = serviceMapping)
 
+@Testable
 class RestaurantTest {
     val context = describe(Restaurant::class) {
 
@@ -23,7 +19,13 @@ class RestaurantTest {
             val restaurant = autoClose(
                 restaurant {
                     namespace("/handlers") {
-                        route(Method.POST, "reverser", ReverserService())
+                        route(Method.POST, "reverser") { ex, _ ->
+                            response(
+                                ByteBuffer.wrap(
+                                    ex.readBody().reversedArray()
+                                )
+                            )
+                        }
                     }
                 }
             )
