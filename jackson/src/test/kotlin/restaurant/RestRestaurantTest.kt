@@ -19,7 +19,8 @@ class ReverserService : SuspendingHandler {
     }
 }
 
-fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
+fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
+    Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
 
 @Testable
 class RestRestaurantTest {
@@ -41,7 +42,7 @@ class RestRestaurantTest {
                 )
                 val response = request(restaurant, "/handlers/empty")
                 expectThat(response) {
-                    get { code }.isEqualTo(204)
+                    get { code }.isEqualTo(HttpStatus.NO_CONTENT_204)
                     get { body }.isNotNull().get { string() }.isEmpty()
                 }
             }
@@ -58,8 +59,7 @@ class RestRestaurantTest {
                 describe("post requests") {
                     val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""".toRequestBody()) }
                     it("returns 201 - Created on successful post request") {
-                        println(restaurant.routes.joinToString("\n"))
-                        expectThat(response).get { code }.isEqualTo(201)
+                        expectThat(response).get { code }.isEqualTo(HttpStatus.CREATED_201)
                     }
                     it("calls create method on post request") {
                         expectThat(response).get { body }.isNotNull().get { string() }
@@ -101,6 +101,17 @@ class RestRestaurantTest {
                     val response = request(restaurant, "/api/users")
                     expectThat(response).get { header("Content-Type") }.isEqualTo("application/json")
                 }
+                describe("error handling") {
+                    describe("malformed requests") {
+                        pending("returns a useful error message") {
+                            val response =
+                                request(restaurant, "/api/users") { post("""{"nam":"userName"}""".toRequestBody()) }
+                            expectThat(response).get { code }.isEqualTo(HttpStatus.BAD_REQUEST_400)
+                        }
+
+                    }
+                }
+
             }
             pending("nested routes") {
                 val restaurant = autoClose(
@@ -126,6 +137,7 @@ class RestRestaurantTest {
                 )
             }
         }
+
     }
 
 }
