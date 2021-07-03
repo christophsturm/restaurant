@@ -26,12 +26,12 @@ class RestaurantTest {
                 }
             )
             it("returns 404 if the route is not found") {
-                val response = req(restaurant, "/unconfigured-url")
+                val response = request(restaurant, "/unconfigured-url")
                 expectThat(response).get { statusCode() }.isEqualTo(404)
             }
             it("calls handlers with body and returns result") {
                 val response =
-                    req(restaurant, "/handlers/reverser") { post("""jakob""") }
+                    request(restaurant, "/handlers/reverser") { post("""jakob""") }
                 expectThat(response) {
                     get { statusCode() }.isEqualTo(200)
                     get { body() }.isEqualTo("bokaj")
@@ -46,7 +46,7 @@ class RestaurantTest {
             }
             it("returns status 500 per default on error") {
                 val restaurant = autoClose(Restaurant { resources(ExceptionsService()) })
-                expectThat(req(restaurant, "/exceptions")) {
+                expectThat(request(restaurant, "/exceptions")) {
                     get { statusCode() }.isEqualTo(500)
                     get { body() }.isEqualTo("internal server error")
                 }
@@ -59,7 +59,7 @@ class RestaurantTest {
                         result = "sorry: " + ex.cause!!.message
                     )
                 }) { resources(ExceptionsService()) }
-                expectThat(req(restaurant, "/exceptions")) {
+                expectThat(request(restaurant, "/exceptions")) {
                     get { statusCode() }.isEqualTo(418)
                     get { body() }.isEqualTo("sorry: error message")
                 }
@@ -72,7 +72,7 @@ class RestaurantTest {
                             "not found but anyway I'm teapot"
                         )
                     }) { }
-                expectThat(req(restaurant, "/not-found")) {
+                expectThat(request(restaurant, "/not-found")) {
                     get { statusCode() }.isEqualTo(418)
                     get { body() }.isEqualTo("not found but anyway I'm teapot")
                 }

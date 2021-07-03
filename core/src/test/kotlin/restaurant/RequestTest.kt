@@ -24,7 +24,7 @@ class RequestTest {
         )
 
         val response = request(restaurant, "/path?query=string")
-        expectThat(response).get { code }.isEqualTo(200)
+        expectThat(response).get { statusCode() }.isEqualTo(200)
         it("exposes the query string") {
             expectThat(exch.queryString).isEqualTo("query=string")
         }

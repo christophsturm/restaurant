@@ -2,7 +2,6 @@ import restaurant.versions.coroutinesVersion
 import restaurant.versions.failgoodVersion
 import restaurant.versions.kotlinVersion
 import restaurant.versions.log4j2Version
-import restaurant.versions.okhttpVersion
 import restaurant.versions.striktVersion
 import restaurant.versions.undertowVersion
 
@@ -24,7 +23,6 @@ dependencies {
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
-    testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
     testImplementation("org.junit.platform:junit-platform-launcher:1.7.2")

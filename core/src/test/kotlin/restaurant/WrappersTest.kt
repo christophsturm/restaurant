@@ -1,12 +1,10 @@
 package restaurant
 
 import failgood.describe
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
 import java.nio.ByteBuffer
 
 @Testable
@@ -31,12 +29,12 @@ class WrappersTest {
             }
         })
         val response = request(restaurant, "/handlers/reverser") {
-            post("""jakob""".toRequestBody())
+            post("jakob")
         }
         it("calls the wrapped handler") {
             expectThat(response) {
-                get { code }.isEqualTo(200)
-                get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
+                get { statusCode() }.isEqualTo(200)
+                get { body() }.isEqualTo("bokaj")
             }
         }
         it("calls the wrappers") {
