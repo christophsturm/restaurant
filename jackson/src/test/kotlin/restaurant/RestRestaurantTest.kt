@@ -93,7 +93,7 @@ class RestRestaurantTest {
                 }
                 it("sets json content type") {
                     val response = request(restaurant, "/api/users")
-                    expectThat(response).get { header("Content-Type") }.isEqualTo("application/json")
+                    expectThat(response).get { header(HttpHeader.CONTENT_TYPE) }.isEqualTo(ContentType.APPLICATION_JSON)
                 }
                 describe("error handling") {
                     describe("malformed requests") {

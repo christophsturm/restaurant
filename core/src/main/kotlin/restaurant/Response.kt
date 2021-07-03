@@ -10,6 +10,9 @@ fun response(status: Int, result: ByteBuffer, headers: Map<String, String> = map
     ByteBufferResponse(status, result, headers)
 
 fun response(result: ByteBuffer, headers: Map<String, String> = mapOf()) = ByteBufferResponse(200, result, headers)
+fun response(result: ByteArray, headers: Map<String, String> = mapOf()) =
+    ByteBufferResponse(200, ByteBuffer.wrap(result), headers)
+
 fun response(result: String, headers: Map<String, String> = mapOf()) = StringResponse(200, result, headers)
 sealed class Response {
     abstract val headers: Map<String, String>

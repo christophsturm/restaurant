@@ -1,5 +1,7 @@
 package restaurant.internal
 
+import restaurant.ContentType
+import restaurant.HttpHeader
 import restaurant.HttpStatus
 import restaurant.Method
 import restaurant.Request
@@ -33,11 +35,10 @@ class RoutesAdder(private val objectMapper: Mapper) {
             functions["show"]?.let {
                 add(
                     Route(
-                        Method.GET, "$path/{id}", HttpServiceHandler(
-                            GetRestServiceHandler(
-                                objectMapper,
-                                RestFunction(it, restService)
-                            ), false, HttpStatus.OK_200
+                        Method.GET, "$path/{id}",
+                        GetRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
                         )
                     )
                 )
@@ -48,11 +49,7 @@ class RoutesAdder(private val objectMapper: Mapper) {
                     Route(
                         Method.GET,
                         path,
-                        HttpServiceHandler(
-                            GetListRestServiceHandler(objectMapper, RestFunction(it, restService)),
-                            false,
-                            HttpStatus.OK_200
-                        )
+                        GetListRestServiceHandler(objectMapper, RestFunction(it, restService))
                     )
                 )
             }
@@ -66,17 +63,17 @@ class RoutesAdder(private val objectMapper: Mapper) {
                                 RestFunction(it, restService)
                             ), true, HttpStatus.OK_200
                         )
-                    ))
+                    )
+                )
             }
 
             functions["delete"]?.let<KFunction<*>, Unit> {
                 add(
                     Route(
-                        Method.DELETE, "$path/{id}", HttpServiceHandler(
-                            GetRestServiceHandler(
-                                objectMapper,
-                                RestFunction(it, restService)
-                            ), false, HttpStatus.OK_200
+                        Method.DELETE, "$path/{id}",
+                        GetRestServiceHandler(
+                            objectMapper,
+                            RestFunction(it, restService)
                         )
                     )
                 )
@@ -84,6 +81,8 @@ class RoutesAdder(private val objectMapper: Mapper) {
         }
     }
 }
+
+val contentTypeJson = mapOf(HttpHeader.CONTENT_TYPE to ContentType.APPLICATION_JSON)
 
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -117,36 +116,39 @@ private class PostRestServiceHandler(
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         val payload = objectMapper.readValue(request.readBody(), payloadType)
         val result = restFunction.callSuspend(payload, null, requestContext)
-        return response(HttpStatus.CREATED_201, ByteBuffer.wrap(objectMapper.writeValueAsBytes(result)))
+        return response(
+            HttpStatus.CREATED_201,
+            ByteBuffer.wrap(objectMapper.writeValueAsBytes(result)),
+            contentTypeJson
+        )
     }
 }
 
 private class GetRestServiceHandler(
     private val objectMapper: Mapper,
     val function: RestFunction
-) : HttpService {
-    override suspend fun handle(
-        requestBody: ByteArray?,
-        pathVariables: Map<String, String>,
-        requestContext: RequestContext
-    ): ByteArray {
-        val id = pathVariables["id"]
-            ?: throw RuntimeException("id variable not found. variables: ${pathVariables.keys.joinToString()}")
-        return objectMapper.writeValueAsBytes(function.callSuspend(null, id, requestContext))
+) : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val id = request.queryParameters.let {
+            it["id"]?.singleOrNull()
+                ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
+        }
+
+        return response(objectMapper.writeValueAsBytes(function.callSuspend(null, id, requestContext)), contentTypeJson)
     }
 }
 
 @OptIn(ExperimentalStdlibApi::class)
 private class GetListRestServiceHandler(
     private val objectMapper: Mapper, val function: RestFunction
-) : HttpService {
-    override suspend fun handle(
-        requestBody: ByteArray?,
-        pathVariables: Map<String, String>,
-        requestContext: RequestContext
-    ): ByteArray? {
+) : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         val result = function.callSuspend(null, null, requestContext)
-        return result?.let { objectMapper.writeValueAsBytes(it) }
+        return if (result == null)
+            response(HttpStatus.NO_CONTENT_204)
+        else {
+            response(objectMapper.writeValueAsBytes(result), contentTypeJson)
+        }
     }
 }
 
