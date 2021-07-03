@@ -9,9 +9,9 @@ fun CoreRoutingDSL.jwt(verifier: JWTVerifier, function: RoutingDSL.() -> Unit) =
 class JWTWrapper(private val verifier: JWTVerifier) : Wrapper {
     companion object DecodedJWTKey : Key<DecodedJWT>
 
-    override suspend fun invoke(exchange: Exchange): WrapperResult {
+    override suspend fun invoke(request: Request): WrapperResult {
         try {
-            val token = exchange.headers["Authorization"]?.singleOrNull()?.substringAfter("Bearer ")
+            val token = request.headers["Authorization"]?.singleOrNull()?.substringAfter("Bearer ")
                 ?: return FinishRequest(response(HttpStatus.UNAUTHORIZED_401, "Unauthorized: Auth Header not found"))
             return AddRequestConstant(DecodedJWTKey, verifier.verify(token))
         } catch (e: JWTVerificationException) {

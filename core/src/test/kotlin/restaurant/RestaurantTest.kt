@@ -67,7 +67,7 @@ class RestaurantTest {
             }
             it("calls default handler if no suitable route is found") {
                 val restaurant =
-                    Restaurant(defaultHandler = { _: Exchange, _: RequestContext ->
+                    Restaurant(defaultHandler = { _: Request, _: RequestContext ->
                         response(
                             418,
                             "not found but anyway I'm teapot"

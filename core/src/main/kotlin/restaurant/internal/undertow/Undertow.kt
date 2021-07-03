@@ -6,8 +6,13 @@ import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
 import io.undertow.util.HttpString
 import io.undertow.util.Methods
-import restaurant.*
-import java.util.*
+import restaurant.HeaderMap
+import restaurant.Method
+import restaurant.Request
+import restaurant.RootHandler
+import restaurant.Route
+import restaurant.SuspendingHandler
+import java.util.Deque
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -18,7 +23,7 @@ fun Route.methodToHttpString(): HttpString = when (method) {
     Method.DELETE -> Methods.DELETE
 }
 
-class UndertowExchange(private val exchange: HttpServerExchange) : Exchange {
+class UndertowRequest(private val exchange: HttpServerExchange) : Request {
 
     override suspend fun readBody(): ByteArray {
         return suspendCoroutine {

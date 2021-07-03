@@ -11,13 +11,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
-import java.nio.ByteBuffer
 
-class ReverserService : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
-        return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
-    }
-}
 
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
     Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)

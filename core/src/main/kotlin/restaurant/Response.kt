@@ -14,17 +14,27 @@ fun response(result: String, headers: Map<String, String> = mapOf()) = StringRes
 sealed class Response {
     abstract val headers: Map<String, String>
     abstract val status: Int
+    abstract fun bodyString(): String
 }
 
-data class StatusResponse(override val status: Int, override val headers: Map<String, String> = mapOf()) : Response()
+data class StatusResponse(override val status: Int, override val headers: Map<String, String> = mapOf()) : Response() {
+    override fun bodyString() = ""
+}
+
 data class StringResponse(
     override val status: Int,
-    val result: String,
+    val body: String,
     override val headers: Map<String, String> = mapOf()
-) : Response()
+) : Response() {
+    override fun bodyString() = body
+}
 
 data class ByteBufferResponse(
     override val status: Int,
-    val result: ByteBuffer,
+    val body: ByteBuffer,
     override val headers: Map<String, String> = mapOf()
-) : Response()
+) : Response() {
+    override fun bodyString(): String {
+        return String(body.array())
+    }
+}

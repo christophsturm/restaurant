@@ -82,7 +82,7 @@ data class AddRequestConstant<T : Any>(val key: Key<T>, val value: T) : WrapperR
 interface Key<T>
 
 fun interface Wrapper {
-    suspend fun invoke(exchange: Exchange): WrapperResult?
+    suspend fun invoke(request: Request): WrapperResult?
 }
 
 
@@ -97,7 +97,7 @@ class ResourceDSL(resolvedPath: String) {
 }
 
 fun interface SuspendingHandler {
-    suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response
+    suspend fun handle(request: Request, requestContext: RequestContext): Response
 }
 
 /**
@@ -110,18 +110,18 @@ internal class RootHandler(
     private val exceptionHandler: ExceptionHandler,
     private val restHandler: SuspendingHandler
 ) : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         return try {
             // wrappers can add request constants, finish the request, or do nothing
             @Suppress("NAME_SHADOWING") val requestContext =
                 wrappers.fold(requestContext as MutableRequestContext) { wrapperContext, wrapper ->
-                    when (val wrapperResult = wrapper.invoke(exchange)) {
+                    when (val wrapperResult = wrapper.invoke(request)) {
                         is AddRequestConstant<*> -> wrapperContext.apply { add(wrapperResult.key, wrapperResult.value) }
                         is FinishRequest -> return wrapperResult.response
                         null -> wrapperContext
                     }
                 }
-            restHandler.handle(exchange, requestContext)
+            restHandler.handle(request, requestContext)
         } catch (e: Exception) {
             return exceptionHandler(e)
         }
@@ -144,7 +144,7 @@ class MutableRequestContext : RequestContext {
 }
 
 
-interface Exchange {
+interface Request {
     /**
      * The Request Path. Everything before the query string
      */

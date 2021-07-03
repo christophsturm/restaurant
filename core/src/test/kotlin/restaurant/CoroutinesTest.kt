@@ -32,7 +32,7 @@ class CoroutinesTest {
 
 class DelayService : SuspendingHandler {
     var afterDelay = false
-    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
+    override suspend fun handle(request: restaurant.Request, requestContext: RequestContext): Response {
         delay(100)
         afterDelay = true
         return response()

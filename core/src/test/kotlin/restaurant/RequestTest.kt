@@ -6,13 +6,13 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 @Testable
-class ExchangeTest {
-    val context = describe(Exchange::class) {
-        lateinit var exch: Exchange
+class RequestTest {
+    val context = describe(Request::class) {
+        lateinit var exch: Request
 
         class TestHandler : SuspendingHandler {
-            override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
-                exch = exchange
+            override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+                exch = request
                 return response(200)
             }
         }

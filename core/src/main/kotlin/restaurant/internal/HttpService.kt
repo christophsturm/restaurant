@@ -1,6 +1,6 @@
 package restaurant.internal
 
-import restaurant.Exchange
+import restaurant.Request
 import restaurant.RequestContext
 import restaurant.Response
 import restaurant.SuspendingHandler
@@ -21,9 +21,9 @@ internal class HttpServiceHandler(
     private val statusCode: Int
 ) :
     SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
-        val body = if (readBody) exchange.readBody() else null
-        val response = service.handle(body, exchange.queryParameters.mapValues { it.value.single() }, requestContext)
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val body = if (readBody) request.readBody() else null
+        val response = service.handle(body, request.queryParameters.mapValues { it.value.single() }, requestContext)
         return if (response == null) {
             response(204)
         } else
