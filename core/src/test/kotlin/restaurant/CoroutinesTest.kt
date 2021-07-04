@@ -20,7 +20,7 @@ class CoroutinesTest {
                 route(Method.GET, "/delay", delayService)
             }
             expectThrows<HttpTimeoutException> {
-                request(restaurant, "/delay") { timeout(30, ChronoUnit.MILLIS) }
+                restaurant.request("/delay") { timeout(30, ChronoUnit.MILLIS) }
             }
             delay(200)
             expectThat(delayService).get { afterDelay }.isFalse()

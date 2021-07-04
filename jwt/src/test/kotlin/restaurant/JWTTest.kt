@@ -40,7 +40,7 @@ class JWTTest {
             }
         })
         it("allows authorized requests") {
-            val response = request(restaurant, "/handlers/welcome") {
+            val response = restaurant.request("/handlers/welcome") {
                 addHeader("Authorization", "Bearer ${JWTConfig.makeToken(42)}")
             }
             expectThat(response) {
@@ -50,7 +50,7 @@ class JWTTest {
         }
 
         it("returns 401 for unauthorized requests") {
-            val response = request(restaurant, "/handlers/welcome")
+            val response = restaurant.request("/handlers/welcome")
             expectThat(response) {
                 get { statusCode() }.isEqualTo(401)
             }
