@@ -75,7 +75,7 @@ Restaurant {
 
 val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
 expectThat(response) {
-    get { code }.isEqualTo(200)
+    get { statusCode() }.isEqualTo(200)
     get { body }.isNotNull().get { string() }.isEqualTo("bokaj")
 }
 
@@ -97,7 +97,7 @@ it("calls default handler if no suitable route is found") {
     val restaurant =
         Restaurant(defaultHandler = { _, _ -> response(418, "not found but anyway I'm teapot") }) { }
     expectThat(request(restaurant, "/not-found")) {
-        get { code }.isEqualTo(418)
+        get { statusCode() }.isEqualTo(418)
         get { body }.isNotNull().get { string() }.isEqualTo("not found but anyway I'm teapot")
     }
 }
