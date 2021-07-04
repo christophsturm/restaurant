@@ -7,7 +7,6 @@ import failgood.describe
 import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
 
 object JWTConfig {
     private const val issuer = "https://restaurant.dev/"
@@ -45,15 +44,15 @@ class JWTTest {
                 addHeader("Authorization", "Bearer ${JWTConfig.makeToken(42)}")
             }
             expectThat(response) {
-                get { code }.isEqualTo(200)
-                get { body }.isNotNull().get { string() }.isEqualTo("welcome user 42")
+                get { statusCode() }.isEqualTo(200)
+                get { body() }.isEqualTo("welcome user 42")
             }
         }
 
         it("returns 401 for unauthorized requests") {
             val response = request(restaurant, "/handlers/welcome")
             expectThat(response) {
-                get { code }.isEqualTo(401)
+                get { statusCode() }.isEqualTo(401)
             }
         }
     }

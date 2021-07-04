@@ -3,14 +3,13 @@
 package restaurant
 
 import failgood.describe
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.platform.commons.annotation.Testable
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService
 import strikt.api.expectThat
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
+import strikt.assertions.single
 
 
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
@@ -36,8 +35,8 @@ class RestRestaurantTest {
                 )
                 val response = request(restaurant, "/handlers/empty")
                 expectThat(response) {
-                    get { code }.isEqualTo(HttpStatus.NO_CONTENT_204)
-                    get { body }.isNotNull().get { string() }.isEmpty()
+                    get { statusCode() }.isEqualTo(HttpStatus.NO_CONTENT_204)
+                    get { body() }.isEmpty()
                 }
             }
 
@@ -51,56 +50,55 @@ class RestRestaurantTest {
                 )
 
                 describe("post requests") {
-                    val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""".toRequestBody()) }
+                    val response = request(restaurant, "/api/users") { post("""{"name":"userName"}""") }
                     it("returns 201 - Created on successful post request") {
-                        expectThat(response).get { code }.isEqualTo(HttpStatus.CREATED_201)
+                        expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.CREATED_201)
                     }
                     it("calls create method on post request") {
-                        expectThat(response).get { body }.isNotNull().get { string() }
-                            .isEqualTo("""{"id":"userId","name":"userName"}""")
+                        expectThat(response).get { body() }.isEqualTo("""{"id":"userId","name":"userName"}""")
                     }
                 }
                 it("calls show method on get request with id") {
                     val response = request(restaurant, "/api/users/5")
                     expectThat(response) {
-                        get { code }.isEqualTo(200)
-                        get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"User 5"}""")
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo("""{"id":"5","name":"User 5"}""")
                     }
                 }
                 it("calls index method on get request without id") {
                     val response = request(restaurant, "/api/users")
                     expectThat(response) {
-                        get { code }.isEqualTo(200)
-                        get { body }.isNotNull().get { string() }
-                            .isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
                     }
                 }
                 it("calls update method on put request") {
                     val response =
-                        request(restaurant, "/api/users/5") { put("""{"name":"userName"}""".toRequestBody()) }
+                        request(restaurant, "/api/users/5") { put("""{"name":"userName"}""") }
                     expectThat(response) {
-                        get { code }.isEqualTo(200)
-                        get { body }.isNotNull().get { string() }.isEqualTo("""{"id":"5","name":"userName"}""")
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo("""{"id":"5","name":"userName"}""")
                     }
                 }
                 it("calls delete method on delete request") {
                     val response =
-                        request(restaurant, "/api/users/5") { delete("""{"name":"userName"}""".toRequestBody()) }
+                        request(restaurant, "/api/users/5") { delete() }
                     expectThat(response) {
-                        get { code }.isEqualTo(200)
-                        get { body }.isNotNull().get { string() }.isEqualTo("""{"status":"user 5 deleted"}""")
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo("""{"status":"user 5 deleted"}""")
                     }
                 }
                 it("sets json content type") {
                     val response = request(restaurant, "/api/users")
-                    expectThat(response).get { header(HttpHeader.CONTENT_TYPE) }.isEqualTo(ContentType.APPLICATION_JSON)
+                    expectThat(response).get { headers().allValues(HttpHeader.CONTENT_TYPE) }.single()
+                        .isEqualTo(ContentType.APPLICATION_JSON)
                 }
                 describe("error handling") {
                     describe("malformed requests") {
                         pending("returns a useful error message") {
                             val response =
-                                request(restaurant, "/api/users") { post("""{"nam":"userName"}""".toRequestBody()) }
-                            expectThat(response).get { code }.isEqualTo(HttpStatus.BAD_REQUEST_400)
+                                request(restaurant, "/api/users") { post("""{"nam":"userName"}""") }
+                            expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.BAD_REQUEST_400)
                         }
 
                     }

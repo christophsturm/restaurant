@@ -1,7 +1,6 @@
 import restaurant.versions.failgoodVersion
 import restaurant.versions.kotlinVersion
 import restaurant.versions.log4j2Version
-import restaurant.versions.okhttpVersion
 import restaurant.versions.striktVersion
 
 plugins {
@@ -15,7 +14,6 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api(project(":restaurant-core"))
     implementation("com.auth0:java-jwt:3.17.0")
-    testImplementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
     testImplementation("org.junit.platform:junit-platform-launcher:1.7.2")
