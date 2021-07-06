@@ -12,12 +12,19 @@ class Java11HttpClient {
     suspend fun send(
         path: String,
         config: RequestDSL.() -> Unit
-    ): HttpResponse<String> {
+    ): HttpResponse<String> = send(buildRequest(path, config))
+
+    suspend fun send(request: HttpRequest) =
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()!!
+
+    fun buildRequest(
+        path: String,
+        config: RequestDSL.() -> Unit
+    ): HttpRequest {
         val builder = RequestDSL(
             HttpRequest.newBuilder(URI(path)).timeout(Duration.ofSeconds(1))
         )
-        val request = builder.apply { config() }.delegate.build()
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()!!
+        return builder.apply { config() }.delegate.build()
     }
 
     class RequestDSL(val delegate: HttpRequest.Builder) {
