@@ -7,7 +7,7 @@ plugins {
     signing
 }
 
-val pub = "mavenJava-${project.name}"
+val pub = "mavenJava"
 
 tasks {
     withType<JavaCompile> {
@@ -31,17 +31,6 @@ java {
 
 
 publishing {
-    repositories {
-        maven {
-            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = project.properties["ossrhUsername"] as String?
-                password = project.properties["ossrhPassword"] as String?
-            }
-        }
-    }
-
-
     publications {
         create<MavenPublication>(pub) {
             from(components["java"])
