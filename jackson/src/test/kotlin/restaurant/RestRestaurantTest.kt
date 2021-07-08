@@ -18,10 +18,8 @@ fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
 @Testable
 class RestRestaurantTest {
     val context = describe(Restaurant::class) {
-        describe("rest services")
-        {
-            it("empty responses return 204")
-            {
+        describe("rest services") {
+            it("empty responses return 204") {
                 class EmptyReplyService : RestService {
                     fun index(): String? {
                         return null

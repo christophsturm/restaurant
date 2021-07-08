@@ -14,7 +14,7 @@ class LoginFailed(val message: String) : LoginResult()
 @Testable
 class SealedClassTest {
     val context = describe("Different return types with sealed classes") {
-        it("works") {
+        it("is supported") {
             class SealedClassService : RestService {
                 fun show(id: Long): LoginResult {
                     return if (id == 42L)
