@@ -17,38 +17,45 @@ class Java11HttpClient {
     suspend fun send(request: HttpRequest) =
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()!!
 
-    fun buildRequest(
-        path: String,
-        config: RequestDSL.() -> Unit
-    ): HttpRequest {
-        val builder = RequestDSL(
-            HttpRequest.newBuilder(URI(path)).timeout(Duration.ofSeconds(1))
-        )
-        return builder.apply { config() }.delegate.build()
+    interface IRequestDSL {
+        fun post(body: String)
+        fun put(body: String)
+        fun delete()
+        fun addHeader(key: String, value: String)
+        fun timeout(amount: Long, unit: ChronoUnit)
     }
 
-    class RequestDSL(val delegate: HttpRequest.Builder) {
-        fun post(body: String) {
+    class RequestDSL(val delegate: HttpRequest.Builder) : IRequestDSL {
+        override fun post(body: String) {
             delegate.POST(HttpRequest.BodyPublishers.ofString(body))
         }
 
-        fun put(body: String) {
+        override fun put(body: String) {
             delegate.PUT(HttpRequest.BodyPublishers.ofString(body))
         }
 
-        fun delete() {
+        override fun delete() {
             delegate.DELETE()
         }
 
-        fun addHeader(key: String, value: String) {
+        override fun addHeader(key: String, value: String) {
             delegate.header(key, value)
         }
 
-        fun timeout(amount: Long, unit: ChronoUnit) {
+        override fun timeout(amount: Long, unit: ChronoUnit) {
             delegate.timeout(Duration.of(amount, unit))
         }
     }
 
+    companion object {
+        fun buildRequest(
+            path: String,
+            config: RequestDSL.() -> Unit
+        ): HttpRequest {
+            val builder = RequestDSL(HttpRequest.newBuilder(URI(path)).timeout(Duration.ofSeconds(1)))
+            return builder.apply { config() }.delegate.build()
+        }
+    }
 }
 
 val httpClient = Java11HttpClient()
