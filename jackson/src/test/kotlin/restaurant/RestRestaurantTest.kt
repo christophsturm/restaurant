@@ -9,6 +9,7 @@ import restaurant.internal.UsersService
 import strikt.api.expectThat
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
 import strikt.assertions.single
 
 
@@ -34,7 +35,7 @@ class RestRestaurantTest {
                 val response = restaurant.request("/handlers/empty")
                 expectThat(response) {
                     get { statusCode() }.isEqualTo(HttpStatus.NO_CONTENT_204)
-                    get { body() }.isEmpty()
+                    get { body() }.isNotNull().isEmpty()
                 }
             }
 
