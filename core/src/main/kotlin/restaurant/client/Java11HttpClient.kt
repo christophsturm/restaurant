@@ -19,17 +19,22 @@ class Java11HttpClient {
     suspend fun send(request: HttpRequest) =
         RestaurantResponse(httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await())
 
-    interface IRequestDSL {
+    interface RequestDSL {
         fun post(body: String)
         fun put(body: String)
         fun delete()
         fun addHeader(key: String, value: String)
         fun timeout(amount: Long, unit: ChronoUnit)
+        fun post()
     }
 
-    class RequestDSL(val delegate: HttpRequest.Builder) : IRequestDSL {
+    class J11ClientRequestDSL(val delegate: HttpRequest.Builder) : RequestDSL {
         override fun post(body: String) {
             delegate.POST(HttpRequest.BodyPublishers.ofString(body))
+        }
+
+        override fun post() {
+            delegate.POST(HttpRequest.BodyPublishers.noBody())
         }
 
         override fun put(body: String) {
@@ -54,7 +59,7 @@ class Java11HttpClient {
             path: String,
             config: RequestDSL.() -> Unit
         ): HttpRequest {
-            val builder = RequestDSL(HttpRequest.newBuilder(URI(path)).timeout(Duration.ofSeconds(1)))
+            val builder = J11ClientRequestDSL(HttpRequest.newBuilder(URI(path)).timeout(Duration.ofSeconds(1)))
             return builder.apply { config() }.delegate.build()
         }
     }
@@ -64,4 +69,5 @@ class RestaurantResponse(val response: HttpResponse<String>) {
     fun statusCode(): Int = response.statusCode()
     fun body(): String? = response.body()
     fun headers(): HttpHeaders = response.headers()
+    override fun toString(): String = """HttpResponse(url: ${response.uri()})"""
 }
