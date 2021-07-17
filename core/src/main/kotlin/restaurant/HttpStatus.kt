@@ -7,5 +7,6 @@ object HttpStatus {
     const val NO_CONTENT_204 = 204
     const val BAD_REQUEST_400 = 400
     const val UNAUTHORIZED_401 = 401
+    const val TEAPOT_418 = 418
 }
 

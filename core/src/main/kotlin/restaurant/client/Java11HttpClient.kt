@@ -66,8 +66,11 @@ class Java11HttpClient {
 }
 
 class RestaurantResponse(val response: HttpResponse<String>) {
-    fun statusCode(): Int = response.statusCode()
-    fun body(): String? = response.body()
-    fun headers(): HttpHeaders = response.headers()
-    override fun toString(): String = """HttpResponse(url: ${response.uri()})"""
+    val statusCode = response.statusCode()
+    val body = response.body()
+    val headers = response.headers()
+    fun statusCode(): Int = statusCode
+    fun body(): String? = body
+    fun headers(): HttpHeaders = headers
+    override fun toString(): String = """HttpResponse(url: "${response.uri()}", status: $statusCode, body:"$body")"""
 }

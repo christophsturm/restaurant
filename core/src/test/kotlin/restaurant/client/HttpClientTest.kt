@@ -2,6 +2,7 @@ package restaurant.client
 
 import failgood.describe
 import org.junit.platform.commons.annotation.Testable
+import restaurant.HttpStatus
 import restaurant.Method
 import restaurant.Restaurant
 import restaurant.request
@@ -15,7 +16,7 @@ class HttpClientTest {
         val restaurant = autoClose(
             Restaurant {
                 route(Method.POST, "post") { _, _ ->
-                    response("post reply")
+                    response(HttpStatus.TEAPOT_418, "post reply")
                 }
             }
         )
@@ -25,6 +26,12 @@ class HttpClientTest {
             describe("toString method") {
                 it("contains the url") {
                     expectThat(response.toString()).contains("/post")
+                }
+                it("contains the post body") {
+                    expectThat(response.toString()).contains("""body:"post reply"""")
+                }
+                it("contains the status code") {
+                    expectThat(response.toString()).contains("""status: 418""")
                 }
             }
         }
