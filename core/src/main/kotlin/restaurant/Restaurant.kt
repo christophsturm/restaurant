@@ -19,7 +19,13 @@ fun findFreePort(): Int = ServerSocket(0).use {
 typealias ExceptionHandler = (Throwable) -> Response
 
 private val defaultExceptionHandler: ExceptionHandler = {
-    response(500, "internal server error")
+    if (it is ResponseException)
+        it.response
+    else {
+        println("exception while handling request")
+        it.printStackTrace()
+        response(500, "internal server error")
+    }
 }
 private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 

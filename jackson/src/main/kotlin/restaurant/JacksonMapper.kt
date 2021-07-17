@@ -1,12 +1,22 @@
 package restaurant
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import restaurant.HttpStatus.BAD_REQUEST_400
 import restaurant.internal.Mapper
 
 class JacksonMapper(private val jackson: ObjectMapper = jacksonObjectMapper()) : Mapper {
     override fun <T : Any> readValue(requestBody: ByteArray?, clazz: Class<T>): T =
-        jackson.readValue(requestBody, clazz)
+        try {
+            jackson.readValue(requestBody, clazz)
+        } catch (e: JsonProcessingException) {
+            throw BadRequestException(e)
+        }
 
     override fun writeValueAsBytes(value: Any?): ByteArray = jackson.writeValueAsBytes(value)
 }
+
+class BadRequestException(e: JsonProcessingException) :
+    ResponseException(response(BAD_REQUEST_400, e.message!!), e.message)
+

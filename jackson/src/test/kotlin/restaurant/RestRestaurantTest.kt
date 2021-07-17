@@ -7,6 +7,7 @@ import org.junit.platform.commons.annotation.Testable
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService
 import strikt.api.expectThat
+import strikt.assertions.contains
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
@@ -94,10 +95,13 @@ class RestRestaurantTest {
                 }
                 describe("error handling") {
                     describe("malformed requests") {
-                        pending("returns a useful error message") {
-                            val response =
-                                restaurant.request("/api/users") { post("""{"nam":"userName"}""") }
-                            expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.BAD_REQUEST_400)
+                        it("returns a useful error message") {
+                            val requestBody = """{"nam":"userName"}"""
+                            val response = restaurant.request("/api/users") { post(requestBody) }
+                            expectThat(response) {
+                                get { statusCode() }.isEqualTo(HttpStatus.BAD_REQUEST_400)
+                                get { body }.isNotNull().contains(requestBody)
+                            }
                         }
 
                     }

@@ -66,9 +66,9 @@ class Java11HttpClient {
 }
 
 class RestaurantResponse(val response: HttpResponse<String>) {
-    val statusCode = response.statusCode()
-    val body = response.body()
-    val headers = response.headers()
+    val statusCode: Int = response.statusCode()
+    val body: String? = response.body()
+    val headers: HttpHeaders = response.headers()
     fun statusCode(): Int = statusCode
     fun body(): String? = body
     fun headers(): HttpHeaders = headers
