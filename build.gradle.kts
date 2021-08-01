@@ -7,24 +7,22 @@ plugins {
 
 
 
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
 tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
-    val filtered =
-        listOf("alpha", "beta", "rc", "cr", "m", "preview", "dev", "eap")
-            .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-]*.*") }
-    resolutionStrategy {
-        componentSelection {
-            all {
-                if (filtered.any { it.matches(candidate.version) }) {
-                    reject("Release candidate")
-                }
-            }
-        }
-        // optional parameters
-        checkForGradleUpdate = true
-        outputFormatter = "json"
-        outputDir = "build/dependencyUpdates"
-        reportfileName = "report"
+    rejectVersionIf {
+        isNonStable(candidate.version) && !isNonStable(currentVersion)
     }
+    // optional parameters
+    gradleReleaseChannel = "current"
+    checkForGradleUpdate = true
+    outputFormatter = "json"
+    outputDir = "build/dependencyUpdates"
+    reportfileName = "report"
 }
 
 

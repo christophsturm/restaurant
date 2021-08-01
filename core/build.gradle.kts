@@ -19,7 +19,7 @@ dependencies {
     implementation(kotlin("reflect"))
     // temp api deps
     implementation("io.undertow:undertow-core:$undertowVersion")
-    implementation("io.github.microutils:kotlin-logging:2.0.8")
+    implementation("io.github.microutils:kotlin-logging:2.0.10")
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
@@ -30,7 +30,7 @@ dependencies {
     testImplementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-jul:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-    testImplementation("org.slf4j:slf4j-api:1.7.31")
+    testImplementation("org.slf4j:slf4j-api:1.7.32")
 }
 
 
