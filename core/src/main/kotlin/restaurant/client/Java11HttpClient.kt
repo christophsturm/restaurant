@@ -13,7 +13,7 @@ class Java11HttpClient {
     private val httpClient = HttpClient.newHttpClient()!!
     suspend fun send(
         path: String,
-        config: RequestDSL.() -> Unit
+        config: RequestDSL.() -> Unit = {}
     ) = send(buildRequest(path, config))
 
     suspend fun send(request: HttpRequest) =
