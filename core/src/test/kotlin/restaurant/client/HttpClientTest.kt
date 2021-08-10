@@ -9,18 +9,27 @@ import restaurant.request
 import restaurant.response
 import strikt.api.expectThat
 import strikt.assertions.contains
+import strikt.assertions.isEqualTo
 
 @Testable
 class HttpClientTest {
     val context = describe(Java11HttpClient::class) {
         val restaurant = autoClose(
             Restaurant {
+                route(Method.GET, "get") { _, _ ->
+                    response("get reply")
+                }
                 route(Method.POST, "post") { _, _ ->
                     response(HttpStatus.TEAPOT_418, "post reply")
                 }
             }
         )
 
+        describe("get requests") {
+            it("are default") {
+                expectThat(restaurant.request("/get").body).isEqualTo("get reply")
+            }
+        }
         describe("http response") {
             val response = restaurant.request("/post") { post() }
             describe("toString method") {
