@@ -2,6 +2,7 @@ package restaurant.test
 
 import restaurant.HeaderMap
 import restaurant.Key
+import restaurant.Method
 import restaurant.Request
 import restaurant.RequestContext
 import java.util.Deque
@@ -15,6 +16,8 @@ class MockRequest(
     override val queryString: String
         get() = TODO("Not yet implemented")
     override val headers: HeaderMap
+        get() = TODO("Not yet implemented")
+    override val method: Method
         get() = TODO("Not yet implemented")
 
     override suspend fun readBody(): ByteArray = body?.toByteArray() ?: byteArrayOf()

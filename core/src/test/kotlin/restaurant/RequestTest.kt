@@ -8,11 +8,11 @@ import strikt.assertions.isEqualTo
 @Testable
 class RequestTest {
     val context = describe(Request::class) {
-        lateinit var exch: Request
+        lateinit var req: Request
 
         class TestHandler : SuspendingHandler {
             override suspend fun handle(request: Request, requestContext: RequestContext): Response {
-                exch = request
+                req = request
                 return response(200)
             }
         }
@@ -26,10 +26,13 @@ class RequestTest {
         val response = restaurant.request("/path?query=string")
         expectThat(response).get { statusCode() }.isEqualTo(200)
         it("exposes the query string") {
-            expectThat(exch.queryString).isEqualTo("query=string")
+            expectThat(req.queryString).isEqualTo("query=string")
         }
         it("exposes the request path") {
-            expectThat(exch.requestPath).isEqualTo("/path")
+            expectThat(req.requestPath).isEqualTo("/path")
+        }
+        it("exposes the request method") {
+            expectThat(req.method).isEqualTo(Method.GET)
         }
 
     }

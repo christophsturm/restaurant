@@ -151,6 +151,7 @@ class MutableRequestContext : RequestContext {
 
 
 interface Request {
+
     /**
      * The Request Path. Everything before the query string
      */
@@ -165,6 +166,12 @@ interface Request {
      * The Headers.
      */
     val headers: HeaderMap
+
+    /**
+     * The Request Method.
+     */
+    val method: Method
+
     val queryParameters: Map<String, Deque<String>>
     suspend fun readBody(): ByteArray
 }
