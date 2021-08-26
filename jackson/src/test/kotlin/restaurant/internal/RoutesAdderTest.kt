@@ -40,7 +40,7 @@ class RoutesAdderTest {
                             get { path }.isEqualTo(rootPath)
                             get {
                                 runBlocking {
-                                    handler.handle(MockRequest("""{"name":"userName"}"""), requestContext)
+                                    handler.handle(MockRequest("""{"name":"userName"}""".toByteArray()), requestContext)
                                 }.bodyString()
                             }.isEqualTo("""{"id":"userId","name":"userName"}""")
                         }
@@ -72,7 +72,10 @@ class RoutesAdderTest {
                             get {
                                 runBlocking {
                                     handler.handle(
-                                        MockRequest("""{"name":"userName"}""", mapOf("id" to LinkedList(listOf("5")))),
+                                        MockRequest(
+                                            """{"name":"userName"}""".toByteArray(),
+                                            mapOf("id" to LinkedList(listOf("5")))
+                                        ),
                                         requestContext
                                     ).bodyString()
                                 }

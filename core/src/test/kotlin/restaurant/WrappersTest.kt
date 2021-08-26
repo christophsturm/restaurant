@@ -23,7 +23,7 @@ class WrappersTest {
             wrap(outer) {
                 wrap(inner) {
                     route(Method.POST, "/handlers/reverser") { exchange, _ ->
-                        response(ByteBuffer.wrap(exchange.readBody().reversedArray()))
+                        response(ByteBuffer.wrap(exchange.withBody().body!!.reversedArray()))
                     }
                 }
             }

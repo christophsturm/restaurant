@@ -10,7 +10,7 @@ import java.nio.ByteBuffer
 
 class Reverser : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
-        return (response(ByteBuffer.wrap(request.readBody().reversedArray())))
+        return (response(ByteBuffer.wrap(request.withBody().body!!.reversedArray())))
     }
 }
 
@@ -19,7 +19,9 @@ class TestabilityTest {
     val context = describe("testability") {
         it("handlers can be tested in isolation") {
             val handler = Reverser()
-            expectThat(handler.handle(MockRequest("jakob"), RequestContext()).bodyString()).isEqualTo("bokaj")
+            expectThat(
+                handler.handle(MockRequest("jakob".toByteArray()), RequestContext()).bodyString()
+            ).isEqualTo("bokaj")
         }
     }
 }

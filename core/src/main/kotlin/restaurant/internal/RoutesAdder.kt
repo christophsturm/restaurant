@@ -95,7 +95,7 @@ private class PutRestServiceHandler(
             it["id"]?.singleOrNull()
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
         }
-        val payload = objectMapper.readValue(request.readBody(), payloadType)
+        val payload = objectMapper.readValue(request.withBody().body, payloadType)
         val result = function.callSuspend(payload, id, requestContext)
         return objectMapper.responseOrNull(result)
     }
@@ -110,7 +110,7 @@ private class PostRestServiceHandler(
     private val payloadType = restFunction.payloadType!!
 
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
-        val payload = objectMapper.readValue(request.readBody(), payloadType)
+        val payload = objectMapper.readValue(request.withBody().body, payloadType)
         val result = restFunction.callSuspend(payload, null, requestContext)
         return objectMapper.responseOrNull(result, HttpStatus.CREATED_201)
     }

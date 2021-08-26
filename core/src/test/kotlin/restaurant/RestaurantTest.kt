@@ -18,7 +18,7 @@ class RestaurantTest {
                         route(Method.POST, "reverser") { ex, _ ->
                             response(
                                 ByteBuffer.wrap(
-                                    ex.readBody().reversedArray()
+                                    ex.withBody().body!!.reversedArray()
                                 )
                             )
                         }

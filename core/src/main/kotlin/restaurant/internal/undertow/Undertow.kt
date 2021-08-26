@@ -9,6 +9,7 @@ import io.undertow.util.Methods
 import restaurant.HeaderMap
 import restaurant.Method
 import restaurant.Request
+import restaurant.RequestWithBody
 import restaurant.RootHandler
 import restaurant.Route
 import restaurant.SuspendingHandler
@@ -26,12 +27,14 @@ fun Route.methodToHttpString(): HttpString = when (method) {
 
 class UndertowRequest(private val exchange: HttpServerExchange) : Request {
 
-    override suspend fun readBody(): ByteArray {
-        return suspendCoroutine {
+    override suspend fun withBody(): RequestWithBody {
+        val body: ByteArray = suspendCoroutine {
             exchange.requestReceiver.receiveFullBytes { _, body ->
                 it.resume(body)
             }
         }
+        return UndertowRequestWithBody(this, body)
+
     }
 
     override val requestPath: String = exchange.requestPath
@@ -49,6 +52,9 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
 
     override val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
 }
+
+class UndertowRequestWithBody(private val undertowRequest: UndertowRequest, override val body: ByteArray?) :
+    RequestWithBody, Request by undertowRequest
 
 internal fun buildUndertow(
     rootHandlers: List<Pair<RootHandler, Route>>,

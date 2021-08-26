@@ -3,14 +3,14 @@ package restaurant.test
 import restaurant.HeaderMap
 import restaurant.Key
 import restaurant.Method
-import restaurant.Request
 import restaurant.RequestContext
+import restaurant.RequestWithBody
 import java.util.Deque
 
 class MockRequest(
-    private val body: String? = null,
+    override val body: ByteArray? = null,
     override val queryParameters: Map<String, Deque<String>> = emptyMap()
-) : Request {
+) : RequestWithBody {
     override val requestPath: String
         get() = TODO("Not yet implemented")
     override val queryString: String
@@ -20,8 +20,7 @@ class MockRequest(
     override val method: Method
         get() = TODO("Not yet implemented")
 
-    override suspend fun readBody(): ByteArray = body?.toByteArray() ?: byteArrayOf()
-
+    override suspend fun withBody() = this
 }
 
 fun RequestContext() = object : RequestContext {

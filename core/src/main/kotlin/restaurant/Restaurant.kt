@@ -173,7 +173,11 @@ interface Request {
     val method: Method
 
     val queryParameters: Map<String, Deque<String>>
-    suspend fun readBody(): ByteArray
+    suspend fun withBody(): RequestWithBody
+}
+
+interface RequestWithBody : Request {
+    val body: ByteArray?
 }
 
 class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
