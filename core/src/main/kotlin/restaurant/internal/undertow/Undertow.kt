@@ -54,7 +54,9 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
 }
 
 class UndertowRequestWithBody(private val undertowRequest: UndertowRequest, override val body: ByteArray?) :
-    RequestWithBody, Request by undertowRequest
+    RequestWithBody, Request by undertowRequest {
+    override suspend fun withBody(): RequestWithBody = this
+}
 
 internal fun buildUndertow(
     rootHandlers: List<Pair<RootHandler, Route>>,
