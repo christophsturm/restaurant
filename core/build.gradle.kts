@@ -1,3 +1,5 @@
+@file:Suppress("GradlePackageUpdate") // buggy
+
 import restaurant.versions.coroutinesVersion
 import restaurant.versions.failgoodVersion
 import restaurant.versions.kotlinVersion
@@ -19,7 +21,7 @@ dependencies {
     implementation(kotlin("reflect"))
     // temp api deps
     implementation("io.undertow:undertow-core:$undertowVersion")
-    implementation("io.github.microutils:kotlin-logging:2.0.10")
+    implementation("io.github.microutils:kotlin-logging:2.0.11")
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
@@ -32,7 +34,6 @@ dependencies {
     testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     testImplementation("org.slf4j:slf4j-api:1.7.32")
 }
-
 
 
 val testMain = tasks.register("testMain", JavaExec::class) {

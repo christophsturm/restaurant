@@ -1,3 +1,5 @@
+@file:Suppress("GradlePackageUpdate") // buggy
+
 import restaurant.versions.failgoodVersion
 import restaurant.versions.jacksonVersion
 import restaurant.versions.kotlinVersion
@@ -22,9 +24,8 @@ dependencies {
     testImplementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-jul:$log4j2Version")
     testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-    testImplementation("org.slf4j:slf4j-api:1.7.31")
+    testImplementation("org.slf4j:slf4j-api:1.7.32")
 }
-
 
 
 val testMain = tasks.register("testMain", JavaExec::class) {
