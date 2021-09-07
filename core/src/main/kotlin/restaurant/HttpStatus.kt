@@ -8,5 +8,6 @@ object HttpStatus {
     const val BAD_REQUEST_400 = 400
     const val UNAUTHORIZED_401 = 401
     const val TEAPOT_418 = 418
+    const val INTERNAL_SERVER_ERROR_500 = 500
 }
 
