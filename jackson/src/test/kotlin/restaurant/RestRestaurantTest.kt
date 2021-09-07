@@ -2,8 +2,8 @@
 
 package restaurant
 
+import failgood.Test
 import failgood.describe
-import org.junit.platform.commons.annotation.Testable
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService
 import strikt.api.expectThat
@@ -17,7 +17,7 @@ import strikt.assertions.single
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
     Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
 
-@Testable
+@Test
 class RestRestaurantTest {
     val context = describe(Restaurant::class) {
         describe("rest services") {

@@ -1,13 +1,13 @@
 package restaurant
 
+import failgood.Test
 import failgood.describe
-import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import java.nio.ByteBuffer
 
-@Testable
+@Test
 class WrappersTest {
     val context = describe("Wrapper Support") {
         val events = mutableListOf<String>()

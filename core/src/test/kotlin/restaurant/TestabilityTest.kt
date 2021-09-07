@@ -1,7 +1,7 @@
 package restaurant
 
+import failgood.Test
 import failgood.describe
-import org.junit.platform.commons.annotation.Testable
 import restaurant.test.MockRequest
 import restaurant.test.RequestContext
 import strikt.api.expectThat
@@ -14,7 +14,7 @@ class Reverser : SuspendingHandler {
     }
 }
 
-@Testable
+@Test
 class TestabilityTest {
     val context = describe("testability") {
         it("handlers can be tested in isolation") {

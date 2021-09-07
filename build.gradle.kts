@@ -3,6 +3,7 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 plugins {
     id("com.github.ben-manes.versions") version "0.39.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("com.autonomousapps.dependency-analysis") version "0.77.0"
 }
 
 
@@ -35,4 +36,8 @@ nexusPublishing {
             packageGroup.set("com.christophsturm.failfast")
         }
     }
+}
+
+dependencyAnalysis {
+    strictMode(false)
 }

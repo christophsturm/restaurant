@@ -1,12 +1,12 @@
 package restaurant
 
+import failgood.Test
 import failgood.describe
-import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isSameInstanceAs
 
-@Testable
+@Test
 class RequestTest {
     val context = describe(Request::class) {
         describe("get requests") {

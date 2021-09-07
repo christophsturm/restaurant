@@ -1,7 +1,7 @@
 package restaurant.client
 
+import failgood.Test
 import failgood.describe
-import org.junit.platform.commons.annotation.Testable
 import restaurant.HttpStatus
 import restaurant.Method
 import restaurant.Restaurant
@@ -11,7 +11,7 @@ import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEqualTo
 
-@Testable
+@Test
 class HttpClientTest {
     val context = describe(Java11HttpClient::class) {
         val restaurant = autoClose(

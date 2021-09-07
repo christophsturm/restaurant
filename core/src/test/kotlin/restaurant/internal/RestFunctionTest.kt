@@ -1,7 +1,7 @@
 package restaurant.internal
 
+import failgood.Test
 import failgood.describe
-import org.junit.platform.commons.annotation.Testable
 import restaurant.MutableRequestContext
 import restaurant.RequestContext
 import restaurant.RestService
@@ -11,7 +11,7 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.message
 
-@Testable
+@Test
 class RestFunctionTest {
     val context = describe(RestFunction::class) {
         data class Body(val field: String)
@@ -107,6 +107,7 @@ class RestFunctionTest {
             }
             describe("the request context") {
                 it("is also passed when declared as parameter") {
+                    @Suppress("UNUSED_PARAMETER")
                     class A : RestService {
                         fun update(id: Int, body: Body, requestContext: RequestContext) =
                             Body(body.field + " with id " + id)
@@ -125,6 +126,8 @@ class RestFunctionTest {
             describe("error handling") {
                 it("fails fast when body type cannot be determined") {
                     data class OtherPossibleBodyType(val s: String)
+
+                    @Suppress("UNUSED_PARAMETER")
                     class A : RestService {
                         fun update(
                             id: Int,

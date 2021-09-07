@@ -1,9 +1,9 @@
 package restaurant.internal
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import failgood.Test
 import failgood.describe
 import kotlinx.coroutines.runBlocking
-import org.junit.platform.commons.annotation.Testable
 import restaurant.JacksonMapper
 import restaurant.Method
 import restaurant.MutableRequestContext
@@ -16,7 +16,7 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.single
 import java.util.LinkedList
 
-@Testable
+@Test
 class RoutesAdderTest {
     val context = describe(RoutesAdder::class) {
         val requestContext = MutableRequestContext()

@@ -1,15 +1,15 @@
 package restaurant
 
+import failgood.Test
 import failgood.describe
 import kotlinx.coroutines.delay
-import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isFalse
 import java.net.http.HttpTimeoutException
 import java.time.temporal.ChronoUnit
 
-@Testable
+@Test
 class CoroutinesTest {
     val context = describe("coroutine handling") {
         pending("cancels coroutine scope when the client disconnects") {

@@ -1,7 +1,7 @@
 package restaurant.versions
 
-val failgoodVersion = "0.4.5"
-val striktVersion = "0.31.0"
+val failgoodVersion = "0.4.6"
+val striktVersion = "0.32.0"
 val kotlinVersion = "1.5.30"
 val jacksonVersion = "2.12.4"
 val coroutinesVersion = "1.5.1"

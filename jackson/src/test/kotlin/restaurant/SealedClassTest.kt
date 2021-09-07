@@ -2,8 +2,8 @@ package restaurant
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import failgood.Test
 import failgood.describe
-import org.junit.platform.commons.annotation.Testable
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
@@ -11,7 +11,7 @@ sealed class LoginResult
 class SuccesfulLogin(val token: String) : LoginResult()
 class LoginFailed(val message: String) : LoginResult()
 
-@Testable
+@Test
 class SealedClassTest {
     val context = describe("Different return types with sealed classes") {
         it("is supported") {

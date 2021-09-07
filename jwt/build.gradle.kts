@@ -14,15 +14,15 @@ plugins {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api(project(":restaurant-core"))
-    implementation("com.auth0:java-jwt:3.18.1")
+    api("com.auth0:java-jwt:3.18.1")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
-    testImplementation("org.junit.platform:junit-platform-launcher:1.7.2")
-    testImplementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
-    testImplementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
-    testImplementation("org.apache.logging.log4j:log4j-jul:$log4j2Version")
-    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-    testImplementation("org.slf4j:slf4j-api:1.7.32")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.7.2")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-api:$log4j2Version")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-jul:$log4j2Version")
+    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+    testRuntimeOnly("org.slf4j:slf4j-api:1.7.32")
 }
 
 
