@@ -5,11 +5,10 @@ import restaurant.Key
 import restaurant.Method
 import restaurant.RequestContext
 import restaurant.RequestWithBody
-import java.util.Deque
 
 class MockRequest(
     override val body: ByteArray? = null,
-    override val queryParameters: Map<String, Deque<String>> = emptyMap()
+    override val queryParameters: Map<String, Collection<String>> = emptyMap()
 ) : RequestWithBody {
     override val requestPath: String
         get() = TODO("Not yet implemented")
