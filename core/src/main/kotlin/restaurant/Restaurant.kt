@@ -1,7 +1,6 @@
 package restaurant
 
 import io.undertow.Undertow
-import io.undertow.util.HttpString
 import restaurant.internal.Mapper
 import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
@@ -182,10 +181,6 @@ interface RequestWithBody : Request {
 
 class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
     operator fun get(header: String): List<String>? {
-        return requestHeaders.get(header)
-    }
-
-    operator fun get(header: HttpString): List<String>? {
         return requestHeaders.get(header)
     }
 }
