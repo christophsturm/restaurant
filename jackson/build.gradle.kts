@@ -14,10 +14,10 @@ plugins {
 }
 
 dependencies {
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     api("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
     api("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api(project(":restaurant-core"))
     testImplementation("io.strikt:strikt-core:$striktVersion")
