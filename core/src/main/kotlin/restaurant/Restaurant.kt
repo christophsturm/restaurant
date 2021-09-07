@@ -6,7 +6,6 @@ import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
-import java.util.Deque
 import java.util.Locale
 
 fun findFreePort(): Int = ServerSocket(0).use {
@@ -171,9 +170,14 @@ interface Request {
      */
     val method: Method
 
-    val queryParameters: Map<String, Deque<String>>
+    val queryParameters: Map<String, Collection<String>>
     suspend fun withBody(): RequestWithBody
 }
+
+fun <K, V> Map<K, Collection<V>>.getSingleOrNull(key: K): V? {
+    return this[key]?.singleOrNull()
+}
+
 
 interface RequestWithBody : Request {
     val body: ByteArray?

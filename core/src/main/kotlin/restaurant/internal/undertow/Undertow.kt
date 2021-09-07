@@ -14,7 +14,6 @@ import restaurant.RootHandler
 import restaurant.Route
 import restaurant.SuspendingHandler
 import restaurant.internal.RestaurantException
-import java.util.Deque
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -50,7 +49,7 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
         else -> throw RestaurantException("unknown request method: $method")
     }
 
-    override val queryParameters: Map<String, Deque<String>> = exchange.queryParameters
+    override val queryParameters: Map<String, Collection<String>> = exchange.queryParameters
 }
 
 class UndertowRequestWithBody(private val undertowRequest: UndertowRequest, override val body: ByteArray?) :
