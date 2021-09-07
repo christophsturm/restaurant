@@ -3,7 +3,10 @@ package restaurant
 import failgood.Test
 import failgood.describe
 import strikt.api.expectThat
+import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
+import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 
 @Test
@@ -17,16 +20,37 @@ class RequestTest {
                     response(200)
                 }
             })
-            val response = restaurant.request("/path?query=string")
+            val response = restaurant.request("/path?p1=v1&p1=v2&p2=v3") {
+                addHeader("header1", "value1")
+                addHeader("header1", "value2")
+                addHeader("header2", "value3")
+            }
             expectThat(response).get { statusCode() }.isEqualTo(200)
             it("exposes the query string") {
-                expectThat(req.queryString).isEqualTo("query=string")
+                expectThat(req.queryString).isEqualTo("p1=v1&p1=v2&p2=v3")
             }
             it("exposes the request path") {
                 expectThat(req.requestPath).isEqualTo("/path")
             }
             it("exposes the request method") {
                 expectThat(req.method).isEqualTo(Method.GET)
+            }
+            describe("headers") {
+                it("can get a list of header values") {
+                    expectThat(req.headers.get("header1")).isNotNull().containsExactly("value1", "value2")
+                }
+                it("can get a single header value") {
+                    expectThat(req.headers.get("header2")).isNotNull().containsExactly("value3")
+                }
+                it("getSingleOrNull returns a single value if there is one") {
+                    expectThat(req.headers.getSingleOrNull("header2")).isEqualTo("value3")
+                }
+                it("getSingleOrNull returns null if there are 2 values") {
+                    expectThat(req.headers.getSingleOrNull("header1")).isNull()
+                }
+                it("getSingleOrNull returns null if there are no values") {
+                    expectThat(req.headers.getSingleOrNull("not-existing-header")).isNull()
+                }
             }
         }
         describe("body handling") {

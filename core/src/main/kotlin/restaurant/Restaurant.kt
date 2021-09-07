@@ -183,6 +183,10 @@ class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
     operator fun get(header: String): List<String>? {
         return requestHeaders.get(header)
     }
+
+    fun getSingleOrNull(header: String): String? {
+        return requestHeaders.get(header)?.singleOrNull()
+    }
 }
 
 enum class Method {
