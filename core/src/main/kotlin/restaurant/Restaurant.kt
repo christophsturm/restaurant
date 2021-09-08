@@ -49,6 +49,7 @@ class Restaurant(
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {
 
+    val baseUrl = "http://localhost:$port"
     val routes = routes(RoutesAdder(mapper), serviceMapping)
 
     private val rootHandlers = routes.map { route ->

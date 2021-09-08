@@ -78,6 +78,10 @@ class RestaurantTest {
                 }
             }
         }
+        it("exposes its base url for easier testing") {
+            val restaurant = autoClose(Restaurant { })
+            expectThat(restaurant.baseUrl).isEqualTo("http://localhost:${restaurant.port}")
+        }
 
     }
 }
