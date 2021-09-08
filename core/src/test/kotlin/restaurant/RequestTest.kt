@@ -7,7 +7,6 @@ import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
-import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 
 @Test
@@ -40,28 +39,10 @@ class RequestTest {
                 it("can get a list of header values") {
                     expectThat(req.headers["header1"]).isNotNull().containsExactly("value1", "value2")
                 }
-                it("getSingleOrNull returns a single value if there is one") {
-                    expectThat(req.headers.getSingleOrNull("header2")).isEqualTo("value3")
-                }
-                it("getSingleOrNull returns null if there are 2 values") {
-                    expectThat(req.headers.getSingleOrNull("header1")).isNull()
-                }
-                it("getSingleOrNull returns null if there are no values") {
-                    expectThat(req.headers.getSingleOrNull("not-existing-header")).isNull()
-                }
             }
             describe("query parameters") {
                 it("can get a list of query parameters") {
                     expectThat(req.queryParameters["p1"]).isNotNull().containsExactlyInAnyOrder("v1", "v2")
-                }
-                it("getSingleOrNull returns a single value if there is one") {
-                    expectThat(req.queryParameters.getSingleOrNull("p2")).isEqualTo("v3")
-                }
-                it("getSingleOrNull returns null if there are 2 values") {
-                    expectThat(req.headers.getSingleOrNull("p1")).isNull()
-                }
-                it("getSingleOrNull returns null if there are no values") {
-                    expectThat(req.headers.getSingleOrNull("not-existing-parameter")).isNull()
                 }
             }
 

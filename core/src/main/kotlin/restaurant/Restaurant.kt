@@ -174,9 +174,6 @@ interface Request {
     suspend fun withBody(): RequestWithBody
 }
 
-fun <K, V> Map<K, Collection<V>>.getSingleOrNull(key: K): V? {
-    return this[key]?.singleOrNull()
-}
 
 
 interface RequestWithBody : Request {
@@ -186,10 +183,6 @@ interface RequestWithBody : Request {
 class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
     operator fun get(header: String): List<String>? {
         return requestHeaders.get(header)
-    }
-
-    fun getSingleOrNull(header: String): String? {
-        return requestHeaders.get(header)?.singleOrNull()
     }
 }
 
