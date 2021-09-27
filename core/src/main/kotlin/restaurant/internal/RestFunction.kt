@@ -2,6 +2,7 @@ package restaurant.internal
 
 import restaurant.RequestContext
 import restaurant.RestService
+import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -45,7 +46,11 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
             }
             value
         }
-        return function.callSuspendBy(parameterMap)
+        return try {
+            function.callSuspendBy(parameterMap)
+        } catch (e: InvocationTargetException) {
+            throw e.cause ?: e
+        }
     }
 
     private fun id(id: String): Any {

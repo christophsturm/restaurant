@@ -53,7 +53,6 @@ class Restaurant(
     val routes = routes(RoutesAdder(mapper), serviceMapping)
 
     private val rootHandlers = routes.map { route ->
-
         Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
     }
 
@@ -127,7 +126,7 @@ internal class RootHandler(
                     }
                 }
             restHandler.handle(request, requestContext)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             return exceptionHandler(e)
         }
     }

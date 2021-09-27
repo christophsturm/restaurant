@@ -39,14 +39,14 @@ class RestaurantTest {
             }
         }
         describe("error handling") {
-            class ExceptionsService : RestService {
-                fun index() {
+            class ExceptionsHandler : SuspendingHandler {
+                override suspend fun handle(request: Request, requestContext: RequestContext): Response {
                     throw RuntimeException("error message")
                 }
             }
             it("returns status 500 per default on error") {
-                val restaurant = autoClose(Restaurant { resources(ExceptionsService()) })
-                expectThat(restaurant.request("/exceptions")) {
+                val restaurant = autoClose(Restaurant { route(Method.GET, "/", ExceptionsHandler()) })
+                expectThat(restaurant.request("/")) {
                     get { statusCode() }.isEqualTo(500)
                     get { body() }.isEqualTo("internal server error")
                 }
@@ -56,10 +56,10 @@ class RestaurantTest {
                 val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
                     response(
                         status = 418,
-                        result = "sorry: " + ex.cause!!.message
+                        result = "sorry: " + ex.message
                     )
-                }) { resources(ExceptionsService()) }
-                expectThat(restaurant.request("/exceptions")) {
+                }) { route(Method.GET, "/", ExceptionsHandler()) }
+                expectThat(restaurant.request("/")) {
                     get { statusCode() }.isEqualTo(418)
                     get { body() }.isEqualTo("sorry: error message")
                 }

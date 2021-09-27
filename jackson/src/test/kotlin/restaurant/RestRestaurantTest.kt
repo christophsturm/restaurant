@@ -108,6 +108,26 @@ class RestRestaurantTest {
                 }
 
             }
+            describe("error handling") {
+                class ExceptionsService : RestService {
+                    fun index() {
+                        throw RuntimeException("error message")
+                    }
+                }
+                it("calls error handler with the correct exception") {
+                    val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
+                        response(
+                            status = 418,
+                            result = "sorry: " + ex.message
+                        )
+                    }) { resources(ExceptionsService()) }
+                    expectThat(restaurant.request("/exceptions")) {
+                        get { statusCode() }.isEqualTo(418)
+                        get { body() }.isEqualTo("sorry: error message")
+                    }
+                }
+            }
+
             pending("nested routes") {
                 val restaurant = autoClose(
                     restaurant {
