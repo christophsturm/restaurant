@@ -22,7 +22,6 @@ dependencies {
     api(project(":restaurant-core"))
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.7.2")
     testRuntimeOnly("org.apache.logging.log4j:log4j-core:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-jul:$log4j2Version")
