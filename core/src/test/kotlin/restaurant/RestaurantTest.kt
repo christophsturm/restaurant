@@ -3,7 +3,9 @@ package restaurant
 import failgood.Test
 import failgood.describe
 import strikt.api.expectThat
+import strikt.assertions.contains
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
 import java.nio.ByteBuffer
 
 
@@ -48,7 +50,7 @@ class RestaurantTest {
                 val restaurant = autoClose(Restaurant { route(Method.GET, "/", ExceptionsHandler()) })
                 expectThat(restaurant.request("/")) {
                     get { statusCode() }.isEqualTo(500)
-                    get { body() }.isEqualTo("internal server error")
+                    get { body }.isNotNull().contains("internal server error")
                 }
 
             }
@@ -63,6 +65,16 @@ class RestaurantTest {
                     get { statusCode() }.isEqualTo(418)
                     get { body() }.isEqualTo("sorry: error message")
                 }
+            }
+            it("handles errors in the error handler gracefully") {
+                val restaurant = Restaurant(exceptionHandler = { _: Throwable ->
+                    throw Exception("oops error handler failed")
+                }) { route(Method.GET, "/", ExceptionsHandler()) }
+                expectThat(restaurant.request("/")) {
+                    get { statusCode() }.isEqualTo(500)
+                    get { body }.isNotNull().contains("error in error handler").contains("oops error handler failed")
+                }
+
             }
             it("calls default handler if no suitable route is found") {
                 val restaurant =

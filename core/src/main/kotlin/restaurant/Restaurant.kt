@@ -1,6 +1,7 @@
 package restaurant
 
 import io.undertow.Undertow
+import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
 import restaurant.internal.Mapper
 import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
@@ -20,9 +21,7 @@ private val defaultExceptionHandler: ExceptionHandler = {
     if (it is ResponseException)
         it.response
     else {
-        println("exception while handling request")
-        it.printStackTrace()
-        response(500, "internal server error")
+        response(500, "internal server error:" + it.stackTraceToString())
     }
 }
 private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
@@ -127,7 +126,11 @@ internal class RootHandler(
                 }
             restHandler.handle(request, requestContext)
         } catch (e: Throwable) {
-            return exceptionHandler(e)
+            return try {
+                exceptionHandler(e)
+            } catch (e: Exception) {
+                response(INTERNAL_SERVER_ERROR_500, "error in error handler" + e.stackTraceToString())
+            }
         }
     }
 }

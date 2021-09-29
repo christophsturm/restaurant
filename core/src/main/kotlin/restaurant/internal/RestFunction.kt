@@ -73,4 +73,5 @@ private fun <R> KCallable<R>.niceName(): String =
 private fun KType.shortName(): String? = (this.classifier as KClass<*>).simpleName
 
 
-open class RestaurantException(value: String) : RuntimeException(value)
+open class RestaurantException(override val message: String, override val cause: Throwable? = null) :
+    RuntimeException(message, cause)
