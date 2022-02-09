@@ -10,6 +10,10 @@ plugins {
 val pub = "mavenJava"
 
 tasks {
+    test {
+        useJUnitPlatform()
+        outputs.upToDateWhen { false }
+    }
     withType<JavaCompile> {
         sourceCompatibility = "1.8"
         targetCompatibility = "1.8"

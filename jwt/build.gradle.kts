@@ -23,12 +23,3 @@ dependencies {
     testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     testRuntimeOnly("org.slf4j:slf4j-api:1.7.32")
 }
-
-
-val testMain = tasks.register("testMain", JavaExec::class) {
-    mainClass.set("restaurant.AllTestsKt")
-    classpath = sourceSets["test"].runtimeClasspath
-}
-tasks.check {
-    dependsOn(testMain)
-}

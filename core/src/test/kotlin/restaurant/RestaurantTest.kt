@@ -29,7 +29,7 @@ class RestaurantTest {
             )
             it("returns 404 if the route is not found") {
                 val response = restaurant.request("/unconfigured-url")
-                expectThat(response).get { statusCode() }.isEqualTo(404)
+                expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.NOT_FOUND_404)
             }
             it("calls handlers with body and returns result") {
                 val response =

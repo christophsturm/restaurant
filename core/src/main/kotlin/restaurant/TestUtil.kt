@@ -1,6 +1,7 @@
 package restaurant
 
 import restaurant.client.Java11HttpClient
+import restaurant.client.RestaurantResponse
 
 val httpClient = Java11HttpClient()
 
@@ -10,7 +11,7 @@ val httpClient = Java11HttpClient()
 suspend fun Restaurant.request(
     path: String,
     config: Java11HttpClient.RequestDSL.() -> Unit = { }
-) = httpClient.send("http://localhost:$port$path", config)
+): RestaurantResponse = httpClient.send("http://localhost:$port$path", config)
 
 
 
