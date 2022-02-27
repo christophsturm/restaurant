@@ -10,7 +10,7 @@ Available from Maven Central.
 
 ```kotlin
 dependencies {
-    testImplementation("com.christophsturm.restaurant:restaurant:0.0.2")
+    implementation("com.christophsturm.restaurant:restaurant-core:0.0.5")
 }
 ```
 

@@ -5,7 +5,8 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("com.autonomousapps.dependency-analysis") version "0.80.0"
 }
-
+// to release:
+// ./gradlew publishToSonatype closeSonatypeStagingRepository (or ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository)
 
 
 fun isNonStable(version: String): Boolean {
