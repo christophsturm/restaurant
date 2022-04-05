@@ -21,8 +21,8 @@ tasks {
 
     withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+            jvmTarget = "11" // need at least jdk 11 for the http11 httpclient anyway
+            freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
             languageVersion = "1.5"
             apiVersion = "1.5"
         }

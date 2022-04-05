@@ -22,7 +22,7 @@ dependencies {
     api("io.undertow:undertow-core:$undertowVersion")
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("io.github.microutils:kotlin-logging:2.0.11")
+    implementation("io.github.microutils:kotlin-logging:2.1.21")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
@@ -30,7 +30,7 @@ dependencies {
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-jul:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-    testRuntimeOnly("org.slf4j:slf4j-api:1.7.32")
+    testRuntimeOnly("org.slf4j:slf4j-api:1.7.36")
 }
 
 
