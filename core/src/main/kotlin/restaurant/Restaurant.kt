@@ -9,6 +9,10 @@ import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
 import java.util.Locale
 
+
+/**
+ * return an unused port for servers to listen on
+ */
 fun findFreePort(): Int = ServerSocket(0).use {
     it.reuseAddress = true
     it.localPort
@@ -174,12 +178,21 @@ interface Request {
     val method: Method
 
     val queryParameters: Map<String, Collection<String>>
+
+    /**
+     * read the body of the request and return a request that has a body set.
+     * if the request body was already read this returns this
+     *
+     */
     suspend fun withBody(): RequestWithBody
 }
 
 
 
 interface RequestWithBody : Request {
+    /**
+     * Body of the request. This is null when no body was sent for example for get requests.
+     */
     val body: ByteArray?
 }
 
