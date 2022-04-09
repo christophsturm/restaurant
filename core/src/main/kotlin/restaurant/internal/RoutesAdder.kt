@@ -83,7 +83,6 @@ class RoutesAdder(private val objectMapper: Mapper) {
 val contentTypeJson = mapOf(HttpHeader.CONTENT_TYPE to ContentType.APPLICATION_JSON)
 
 
-@OptIn(ExperimentalStdlibApi::class)
 private class PutRestServiceHandler(
     private val objectMapper: Mapper,
     val function: RestFunction
@@ -102,7 +101,6 @@ private class PutRestServiceHandler(
 }
 
 @Suppress("CanBeParameter")
-@OptIn(ExperimentalStdlibApi::class)
 private class PostRestServiceHandler(
     private val objectMapper: Mapper,
     val restFunction: RestFunction
@@ -130,7 +128,6 @@ private class GetRestServiceHandler(
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private class GetListRestServiceHandler(
     private val objectMapper: Mapper, val function: RestFunction
 ) : SuspendingHandler {

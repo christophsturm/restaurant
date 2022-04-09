@@ -12,7 +12,6 @@ import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.jvm.javaType
 
-@OptIn(ExperimentalStdlibApi::class)
 class RestFunction(private val function: KFunction<*>, private val service: RestService) {
     private val parameters = function.parameters.drop(1)
 

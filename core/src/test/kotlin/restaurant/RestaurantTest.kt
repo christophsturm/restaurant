@@ -67,7 +67,7 @@ class RestaurantTest {
                 }
             }
             it("handles errors in the error handler gracefully") {
-                val restaurant = Restaurant(exceptionHandler = { _: Throwable ->
+                val restaurant = Restaurant(exceptionHandler = {
                     throw Exception("oops error handler failed")
                 }) { route(Method.GET, "/", ExceptionsHandler()) }
                 expectThat(restaurant.request("/")) {
