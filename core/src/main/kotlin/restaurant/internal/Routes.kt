@@ -1,15 +1,19 @@
 package restaurant.internal
 
-import restaurant.*
+import restaurant.Method
+import restaurant.Route
+import restaurant.RoutingDSL
+import restaurant.SuspendingHandler
+import restaurant.Wrapper
 
-internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> Unit): List<Route> {
+internal fun routes(serviceMapping: RoutingDSL.() -> Unit): List<Route> {
 
     class Routing(private val prefix: String = "") : RoutingDSL {
         val routes = mutableListOf<Route>()
 
 
         override fun route(method: Method, path: String, service: SuspendingHandler) {
-            routes.add(Route(method, prefix+path, service))
+            routes.add(Route(method, prefix + path, service))
         }
 
 
@@ -19,12 +23,6 @@ internal fun routes(routesAdder: RoutesAdder, serviceMapping: RoutingDSL.() -> U
             routes += nested.routes.map { it.copy(wrappers = listOf(wrapper) + it.wrappers) }
         }
 
-        override fun resources(service: RestService, path: String, function: ResourceDSL.() -> Unit) {
-            routesAdder.routesFor(service, path).forEach { restRoute ->
-                route(restRoute.method, restRoute.path, restRoute.handler)
-            }
-            ResourceDSL(path).function()
-        }
 
         override fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
             val routing = Routing(this.prefix + prefix + "/")

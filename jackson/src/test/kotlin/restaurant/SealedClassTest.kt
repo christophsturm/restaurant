@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import failgood.Test
 import failgood.describe
+import restaurant.internal.rest.resources
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 

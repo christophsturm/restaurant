@@ -6,6 +6,7 @@ import failgood.Test
 import failgood.describe
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService
+import restaurant.internal.rest.resources
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEmpty

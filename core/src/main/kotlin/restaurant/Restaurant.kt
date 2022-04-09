@@ -3,11 +3,9 @@ package restaurant
 import io.undertow.Undertow
 import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
 import restaurant.internal.Mapper
-import restaurant.internal.RoutesAdder
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
-import java.util.Locale
 
 
 /**
@@ -53,7 +51,7 @@ class Restaurant(
 ) : AutoCloseable {
 
     val baseUrl = "http://localhost:$port"
-    val routes = routes(RoutesAdder(mapper), serviceMapping)
+    val routes = routes(serviceMapping)
 
     private val rootHandlers = routes.map { route ->
         Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
@@ -68,19 +66,14 @@ class Restaurant(
 }
 
 
-private fun path(service: RestService) =
-    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
-
-interface CoreRoutingDSL {
+@RestDSL
+interface RoutingDSL {
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
     fun route(method: Method, path: String, service: SuspendingHandler)
 }
+//fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
 
-@RestDSL
-interface RoutingDSL : CoreRoutingDSL {
-    fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
-}
 
 sealed class WrapperResult
 data class FinishRequest(val response: Response) : WrapperResult()
