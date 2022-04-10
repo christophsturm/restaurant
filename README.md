@@ -1,6 +1,6 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant-core)
 [![Github CI](https://github.com/christophsturm/restaurant/workflows/CI/badge.svg)](https://github.com/christophsturm/restaurant/actions)
-
+[![codecov](https://codecov.io/gh/christophsturm/restaurant/branch/main/graph/badge.svg?token=3EV51LYGSC)](https://codecov.io/gh/christophsturm/restaurant)
 ### Restaurant - Rest Without Boilerplate
 
 A small web server with focus on testability. Supports coroutines, has a nice low-level-api, and a high-level-api for
