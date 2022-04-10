@@ -8,34 +8,32 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 11, 15 ]
+        java: [ 11, 17 ]
     steps:
-        - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Java
-        uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      -  uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
-      -   name: Cache Gradle packages
+      - name: Cache Gradle packages
         uses: actions/cache@v1
-          with:
-              path: ~/.gradle/caches
-              key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-              restore-keys: ${{ runner.os }}-gradle
-        -   name: Build with Gradle
-            continue-on-error: true
-            env:
-                CI: true
-            run: |
-                ./gradlew build
-        -   uses: codecov/codecov-action@v2
-            with:
-                files: core/build/reports/kover/report.xml,rest/build/reports/kover/report.xml
-        -   name: Test Report ${{matrix.java}}
-            uses: ScaCap/action-surefire-report@v1.0.5
-            with:
-                check_name: Test Report ${{matrix.java}}
-                report_paths: '**/build/test-results/test/TEST-*.xml'
-                fail_on_test_failures: true
-                fail_if_no_tests: true
-                github_token: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Build with Gradle
+        continue-on-error: true
+        env:
+          CI: true
+        run: |
+          ./gradlew build
+      - uses: codecov/codecov-action@v2
+        with:
+            files: core/build/reports/kover/report.xml,rest/build/reports/kover/report.xml
+      - name: Test Report ${{matrix.java}}
+        uses: ScaCap/action-surefire-report@v1.0.5
+        with:
+          check_name: Test Report ${{matrix.java}}
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+          fail_on_test_failures: true
+          fail_if_no_tests: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
