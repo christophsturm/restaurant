@@ -2,7 +2,6 @@ package restaurant
 
 import io.undertow.Undertow
 import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
-import restaurant.internal.Mapper
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
@@ -28,24 +27,10 @@ private val defaultExceptionHandler: ExceptionHandler = {
 }
 private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 
-internal object NullMapper : Mapper {
-    private const val errorMessage = "No Json mapping defined, please use a dependency that contains a json lib"
-
-    override fun <T : Any> readValue(requestBody: ByteArray?, clazz: Class<T>): T {
-        TODO(errorMessage)
-    }
-
-    override fun writeValueAsBytes(value: Any?): ByteArray {
-        TODO(errorMessage)
-    }
-
-}
-
 class Restaurant(
     host: String = "127.0.0.1",
     val port: Int = findFreePort(),
     private val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-    mapper: Mapper = NullMapper,
     defaultHandler: SuspendingHandler = defaultDefaultHandler,
     serviceMapping: RoutingDSL.() -> Unit
 ) : AutoCloseable {

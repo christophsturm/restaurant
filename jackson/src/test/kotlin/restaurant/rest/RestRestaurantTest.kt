@@ -7,7 +7,6 @@ import failgood.describe
 import restaurant.ContentType
 import restaurant.HttpHeader
 import restaurant.HttpStatus
-import restaurant.JacksonMapper
 import restaurant.Restaurant
 import restaurant.RoutingDSL
 import restaurant.internal.HobbiesService
@@ -23,7 +22,7 @@ import strikt.assertions.single
 
 
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
-    Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
+    Restaurant(serviceMapping = serviceMapping)
 
 @Test
 class RestRestaurantTest {

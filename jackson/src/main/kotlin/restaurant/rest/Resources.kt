@@ -19,6 +19,7 @@ private val routesAdder = RoutesAdder(JacksonMapper(jacksonObjectMapper()))
 @RestDSL
 class ResourceDSL(resolvedPath: String) {
     fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
+        throw NotImplementedError("this function exists only to make a pending test compile")
     }
 }
 
