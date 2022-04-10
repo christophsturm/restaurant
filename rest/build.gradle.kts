@@ -10,7 +10,7 @@ plugins {
     kotlin("jvm")
     id("info.solidsoft.pitest")
     id("restaurant.common")
-
+    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {

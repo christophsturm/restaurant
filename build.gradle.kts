@@ -4,6 +4,8 @@ plugins {
     id("com.github.ben-manes.versions") version "0.42.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("com.autonomousapps.dependency-analysis") version "0.80.0"
+    id("org.jetbrains.kotlinx.kover") version "0.5.0" apply false
+
 }
 // to release:
 // ./gradlew publishToSonatype closeSonatypeStagingRepository (or ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository)
