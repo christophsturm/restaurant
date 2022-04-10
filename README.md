@@ -1,4 +1,4 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant-core)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant)
 [![Github CI](https://github.com/christophsturm/restaurant/workflows/CI/badge.svg)](https://github.com/christophsturm/restaurant/actions)
 [![codecov](https://codecov.io/gh/christophsturm/restaurant/branch/main/graph/badge.svg?token=3EV51LYGSC)](https://codecov.io/gh/christophsturm/restaurant)
 ### Restaurant - Rest Without Boilerplate
@@ -7,6 +7,8 @@ A small web server with focus on testability. Supports coroutines, has a nice lo
 rest services. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
 
 Available from Maven Central.
+
+This readme is currently a bit outdated but will be updated in the next days.
 
 ```kotlin
 dependencies {
