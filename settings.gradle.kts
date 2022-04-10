@@ -8,7 +8,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "restaurant-root"
-include("restaurant-core", "restaurant-jackson", "restaurant-jwt")
+include("restaurant-core", "restaurant-rest", "restaurant-jwt")
 project(":restaurant-core").projectDir = file("core")
-project(":restaurant-jackson").projectDir = file("jackson")
+project(":restaurant-rest").projectDir = file("rest")
 project(":restaurant-jwt").projectDir = file("jwt")
