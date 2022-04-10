@@ -1,7 +1,8 @@
-package restaurant.internal
+package restaurant.rest.internal
 
 import restaurant.RequestContext
-import restaurant.RestService
+import restaurant.RestaurantException
+import restaurant.rest.RestService
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
@@ -72,5 +73,3 @@ private fun <R> KCallable<R>.niceName(): String =
 private fun KType.shortName(): String? = (this.classifier as KClass<*>).simpleName
 
 
-open class RestaurantException(override val message: String, override val cause: Throwable? = null) :
-    RuntimeException(message, cause)

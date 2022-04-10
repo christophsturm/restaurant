@@ -7,10 +7,11 @@ import restaurant.Method
 import restaurant.Request
 import restaurant.RequestContext
 import restaurant.Response
-import restaurant.RestService
 import restaurant.Route
 import restaurant.SuspendingHandler
 import restaurant.response
+import restaurant.rest.RestService
+import restaurant.rest.internal.RestFunction
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 

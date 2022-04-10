@@ -89,12 +89,6 @@ fun interface Wrapper {
 @DslMarker
 annotation class RestDSL
 
-@Suppress("UNUSED_PARAMETER")
-@RestDSL
-class ResourceDSL(resolvedPath: String) {
-    fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
-    }
-}
 
 fun interface SuspendingHandler {
     suspend fun handle(request: Request, requestContext: RequestContext): Response
@@ -210,5 +204,6 @@ data class Route(
 )
 
 
-interface RestService
+open class RestaurantException(override val message: String, override val cause: Throwable? = null) :
+    RuntimeException(message, cause)
 

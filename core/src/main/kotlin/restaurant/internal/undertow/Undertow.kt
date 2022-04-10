@@ -10,10 +10,10 @@ import restaurant.HeaderMap
 import restaurant.Method
 import restaurant.Request
 import restaurant.RequestWithBody
+import restaurant.RestaurantException
 import restaurant.RootHandler
 import restaurant.Route
 import restaurant.SuspendingHandler
-import restaurant.internal.RestaurantException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 

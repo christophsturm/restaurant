@@ -1,12 +1,19 @@
-@file:Suppress("UNUSED_VARIABLE", "BlockingMethodInNonBlockingContext")
+@file:Suppress("UNUSED_VARIABLE", "BlockingMethodInNonBlockingContext", "unused")
 
-package restaurant
+package restaurant.rest
 
 import failgood.Test
 import failgood.describe
+import restaurant.ContentType
+import restaurant.HttpHeader
+import restaurant.HttpStatus
+import restaurant.JacksonMapper
+import restaurant.Restaurant
+import restaurant.RoutingDSL
 import restaurant.internal.HobbiesService
 import restaurant.internal.UsersService
-import restaurant.internal.rest.resources
+import restaurant.request
+import restaurant.response
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEmpty

@@ -1,18 +1,26 @@
-package restaurant.internal.rest
+package restaurant.rest
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import restaurant.JacksonMapper
-import restaurant.ResourceDSL
-import restaurant.RestService
+import restaurant.RestDSL
 import restaurant.RoutingDSL
 import restaurant.internal.RoutesAdder
 import java.util.Locale
+
+interface RestService
 
 private fun path(service: RestService) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
 
 private val routesAdder = RoutesAdder(JacksonMapper(jacksonObjectMapper()))
+
+@Suppress("UNUSED_PARAMETER")
+@RestDSL
+class ResourceDSL(resolvedPath: String) {
+    fun resources(service: RestService, function: ResourceDSL.() -> Unit = {}) {
+    }
+}
 
 fun RoutingDSL.resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {}) {
     routesAdder.routesFor(service, path).forEach { restRoute ->

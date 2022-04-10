@@ -1,10 +1,10 @@
-package restaurant.internal
+package restaurant.rest.internal
 
 import failgood.Test
 import failgood.describe
 import restaurant.MutableRequestContext
 import restaurant.RequestContext
-import restaurant.RestService
+import restaurant.rest.RestService
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isEqualTo

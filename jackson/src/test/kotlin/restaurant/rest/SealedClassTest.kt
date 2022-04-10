@@ -1,10 +1,12 @@
-package restaurant
+@file:Suppress("unused")
+
+package restaurant.rest
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import failgood.Test
 import failgood.describe
-import restaurant.internal.rest.resources
+import restaurant.request
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 

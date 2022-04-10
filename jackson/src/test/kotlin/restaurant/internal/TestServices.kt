@@ -1,7 +1,9 @@
+@file:Suppress("unused")
+
 package restaurant.internal
 
 import kotlinx.coroutines.delay
-import restaurant.RestService
+import restaurant.rest.RestService
 
 data class User(val id: String?, val name: String)
 data class Hobby(val name: String)
