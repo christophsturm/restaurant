@@ -7,8 +7,11 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 }
 
-rootProject.name = "restaurant-root"
-include("restaurant-core", "restaurant-rest", "restaurant-jwt")
-project(":restaurant-core").projectDir = file("core")
-project(":restaurant-rest").projectDir = file("rest")
-project(":restaurant-jwt").projectDir = file("jwt")
+val projectName = "restaurant"
+rootProject.name = "$projectName-root"
+val modules = listOf("core", "rest", "jwt")
+val projects = modules.map {"$projectName-$it"}
+include(modules.map { "$projectName-$it" })
+modules.forEach {
+    project(":$projectName-$it").projectDir = file(it)
+}
