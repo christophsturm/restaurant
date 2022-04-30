@@ -21,8 +21,7 @@ import strikt.assertions.isNotNull
 import strikt.assertions.single
 
 
-fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
-    Restaurant(serviceMapping = serviceMapping)
+fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
 
 @Test
 class RestRestaurantTest {
@@ -135,7 +134,7 @@ class RestRestaurantTest {
                 }
             }
 
-            pending("nested routes") {
+            ignore("nested routes") {
                 val restaurant = autoClose(
                     restaurant {
                         namespace("/api") {
@@ -147,7 +146,7 @@ class RestRestaurantTest {
                 )
 
             }
-            pending("singular routes") {
+            ignore("singular routes") {
                 class CartService : RestService
 
                 val restaurant = autoClose(

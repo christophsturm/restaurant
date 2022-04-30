@@ -9,7 +9,7 @@ import java.util.Locale
 
 interface RestService
 
-private fun path(service: RestService) =
+internal fun path(service: Any) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
 
