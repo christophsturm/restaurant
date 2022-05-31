@@ -1,6 +1,8 @@
 package restaurant.client
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.stream.consumeAsFlow
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpHeaders
@@ -8,6 +10,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import java.util.stream.Stream
 
 class Java11HttpClient {
     private val httpClient = HttpClient.newHttpClient()!!
@@ -16,17 +19,18 @@ class Java11HttpClient {
         config: RequestDSL.() -> Unit = {}
     ) = send(buildRequest(path, config))
 
-    suspend fun send(request: HttpRequest): RestaurantResponse {
+    suspend fun send(request: HttpRequest): RestaurantResponse<String> {
         val response = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
         return RestaurantResponse(response.statusCode(), response.body(), response.headers(), response.uri())
     }
 
-    /*
-        suspend fun sendStreaming(url: String, config: RequestDSL.() -> Unit = {}): Flow<String> {
+
+        suspend fun sendStreaming(url: String, config: RequestDSL.() -> Unit = {}): RestaurantResponse<Flow<String>> {
             val request = buildRequest(url, config)
-            response = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).await()
+            val response: HttpResponse<Stream<String>> = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines()).await()
+            return RestaurantResponse(response.statusCode(), response.body().consumeAsFlow(), response.headers(), response.uri())
         }
-    */
+
     interface RequestDSL {
         fun post(body: String)
         fun put(body: String)
@@ -83,14 +87,9 @@ class Java11HttpClient {
     }
 }
 
-data class RestaurantResponse(
-    val statusCode: Int,
-    val body: String?,
-    val headers: HttpHeaders,
-    val uri: URI?
-) {
+data class RestaurantResponse<BodyType>(val statusCode: Int, val body: BodyType?, val headers: HttpHeaders, val uri: URI?) {
     fun statusCode(): Int = statusCode
-    fun body(): String? = body
+    fun body(): BodyType? = body
     fun headers(): HttpHeaders = headers
     override fun toString(): String = """HttpResponse(url: "$uri", status: $statusCode, body:"$body" headers: $headers)"""
 }

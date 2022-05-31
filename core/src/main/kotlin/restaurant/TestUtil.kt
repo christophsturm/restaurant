@@ -11,7 +11,7 @@ val httpClient = Java11HttpClient()
 suspend fun Restaurant.request(
     path: String,
     config: Java11HttpClient.RequestDSL.() -> Unit = { }
-): RestaurantResponse = httpClient.send("http://localhost:$port$path", config)
+): RestaurantResponse<String> = httpClient.send("http://localhost:$port$path", config)
 
 
 

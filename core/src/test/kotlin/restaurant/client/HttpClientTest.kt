@@ -2,14 +2,18 @@ package restaurant.client
 
 import failgood.Test
 import failgood.describe
+import kotlinx.coroutines.flow.toList
 import restaurant.HttpStatus
 import restaurant.Method
 import restaurant.Restaurant
+import restaurant.httpClient
 import restaurant.request
 import restaurant.response
 import strikt.api.expectThat
 import strikt.assertions.contains
+import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
 
 @Test
 class HttpClientTest {
@@ -20,7 +24,7 @@ class HttpClientTest {
                     response("get reply")
                 }
                 route(Method.POST, "post") { _, _ ->
-                    response(HttpStatus.TEAPOT_418, "post reply", mapOf("Content-Type" to "only the best content"))
+                    response(HttpStatus.TEAPOT_418, "post\nreply", mapOf("Content-Type" to "only the best content"))
                 }
             }
         )
@@ -37,7 +41,7 @@ class HttpClientTest {
                     expectThat(response.toString()).contains("/post")
                 }
                 it("contains the post body") {
-                    expectThat(response.toString()).contains("""body:"post reply"""")
+                    expectThat(response.toString()).contains("body:\"post\nreply\"")
                 }
                 it("contains the status code") {
                     expectThat(response.toString()).contains("""status: 418""")
@@ -49,7 +53,9 @@ class HttpClientTest {
         }
         describe("streaming the response") {
             it("works") {
-//                val response = httpClient.sendStreaming("http://localhost:${restaurant.port}${"/post"}") { post() }
+                val response = httpClient.sendStreaming("http://localhost:${restaurant.port}${"/post"}") { post() }
+                expectThat(response.body?.toList()).isNotNull().containsExactly("post", "reply")
+
 
             }
         }
