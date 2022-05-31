@@ -55,8 +55,6 @@ class HttpClientTest {
             it("works") {
                 val response = httpClient.sendStreaming("http://localhost:${restaurant.port}${"/post"}") { post() }
                 expectThat(response.body?.toList()).isNotNull().containsExactly("post", "reply")
-
-
             }
         }
     }

@@ -2,10 +2,17 @@ package restaurant
 
 import failgood.Test
 import failgood.describe
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import strikt.api.expectThat
+import strikt.assertions.all
 import strikt.assertions.contains
 import strikt.assertions.isEqualTo
+import strikt.assertions.isGreaterThan
 import strikt.assertions.isNotNull
+import strikt.assertions.size
 import java.nio.ByteBuffer
 
 
@@ -94,6 +101,39 @@ class RestaurantTest {
             val restaurant = autoClose(Restaurant { })
             expectThat(restaurant.baseUrl).isEqualTo("http://localhost:${restaurant.port}")
         }
+        describe("async roundtrip") {
+            it("works") {
+                var stopFlow = false
+                val californiaStreaming = flow {
+                    while (!stopFlow) {
+                        this.emit("california\n")
+                        delay(10)
+                    }
+                }
 
+                val restaurant = autoClose(
+                    Restaurant {
+                        route(Method.GET, "/async") { ex, _ ->
+                            FlowResponse(mapOf(), 200, californiaStreaming)
+                        }
+                    }
+                )
+                val response = httpClient.sendStreaming("http://localhost:${restaurant.port}/async")
+                // the flow is still sending, but  we already got our answer. we must be streaming!
+                expectThat(response).get {statusCode}.isEqualTo(200)
+                var received = 0
+                // let it send 10 elements to and then quit
+                expectThat(response.body!!.map {
+                    if(received++ > 10)
+                        stopFlow = true
+                    it
+                }.toList()) {
+                    size.isGreaterThan(10)
+                    all {
+                        isEqualTo("california")
+                    }
+                }
+            }
+        }
     }
 }
