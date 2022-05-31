@@ -16,14 +16,17 @@ class Java11HttpClient {
         config: RequestDSL.() -> Unit = {}
     ) = send(buildRequest(path, config))
 
-    suspend fun send(request: HttpRequest) =
-        RestaurantResponse(httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await())
-/*
-    suspend fun sendStreaming(url: String, config: RequestDSL.() -> Unit = {}): Flow<String> {
-        val request = buildRequest(url, config)
-        response = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).await()
+    suspend fun send(request: HttpRequest): RestaurantResponse {
+        val response = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
+        return RestaurantResponse(response.statusCode(), response.body(), response.headers(), response.uri())
     }
-*/
+
+    /*
+        suspend fun sendStreaming(url: String, config: RequestDSL.() -> Unit = {}): Flow<String> {
+            val request = buildRequest(url, config)
+            response = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).await()
+        }
+    */
     interface RequestDSL {
         fun post(body: String)
         fun put(body: String)
@@ -80,12 +83,14 @@ class Java11HttpClient {
     }
 }
 
-class RestaurantResponse(val response: HttpResponse<String>) {
-    val statusCode: Int = response.statusCode()
-    val body: String? = response.body()
-    val headers: HttpHeaders = response.headers()
+data class RestaurantResponse(
+    val statusCode: Int,
+    val body: String?,
+    val headers: HttpHeaders,
+    val uri: URI?
+) {
     fun statusCode(): Int = statusCode
     fun body(): String? = body
     fun headers(): HttpHeaders = headers
-    override fun toString(): String = """HttpResponse(url: "${response.uri()}", status: $statusCode, body:"$body")"""
+    override fun toString(): String = """HttpResponse(url: "$uri", status: $statusCode, body:"$body")"""
 }
