@@ -32,7 +32,7 @@ jobs:
         env:
           CI: true
         run: ./gradlew build
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: core/build/reports/kover/report.xml,rest/build/reports/kover/report.xml
       - name: Test Report ${{matrix.java}}
