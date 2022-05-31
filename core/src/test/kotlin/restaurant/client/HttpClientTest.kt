@@ -20,7 +20,7 @@ class HttpClientTest {
                     response("get reply")
                 }
                 route(Method.POST, "post") { _, _ ->
-                    response(HttpStatus.TEAPOT_418, "post reply")
+                    response(HttpStatus.TEAPOT_418, "post reply", mapOf("Content-Type" to "only the best content"))
                 }
             }
         )
@@ -41,6 +41,9 @@ class HttpClientTest {
                 }
                 it("contains the status code") {
                     expectThat(response.toString()).contains("""status: 418""")
+                }
+                ignore("contains the headers") { // toString should contain nicely printed headers
+                    expectThat(response.toString()).contains("""headers: {"Content-Type" => ["only the best content"] """)
                 }
             }
         }

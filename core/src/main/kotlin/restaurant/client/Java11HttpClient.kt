@@ -92,5 +92,5 @@ data class RestaurantResponse(
     fun statusCode(): Int = statusCode
     fun body(): String? = body
     fun headers(): HttpHeaders = headers
-    override fun toString(): String = """HttpResponse(url: "$uri", status: $statusCode, body:"$body")"""
+    override fun toString(): String = """HttpResponse(url: "$uri", status: $statusCode, body:"$body" headers: $headers)"""
 }
