@@ -44,5 +44,11 @@ class HttpClientTest {
                 }
             }
         }
+        describe("streaming the response") {
+            it("works") {
+//                val response = httpClient.sendStreaming("http://localhost:${restaurant.port}${"/post"}") { post() }
+
+            }
+        }
     }
 }

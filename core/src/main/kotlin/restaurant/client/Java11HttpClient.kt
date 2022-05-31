@@ -18,7 +18,12 @@ class Java11HttpClient {
 
     suspend fun send(request: HttpRequest) =
         RestaurantResponse(httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await())
-
+/*
+    suspend fun sendStreaming(url: String, config: RequestDSL.() -> Unit = {}): Flow<String> {
+        val request = buildRequest(url, config)
+        response = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).await()
+    }
+*/
     interface RequestDSL {
         fun post(body: String)
         fun put(body: String)
