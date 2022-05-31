@@ -20,8 +20,11 @@ import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.single
+import kotlin.reflect.KClass
 
-
+/*
+this is just an experiment for a new rest dsl. probably not interesting for anyone except me right now (CS)
+ */
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
 
 @Test
@@ -140,16 +143,21 @@ class RestRestaurantTest {
 
 
 private fun <T:Any> RoutingDSL.resources(service: T, path: String = path(service)) = ResourceMapper(service, path)
-class MagicGet
-private inline  fun <reified T> MagicGet.get(): T {
-TODO()
+class Context {
+    fun <T:Any> get(kClass: KClass<T>): T {
+        TODO()
+    }
+}
+
+private inline  fun <reified T:Any> Context.get(): T {
+    return this.get(T::class)
 }
 class ResourceMapper<T:Any>(service: T, path: String= path(service)) {
     fun mapping(
-        index: suspend T.(MagicGet) -> Unit = {},
-        create: suspend T.(MagicGet) -> Unit = {},
-        update: suspend T.(MagicGet) -> Unit = {},
-        delete: suspend T.(MagicGet) -> Unit = {}
+        index: suspend T.(Context) -> Unit = {},
+        create: suspend T.(Context) -> Unit = {},
+        update: suspend T.(Context) -> Unit = {},
+        delete: suspend T.(Context) -> Unit = {}
     ) {
     }
 
