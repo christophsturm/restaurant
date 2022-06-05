@@ -4,15 +4,15 @@
 ### Restaurant - Rest Without Boilerplate
 
 A small web server with focus on testability. Supports coroutines, has a nice low-level-api, and a high-level-api for
-rest services. Uses Undertow for non-blocking http handling, so it should perform well despite still being new.
+rest services. Uses Undertow for non-blocking http handling, so it should perform well despite still being new. Also
+includes a http client based on the java 11 http client.
 
 Available from Maven Central.
 
-This readme is currently a bit outdated but will be updated in the next days.
 
 ```kotlin
 dependencies {
-    implementation("com.christophsturm.restaurant:restaurant-core:0.0.5")
+    implementation("com.christophsturm.restaurant:restaurant-core:0.0.6")
 }
 ```
 
@@ -65,14 +65,14 @@ easy to test.
 There is also a really nice low level api if you need more flexibility.
 
 ```kotlin
-class ReverserService : SuspendingHandler {
-    override suspend fun handle(exchange: Exchange, requestContext: RequestContext): Response {
-        return (response(ByteBuffer.wrap(exchange.readBody().reversedArray())))
+class Reverser : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        return (response(ByteBuffer.wrap(request.withBody().body!!.reversedArray())))
     }
 }
 //...
 Restaurant {
-    route(Method.POST, "/handlers/reverser", ReverserService())
+    route(Method.POST, "/handlers/reverser", Reverser())
 }
 
 val response = request(restaurant, "/handlers/reverser") { post("""jakob""".toRequestBody()) }
