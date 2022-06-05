@@ -47,3 +47,7 @@ data class ByteBufferResponse(
 data class FlowResponse(override val headers: Map<String, String>, override val status: Int, val body: Flow<String>) : Response {
     override fun bodyString() = "<FLOW>"
 }
+data class ByteArrayFlowResponse(override val headers: Map<String, String>, override val status: Int, val body: Flow<ByteArray>) : Response {
+    override fun bodyString() = "<FLOW>"
+}
+

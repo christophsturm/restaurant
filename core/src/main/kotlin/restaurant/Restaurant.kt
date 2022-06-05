@@ -36,7 +36,7 @@ class Restaurant(
 ) : AutoCloseable {
 
     val baseUrl = "http://localhost:$port"
-    val routes = routes(serviceMapping)
+    val routes: List<Route> = routes(serviceMapping)
 
     private val rootHandlers = routes.map { route ->
         Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)

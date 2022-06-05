@@ -1,6 +1,9 @@
 package restaurant.internal
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import restaurant.ContentType
+import restaurant.FlowResponse
 import restaurant.HttpHeader
 import restaurant.HttpStatus
 import restaurant.Method
@@ -16,7 +19,6 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 
 class RoutesAdder(private val objectMapper: Mapper) {
-    @OptIn(ExperimentalStdlibApi::class)
     fun routesFor(restService: RestService, path: String): List<Route> {
         val functions = restService::class.functions.associateBy { it.name }
         return buildList {
@@ -101,7 +103,6 @@ private class PutRestServiceHandler(
     }
 }
 
-@Suppress("CanBeParameter")
 private class PostRestServiceHandler(
     private val objectMapper: Mapper,
     val restFunction: RestFunction
@@ -139,9 +140,14 @@ private class GetListRestServiceHandler(
 
 }
 
-private fun Mapper.responseOrNull(result: Any?, statusCode: Int = HttpStatus.OK_200) = if (result == null)
-    response(HttpStatus.NO_CONTENT_204)
-else {
-    response(statusCode, writeValueAsBytes(result), contentTypeJson)
+private fun Mapper.responseOrNull(result: Any?, statusCode: Int = HttpStatus.OK_200): Response {
+    return if (result == null)
+        response(HttpStatus.NO_CONTENT_204)
+    else {
+        if (result is Flow<*>) {
+            FlowResponse(mapOf(), statusCode, flow { result.collect { emit(writeValueAsString(it));emit("\n") } })
+        } else
+            response(statusCode, writeValueAsBytes(result), contentTypeJson)
+    }
 }
 

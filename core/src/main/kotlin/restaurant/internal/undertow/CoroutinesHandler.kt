@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import restaurant.ByteArrayFlowResponse
 import restaurant.ByteBufferResponse
 import restaurant.FlowResponse
 import restaurant.MutableRequestContext
@@ -19,6 +20,7 @@ import restaurant.StatusResponse
 import restaurant.StringResponse
 import restaurant.SuspendingHandler
 import java.io.IOException
+import java.nio.ByteBuffer
 
 private val logger = KotlinLogging.logger {}
 
@@ -52,30 +54,57 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
                     }
 
                     is FlowResponse -> {
-                        val responseSender = exchange.responseSender
-                        response.body.collect {
-                            val deferred = CompletableDeferred<Unit>()
-                            responseSender.send(it, object : IoCallback {
-                                override fun onComplete(exchange: HttpServerExchange?, sender: Sender?) {
-                                    deferred.complete(Unit)
-                                }
-
-                                override fun onException(
-                                    exchange: HttpServerExchange?,
-                                    sender: Sender?,
-                                    exception: IOException?
-                                ) {
-                                    deferred.completeExceptionally(exception!!)
-                                }
-                            })
-                            deferred.await()
+                        send(exchange) { responseSender ->
+                            response.body.collect {
+                                responseSender.asyncSend(it)
+                            }
                         }
-                        responseSender.close()
-
-
                     }
+                    is ByteArrayFlowResponse -> {
+                        send(exchange) { responseSender ->
+                            response.body.collect {
+                                responseSender.asyncSend(it)
+                            }
+                        }
+                    }
+
                 }
             }
         })
+    }
+
+    private suspend fun Sender.asyncSend(it: ByteArray) {
+        val deferred = CompletableDeferred<Unit>()
+        send(ByteBuffer.wrap(it), CompletingIOCallback(deferred))
+        deferred.await()
+    }
+
+    private suspend fun Sender.asyncSend(it: String) {
+        val deferred = CompletableDeferred<Unit>()
+        send(it, CompletingIOCallback(deferred))
+        deferred.await()
+    }
+
+    private suspend fun send(
+        exchange: HttpServerExchange,
+        cb: suspend (Sender) -> Unit
+    ) {
+        val responseSender = exchange.responseSender
+        cb(responseSender)
+        responseSender.close()
+    }
+
+    class CompletingIOCallback(private val deferred: CompletableDeferred<Unit>) : IoCallback {
+        override fun onComplete(exchange: HttpServerExchange?, sender: Sender?) {
+            deferred.complete(Unit)
+        }
+
+        override fun onException(
+            exchange: HttpServerExchange?,
+            sender: Sender?,
+            exception: IOException?
+        ) {
+            deferred.completeExceptionally(exception!!)
+        }
     }
 }

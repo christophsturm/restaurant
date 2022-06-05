@@ -28,6 +28,14 @@ tasks {
         }
     }
 }
+kotlin {
+    sourceSets.all {
+        languageSettings.apply {
+            languageVersion = "1.6"
+            progressiveMode = true
+        }
+    }
+}
 java {
     withJavadocJar()
     withSourcesJar()

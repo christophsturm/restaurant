@@ -15,6 +15,7 @@ class JacksonMapper(private val jackson: ObjectMapper = jacksonObjectMapper()) :
         }
 
     override fun writeValueAsBytes(value: Any?): ByteArray = jackson.writeValueAsBytes(value)
+    override fun writeValueAsString(value: Any?): String = jackson.writeValueAsString(value)
 }
 
 class BadRequestException(e: JsonProcessingException) :
