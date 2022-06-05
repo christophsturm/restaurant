@@ -1,6 +1,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.christophsturm.restaurant/restaurant)
 [![Github CI](https://github.com/christophsturm/restaurant/workflows/CI/badge.svg)](https://github.com/christophsturm/restaurant/actions)
 [![codecov](https://codecov.io/gh/christophsturm/restaurant/branch/main/graph/badge.svg?token=3EV51LYGSC)](https://codecov.io/gh/christophsturm/restaurant)
+
 ### Restaurant - Rest Without Boilerplate
 
 A small web server with focus on testability. Supports coroutines, has a nice low-level-api, and a high-level-api for
@@ -8,7 +9,6 @@ rest services. Uses Undertow for non-blocking http handling, so it should perfor
 includes a http client based on the java 11 http client.
 
 Available from Maven Central.
-
 
 ```kotlin
 dependencies {
@@ -18,8 +18,7 @@ dependencies {
 
 ### High Level API
 
-There is clear consensus how a good REST api should look like. Restaurant helps you implement it in a simple way that is
-easy to test.
+Restaurant helps you implement REST apis in a simple way that is easy to test, and have your handlers not depend on any webserver classes.
 
 ```kotlin
 
@@ -60,6 +59,38 @@ methods can be `suspend` or not, and can declare their incoming and outgoing par
 serialized and deserialized with jackson. Your service class has no dependencies on any http server, and should be super
 easy to test.
 
+#### Streaming
+
+You can stream responses from your service class by using a
+flow: [StreamingExample](rest/src/test/kotlin/restaurant/rest/StreamingExample.kt)
+
+```kotlin
+class StreamingService : RestService {
+    fun index(): Flow<User> {
+        return flow {
+            emit(User("5", "userName"))
+            delay(10)
+            emit(User("6", "otherUserName"))
+        }
+    }
+}
+
+val restaurant = Restaurant {
+    resources(StreamingService())
+}
+
+val response: RestaurantResponse<Flow<String>> = restaurant.streamRequest("/streaming")
+expectThat(response) {
+    get { statusCode }.isEqualTo(200)
+}
+val list = response.body!!.toList()
+expectThat(list).containsExactly(
+    """{"id":"5","name":"userName"}""",
+    """{"id":"6","name":"otherUserName"}"""
+)
+
+```
+
 ### The Low Level API
 
 There is also a really nice low level api if you need more flexibility.
@@ -94,6 +125,7 @@ val restaurant = Restaurant(errorHandler = { ex -> response(500, "sorry") })
 ### Default Routing
 
 You can install a default handler that is invoked when no other route is found.
+
 ```kotlin
 it("calls default handler if no suitable route is found") {
     val restaurant =
