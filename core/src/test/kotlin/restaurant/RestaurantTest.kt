@@ -113,7 +113,7 @@ class RestaurantTest {
 
                 val restaurant = autoClose(
                     Restaurant {
-                        route(Method.GET, "/async") { ex, _ ->
+                        route(Method.GET, "/async") { _, _ ->
                             FlowResponse(mapOf(), 200, californiaStreaming)
                         }
                     }
