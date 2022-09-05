@@ -12,6 +12,6 @@ dependencies {
     implementation(kotlin("script-runtime"))
 
     implementation(kotlin("gradle-plugin", "1.7.10"))
-    implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.7.0")
+    implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.9.0")
 }
 
