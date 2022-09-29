@@ -11,6 +11,7 @@ plugins {
     id("info.solidsoft.pitest")
     id("restaurant.common")
     id("org.jetbrains.kotlinx.kover")
+    id("org.jmailen.kotlinter")
 }
 
 dependencies {
