@@ -145,6 +145,7 @@ class RestRestaurantTest {
 
 @Suppress("UnusedReceiverParameter")
 private fun <T : Any> RoutingDSL.resources(service: T, path: String = path(service)) = ResourceMapper(service, path)
+
 @Suppress("UNUSED_PARAMETER")
 class Context {
     fun <T : Any> get(kClass: KClass<T>): T {
@@ -155,6 +156,7 @@ class Context {
 private inline fun <reified T : Any> Context.get(): T {
     return this.get(T::class)
 }
+
 @Suppress("UNUSED_PARAMETER")
 class ResourceMapper<T : Any>(service: T, path: String = path(service)) {
     fun mapping(
