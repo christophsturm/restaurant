@@ -24,7 +24,6 @@ class Java11HttpClient {
         return RestaurantResponse(response.statusCode(), response.body(), response.headers(), response.uri())
     }
 
-
     suspend fun sendStreaming(url: String, config: RequestDSL.() -> Unit = {}): RestaurantResponse<Flow<String>> {
         val request = buildRequest(url, config)
         val response: HttpResponse<Stream<String>> =

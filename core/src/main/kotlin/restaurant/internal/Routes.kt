@@ -7,15 +7,12 @@ import restaurant.SuspendingHandler
 import restaurant.Wrapper
 
 internal fun routes(serviceMapping: RoutingDSL.() -> Unit): List<Route> {
-
     class Routing(private val prefix: String = "") : RoutingDSL {
         val routes = mutableListOf<Route>()
-
 
         override fun route(method: Method, path: String, service: SuspendingHandler) {
             routes.add(Route(method, prefix + path, service))
         }
-
 
         override fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit) {
             val nested = Routing(prefix)
@@ -23,13 +20,11 @@ internal fun routes(serviceMapping: RoutingDSL.() -> Unit): List<Route> {
             routes += nested.routes.map { it.copy(wrappers = listOf(wrapper) + it.wrappers) }
         }
 
-
         override fun namespace(prefix: String, function: RoutingDSL.() -> Unit) {
             val routing = Routing(this.prefix + prefix + "/")
             routing.function()
             routes += routing.routes
         }
-
     }
     return Routing("").apply(serviceMapping).routes
 }

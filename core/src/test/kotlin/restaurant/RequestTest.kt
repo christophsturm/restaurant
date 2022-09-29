@@ -14,12 +14,14 @@ class RequestTest {
     val context = describe(Request::class) {
         describe("get requests") {
             lateinit var req: Request
-            val restaurant = autoClose(Restaurant {
-                route(Method.GET, "/path") { request, _ ->
-                    req = request
-                    response(200)
+            val restaurant = autoClose(
+                Restaurant {
+                    route(Method.GET, "/path") { request, _ ->
+                        req = request
+                        response(200)
+                    }
                 }
-            })
+            )
             val response = restaurant.request("/path?p1=v1&p1=v2&p2=v3") {
                 addHeader("header1", "value1")
                 addHeader("header1", "value2")
@@ -45,16 +47,17 @@ class RequestTest {
                     expectThat(req.queryParameters["p1"]).isNotNull().containsExactlyInAnyOrder("v1", "v2")
                 }
             }
-
         }
         describe("body handling") {
             lateinit var req: RequestWithBody
-            val restaurant = autoClose(Restaurant {
-                route(Method.POST, "/path") { request, _ ->
-                    req = request.withBody()
-                    response(200)
+            val restaurant = autoClose(
+                Restaurant {
+                    route(Method.POST, "/path") { request, _ ->
+                        req = request.withBody()
+                        response(200)
+                    }
                 }
-            })
+            )
             val response = restaurant.request("/path?query=string") { post("body") }
             expectThat(response).get { statusCode() }.isEqualTo(200)
             it("can convert to a request that has a body") {
@@ -67,5 +70,3 @@ class RequestTest {
         }
     }
 }
-
-

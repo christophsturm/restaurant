@@ -21,5 +21,3 @@ suspend fun Restaurant.streamRequest(
     path: String,
     config: Java11HttpClient.RequestDSL.() -> Unit = { }
 ): RestaurantResponse<Flow<String>> = httpClient.sendStreaming("http://localhost:$port$path", config)
-
-

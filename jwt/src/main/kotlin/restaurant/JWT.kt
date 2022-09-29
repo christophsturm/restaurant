@@ -18,5 +18,4 @@ class JWTWrapper(private val verifier: JWTVerifier) : Wrapper {
             return FinishRequest(StringResponse(HttpStatus.UNAUTHORIZED_401, "Unauthorized: " + e.message))
         }
     }
-
 }

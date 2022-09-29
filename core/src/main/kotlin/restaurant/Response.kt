@@ -28,7 +28,8 @@ data class StatusResponse(override val status: Int, override val headers: Map<St
     override fun bodyString() = ""
 }
 
-data class StringResponse(override val status: Int,
+data class StringResponse(
+    override val status: Int,
     val body: String,
     override val headers: Map<String, String> = mapOf()
 ) : Response {
@@ -44,10 +45,16 @@ data class ByteBufferResponse(
         return String(body.array())
     }
 }
-data class FlowResponse(override val headers: Map<String, String>, override val status: Int, val body: Flow<String>) : Response {
-    override fun bodyString() = "<FLOW>"
-}
-data class ByteArrayFlowResponse(override val headers: Map<String, String>, override val status: Int, val body: Flow<ByteArray>) : Response {
+
+data class FlowResponse(override val headers: Map<String, String>, override val status: Int, val body: Flow<String>) :
+    Response {
     override fun bodyString() = "<FLOW>"
 }
 
+data class ByteArrayFlowResponse(
+    override val headers: Map<String, String>,
+    override val status: Int,
+    val body: Flow<ByteArray>
+) : Response {
+    override fun bodyString() = "<FLOW>"
+}

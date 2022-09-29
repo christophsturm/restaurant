@@ -20,7 +20,6 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.single
 
-
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
 
 @Test
@@ -109,10 +108,8 @@ class RestRestaurantTest {
                                 get { body }.isNotNull().contains(requestBody)
                             }
                         }
-
                     }
                 }
-
             }
             describe("error handling") {
                 class ExceptionsService : RestService {
@@ -144,7 +141,6 @@ class RestRestaurantTest {
                         }
                     }
                 )
-
             }
             ignore("singular routes") {
                 class CartService : RestService
@@ -158,16 +154,9 @@ class RestRestaurantTest {
                 )
             }
         }
-
     }
-
 }
 
 @Suppress("unused", "UnusedReceiverParameter")
 private fun RoutingDSL.resource(@Suppress("UNUSED_PARAMETER") service: RestService) {
 }
-
-
-
-
-

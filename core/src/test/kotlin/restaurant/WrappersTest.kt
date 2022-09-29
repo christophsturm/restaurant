@@ -19,15 +19,17 @@ class WrappersTest {
             events.add("outer")
             null
         }
-        val restaurant = autoClose(Restaurant {
-            wrap(outer) {
-                wrap(inner) {
-                    route(Method.POST, "/handlers/reverser") { exchange, _ ->
-                        response(ByteBuffer.wrap(exchange.withBody().body!!.reversedArray()))
+        val restaurant = autoClose(
+            Restaurant {
+                wrap(outer) {
+                    wrap(inner) {
+                        route(Method.POST, "/handlers/reverser") { exchange, _ ->
+                            response(ByteBuffer.wrap(exchange.withBody().body!!.reversedArray()))
+                        }
                     }
                 }
             }
-        })
+        )
         val response = restaurant.request("/handlers/reverser") {
             post("jakob")
         }

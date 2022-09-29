@@ -34,11 +34,13 @@ class JWTWelcomeHandler : SuspendingHandler {
 @Test
 class JWTTest {
     val context = describe("JWT Support") {
-        val restaurant = autoClose(Restaurant {
-            jwt(JWTConfig.makeJwtVerifier()) {
-                route(Method.GET, "/handlers/welcome", JWTWelcomeHandler())
+        val restaurant = autoClose(
+            Restaurant {
+                jwt(JWTConfig.makeJwtVerifier()) {
+                    route(Method.GET, "/handlers/welcome", JWTWelcomeHandler())
+                }
             }
-        })
+        )
         it("allows authorized requests") {
             val response = restaurant.request("/handlers/welcome") {
                 addHeader("Authorization", "Bearer ${JWTConfig.makeToken(42)}")
@@ -57,4 +59,3 @@ class JWTTest {
         }
     }
 }
-

@@ -33,7 +33,6 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
             }
         }
         return UndertowRequestWithBody(this, body)
-
     }
 
     override val requestPath: String = exchange.requestPath
@@ -75,4 +74,3 @@ internal fun buildUndertow(
         .setHandler(SimpleErrorPageHandler(routingHandler))
         .build()
 }
-

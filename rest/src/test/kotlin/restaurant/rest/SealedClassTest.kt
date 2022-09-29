@@ -20,10 +20,11 @@ class SealedClassTest {
         it("is supported") {
             class SealedClassService : RestService {
                 fun show(id: Long): LoginResult {
-                    return if (id == 42L)
+                    return if (id == 42L) {
                         SuccesfulLogin("1234")
-                    else
+                    } else {
                         LoginFailed("sorry")
+                    }
                 }
             }
 

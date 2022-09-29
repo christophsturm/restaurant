@@ -20,4 +20,3 @@ class JacksonMapper(private val jackson: ObjectMapper = jacksonObjectMapper()) :
 
 class BadRequestException(e: JsonProcessingException) :
     ResponseException(response(BAD_REQUEST_400, e.message!!), e.message)
-

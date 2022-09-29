@@ -28,9 +28,11 @@ class StreamingExample {
             }
         }
 
-        val restaurant = autoClose(Restaurant {
-            resources(StreamingService())
-        })
+        val restaurant = autoClose(
+            Restaurant {
+                resources(StreamingService())
+            }
+        )
 
         it("works with the buffering http client") {
             val response = restaurant.request("/streaming")
@@ -39,7 +41,8 @@ class StreamingExample {
                 get { body }.isEqualTo(
                     """{"id":"5","name":"userName"}
                             |{"id":"6","name":"otherUserName"}
-                            |""".trimMargin()
+                            |
+                    """.trimMargin()
                 )
             }
         }
@@ -55,5 +58,4 @@ class StreamingExample {
             )
         }
     }
-
 }

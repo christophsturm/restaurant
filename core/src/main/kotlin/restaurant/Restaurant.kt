@@ -6,7 +6,6 @@ import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
 
-
 /**
  * return an unused port for servers to listen on
  */
@@ -15,13 +14,12 @@ fun findFreePort(): Int = ServerSocket(0).use {
     it.localPort
 }
 
-
 typealias ExceptionHandler = (Throwable) -> Response
 
 private val defaultExceptionHandler: ExceptionHandler = {
-    if (it is ResponseException)
+    if (it is ResponseException) {
         it.response
-    else {
+    } else {
         response(500, "internal server error:" + it.stackTraceToString())
     }
 }
@@ -47,9 +45,7 @@ class Restaurant(
     override fun close() {
         undertow.stop()
     }
-
 }
-
 
 @RestDSL
 interface RoutingDSL {
@@ -57,8 +53,7 @@ interface RoutingDSL {
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
     fun route(method: Method, path: String, service: SuspendingHandler)
 }
-//fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
-
+// fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
 
 sealed class WrapperResult
 data class FinishRequest(val response: Response) : WrapperResult()
@@ -70,10 +65,8 @@ fun interface Wrapper {
     suspend fun invoke(request: Request): WrapperResult?
 }
 
-
 @DslMarker
 annotation class RestDSL
-
 
 fun interface SuspendingHandler {
     suspend fun handle(request: Request, requestContext: RequestContext): Response
@@ -92,7 +85,8 @@ internal class RootHandler(
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         return try {
             // wrappers can add request constants, finish the request, or do nothing
-            @Suppress("NAME_SHADOWING") val requestContext =
+            @Suppress("NAME_SHADOWING")
+            val requestContext =
                 wrappers.fold(requestContext as MutableRequestContext) { wrapperContext, wrapper ->
                     when (val wrapperResult = wrapper.invoke(request)) {
                         is AddRequestConstant<*> -> wrapperContext.apply { add(wrapperResult.key, wrapperResult.value) }
@@ -123,9 +117,7 @@ class MutableRequestContext : RequestContext {
 
     @Suppress("UNCHECKED_CAST")
     override operator fun <T> get(key: Key<T>): T = map[key] as T
-
 }
-
 
 interface Request {
 
@@ -159,8 +151,6 @@ interface Request {
     suspend fun withBody(): RequestWithBody
 }
 
-
-
 interface RequestWithBody : Request {
     /**
      * Body of the request. This is null when no body was sent for example for get requests.
@@ -188,7 +178,5 @@ data class Route(
     val wrappers: List<Wrapper> = listOf()
 )
 
-
 open class RestaurantException(override val message: String, override val cause: Throwable? = null) :
     RuntimeException(message, cause)
-

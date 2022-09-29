@@ -15,7 +15,6 @@ import strikt.assertions.isNotNull
 import strikt.assertions.size
 import java.nio.ByteBuffer
 
-
 @Test
 class RestaurantTest {
     val context = describe(Restaurant::class) {
@@ -59,7 +58,6 @@ class RestaurantTest {
                     get { statusCode() }.isEqualTo(500)
                     get { body }.isNotNull().contains("internal server error")
                 }
-
             }
             it("calls error handler to create error reply") {
                 val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
@@ -81,7 +79,6 @@ class RestaurantTest {
                     get { statusCode() }.isEqualTo(500)
                     get { body }.isNotNull().contains("error in error handler").contains("oops error handler failed")
                 }
-
             }
             it("calls default handler if no suitable route is found") {
                 val restaurant =
@@ -120,14 +117,17 @@ class RestaurantTest {
                 )
                 val response = httpClient.sendStreaming("http://localhost:${restaurant.port}/async")
                 // the flow is still sending, but  we already got our answer. we must be streaming!
-                expectThat(response).get {statusCode}.isEqualTo(200)
+                expectThat(response).get { statusCode }.isEqualTo(200)
                 var received = 0
                 // let it send 10 elements to and then quit
-                expectThat(response.body!!.map {
-                    if(received++ > 10)
-                        stopFlow = true
-                    it
-                }.toList()) {
+                expectThat(
+                    response.body!!.map {
+                        if (received++ > 10) {
+                            stopFlow = true
+                        }
+                        it
+                    }.toList()
+                ) {
                     size.isGreaterThan(10)
                     all {
                         isEqualTo("california")

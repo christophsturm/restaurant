@@ -12,7 +12,6 @@ interface RestService
 internal fun path(service: Any) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
-
 private val routesAdder = RoutesAdder(JacksonMapper(jacksonObjectMapper()))
 
 @Suppress("UNUSED_PARAMETER")

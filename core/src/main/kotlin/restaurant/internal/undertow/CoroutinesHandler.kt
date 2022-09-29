@@ -35,42 +35,44 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
             }
             nextListener.proceed()
         }
-        exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable {
-            requestScope.launch {
-                val response = suspendHandler.handle(UndertowRequest(exchange), MutableRequestContext())
-                exchange.statusCode = response.status
-                response.headers.forEach {
-                    exchange.responseHeaders.add(HttpString(it.key), it.value)
-                }
-                when (response) {
-                    is ByteBufferResponse -> {
-                        exchange.responseSender.send(response.body)
+        exchange.dispatch(
+            SameThreadExecutor.INSTANCE,
+            Runnable {
+                requestScope.launch {
+                    val response = suspendHandler.handle(UndertowRequest(exchange), MutableRequestContext())
+                    exchange.statusCode = response.status
+                    response.headers.forEach {
+                        exchange.responseHeaders.add(HttpString(it.key), it.value)
                     }
-                    is StatusResponse -> {
-                        exchange.endExchange()
-                    }
-                    is StringResponse -> {
-                        exchange.responseSender.send(response.body)
-                    }
+                    when (response) {
+                        is ByteBufferResponse -> {
+                            exchange.responseSender.send(response.body)
+                        }
+                        is StatusResponse -> {
+                            exchange.endExchange()
+                        }
+                        is StringResponse -> {
+                            exchange.responseSender.send(response.body)
+                        }
 
-                    is FlowResponse -> {
-                        send(exchange) { responseSender ->
-                            response.body.collect {
-                                responseSender.asyncSend(it)
+                        is FlowResponse -> {
+                            send(exchange) { responseSender ->
+                                response.body.collect {
+                                    responseSender.asyncSend(it)
+                                }
+                            }
+                        }
+                        is ByteArrayFlowResponse -> {
+                            send(exchange) { responseSender ->
+                                response.body.collect {
+                                    responseSender.asyncSend(it)
+                                }
                             }
                         }
                     }
-                    is ByteArrayFlowResponse -> {
-                        send(exchange) { responseSender ->
-                            response.body.collect {
-                                responseSender.asyncSend(it)
-                            }
-                        }
-                    }
-
                 }
             }
-        })
+        )
     }
 
     private suspend fun Sender.asyncSend(it: ByteArray) {

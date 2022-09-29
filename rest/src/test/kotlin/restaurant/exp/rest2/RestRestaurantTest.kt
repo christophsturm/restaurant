@@ -32,7 +32,7 @@ class RestRestaurantTest {
     val context = describe(Restaurant::class, disabled = true) {
         describe("rest services") {
             it("empty responses return 204") {
-                class EmptyReplyService  {
+                class EmptyReplyService {
                     fun index(): String? {
                         return null
                     }
@@ -40,7 +40,7 @@ class RestRestaurantTest {
 
                 val restaurant = autoClose(
                     restaurant {
-                        resources(EmptyReplyService(),"/handlers/empty").mapping(index={index()})
+                        resources(EmptyReplyService(), "/handlers/empty").mapping(index = { index() })
                     }
                 )
                 val response = restaurant.request("/handlers/empty")
@@ -54,7 +54,11 @@ class RestRestaurantTest {
                 val restaurant = autoClose(
                     restaurant {
                         namespace("/api") {
-                            resources(UsersService()).mapping(index = {index()}, create= {create(it.get())}, update={update(it.get(), it.get())})
+                            resources(UsersService()).mapping(
+                                index = { index() },
+                                create = { create(it.get()) },
+                                update = { update(it.get(), it.get()) }
+                            )
                         }
                     }
                 )
@@ -113,10 +117,8 @@ class RestRestaurantTest {
                                 get { body }.isNotNull().contains(requestBody)
                             }
                         }
-
                     }
                 }
-
             }
             describe("error handling") {
                 class ExceptionsService : RestService {
@@ -141,18 +143,20 @@ class RestRestaurantTest {
     }
 }
 
-
-private fun <T:Any> RoutingDSL.resources(service: T, path: String = path(service)) = ResourceMapper(service, path)
+@Suppress("UnusedReceiverParameter")
+private fun <T : Any> RoutingDSL.resources(service: T, path: String = path(service)) = ResourceMapper(service, path)
+@Suppress("UNUSED_PARAMETER")
 class Context {
-    fun <T:Any> get(kClass: KClass<T>): T {
+    fun <T : Any> get(kClass: KClass<T>): T {
         TODO()
     }
 }
 
-private inline  fun <reified T:Any> Context.get(): T {
+private inline fun <reified T : Any> Context.get(): T {
     return this.get(T::class)
 }
-class ResourceMapper<T:Any>(service: T, path: String= path(service)) {
+@Suppress("UNUSED_PARAMETER")
+class ResourceMapper<T : Any>(service: T, path: String = path(service)) {
     fun mapping(
         index: suspend T.(Context) -> Unit = {},
         create: suspend T.(Context) -> Unit = {},
@@ -160,14 +164,8 @@ class ResourceMapper<T:Any>(service: T, path: String= path(service)) {
         delete: suspend T.(Context) -> Unit = {}
     ) {
     }
-
 }
 
-@Suppress("unused")
+@Suppress("unused", "UnusedReceiverParameter")
 private fun RoutingDSL.resource(@Suppress("UNUSED_PARAMETER") service: RestService) {
 }
-
-
-
-
-

@@ -32,7 +32,6 @@ class UsersService : RestService {
         delay(1)
         return DeleteReply("user $userId deleted")
     }
-
 }
 
 class UsersStringPKService : RestService {
@@ -60,7 +59,6 @@ class UsersStringPKService : RestService {
         delay(1)
         return DeleteReply("user $userId deleted")
     }
-
 }
 
 data class DeleteReply(val status: String)

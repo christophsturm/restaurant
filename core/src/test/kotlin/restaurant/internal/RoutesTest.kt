@@ -27,5 +27,4 @@ class RoutesTest {
             expectThat(routes).containsExactly(Route(Method.GET, "/url", handler, listOf(outer, inner)))
         }
     }
-
 }

@@ -140,11 +140,13 @@ class RestFunctionTest {
                     expectThrows<RuntimeException> {
                         RestFunction(A::update, A())
                     }.message.isNotNull().and {
-                        isEqualTo("Rest method A#update(Int, Body, OtherPossibleBodyType, RequestContext) has multiple possible body types: [Body, OtherPossibleBodyType]")
+                        isEqualTo(
+                            "Rest method A#update(Int, Body, OtherPossibleBodyType, RequestContext)" +
+                                " has multiple possible body types: [Body, OtherPossibleBodyType]"
+                        )
                     }
                 }
             }
-
         }
     }
 }

@@ -11,4 +11,3 @@ object HttpStatus {
     const val TEAPOT_418 = 418
     const val INTERNAL_SERVER_ERROR_500 = 500
 }
-

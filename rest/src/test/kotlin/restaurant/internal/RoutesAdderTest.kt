@@ -61,7 +61,7 @@ class RoutesAdderTest {
                             getRoutes.single { it.path == rootPath }.handler.handle(
                                 MockRequest(),
                                 requestContext
-                            ).bodyString(),
+                            ).bodyString()
                         ).isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
                     }
                 }

@@ -25,7 +25,8 @@ class RoutesAdder(private val objectMapper: Mapper) {
             functions["create"]?.let {
                 add(
                     Route(
-                        Method.POST, path,
+                        Method.POST,
+                        path,
                         PostRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -37,7 +38,8 @@ class RoutesAdder(private val objectMapper: Mapper) {
             functions["show"]?.let {
                 add(
                     Route(
-                        Method.GET, "$path/{id}",
+                        Method.GET,
+                        "$path/{id}",
                         GetRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -59,7 +61,8 @@ class RoutesAdder(private val objectMapper: Mapper) {
             functions["update"]?.let {
                 add(
                     Route(
-                        Method.PUT, "$path/{id}",
+                        Method.PUT,
+                        "$path/{id}",
                         PutRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -71,7 +74,8 @@ class RoutesAdder(private val objectMapper: Mapper) {
             functions["delete"]?.let<KFunction<*>, Unit> {
                 add(
                     Route(
-                        Method.DELETE, "$path/{id}",
+                        Method.DELETE,
+                        "$path/{id}",
                         GetRestServiceHandler(
                             objectMapper,
                             RestFunction(it, restService)
@@ -84,7 +88,6 @@ class RoutesAdder(private val objectMapper: Mapper) {
 }
 
 val contentTypeJson = mapOf(HttpHeader.CONTENT_TYPE to ContentType.APPLICATION_JSON)
-
 
 private class PutRestServiceHandler(
     private val objectMapper: Mapper,
@@ -131,23 +134,23 @@ private class GetRestServiceHandler(
 }
 
 private class GetListRestServiceHandler(
-    private val objectMapper: Mapper, val function: RestFunction
+    private val objectMapper: Mapper,
+    val function: RestFunction
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         val result = function.callSuspend(null, null, requestContext)
         return objectMapper.responseOrNull(result)
     }
-
 }
 
 private fun Mapper.responseOrNull(result: Any?, statusCode: Int = HttpStatus.OK_200): Response {
-    return if (result == null)
+    return if (result == null) {
         response(HttpStatus.NO_CONTENT_204)
-    else {
+    } else {
         if (result is Flow<*>) {
-            FlowResponse(mapOf(), statusCode, flow { result.collect { emit(writeValueAsString(it));emit("\n") } })
-        } else
+            FlowResponse(mapOf(), statusCode, flow { result.collect { emit(writeValueAsString(it)); emit("\n") } })
+        } else {
             response(statusCode, writeValueAsBytes(result), contentTypeJson)
+        }
     }
 }
-

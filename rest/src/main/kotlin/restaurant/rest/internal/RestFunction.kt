@@ -23,13 +23,17 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
 
     private fun KParameter.isPayload(): Boolean {
         val javaType = type.javaType
-        return !(javaType == String::class.java || javaType == Int::class.java || javaType == Long::class.java || javaType == RequestContext::class.java)
+        return !(
+            javaType == String::class.java ||
+                javaType == Int::class.java ||
+                javaType == Long::class.java ||
+                javaType == RequestContext::class.java
+            )
     }
 
-    val payloadType: Class<*>? =
-        parameters.filter { it.isPayload() }
-            .also { if (it.size > 1) throw MultiplePossibleBodyTypesException(function, it) }
-            .singleOrNull()?.type?.javaType as? Class<*>
+    val payloadType: Class<*>? = parameters.filter { it.isPayload() }
+        .also { if (it.size > 1) throw MultiplePossibleBodyTypesException(function, it) }
+        .singleOrNull()?.type?.javaType as? Class<*>
     private val idParameter = parameters.singleOrNull { it.isId() }?.type?.classifier
     private val instanceParameter = function.instanceParameter!!
 
@@ -39,6 +43,7 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
                 Long::class.java, Int::class.java, String::class.java -> {
                     id(id!!)
                 }
+
                 payloadType -> payload!!
                 RequestContext::class.java -> requestContext
 
@@ -62,14 +67,12 @@ class RestFunction(private val function: KFunction<*>, private val service: Rest
     }
 }
 
-class MultiplePossibleBodyTypesException(function: KFunction<*>, it: List<KParameter>) :
-    RestaurantException("Rest method ${function.niceName()} has multiple possible body types: ${it.map { it.type.shortName() }}")
+class MultiplePossibleBodyTypesException(function: KFunction<*>, it: List<KParameter>) : RestaurantException(
+    "Rest method ${function.niceName()} has multiple possible body types: ${it.map { it.type.shortName() }}"
+)
 
-private fun <R> KCallable<R>.niceName(): String =
-    "${this.parameters.first().type.shortName()}#${this.name}(${
-        parameters.drop(1).joinToString { it.type.shortName() ?: "" }
-    })"
+private fun <R> KCallable<R>.niceName(): String = "${this.parameters.first().type.shortName()}#${this.name}(${
+parameters.drop(1).joinToString { it.type.shortName() ?: "" }
+})"
 
 private fun KType.shortName(): String? = (this.classifier as KClass<*>).simpleName
-
-
