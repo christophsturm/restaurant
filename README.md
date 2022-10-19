@@ -12,7 +12,7 @@ Available from Maven Central.
 
 ```kotlin
 dependencies {
-    implementation("com.christophsturm.restaurant:restaurant-core:0.0.6")
+    implementation("com.christophsturm.restaurant:restaurant-core:0.0.7")
 }
 ```
 
