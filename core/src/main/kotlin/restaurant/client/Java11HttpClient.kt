@@ -98,6 +98,7 @@ data class RestaurantResponse<BodyType>(
     val headers: HttpHeaders,
     val uri: URI?
 ) {
+    val isOk = statusCode in 200..299
     fun statusCode(): Int = statusCode
     fun body(): BodyType? = body
     fun headers(): HttpHeaders = headers
