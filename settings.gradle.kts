@@ -9,7 +9,7 @@ dependencyResolutionManagement {
 
 val projectName = "restaurant"
 rootProject.name = "$projectName-root"
-val modules = listOf("core", "jackson", "jwt")
+val modules = listOf("core", "jackson", "jwt", "kotlinx-serialization")
 val projects = modules.map {"$projectName-$it"}
 include(modules.map { "$projectName-$it" })
 modules.forEach {
