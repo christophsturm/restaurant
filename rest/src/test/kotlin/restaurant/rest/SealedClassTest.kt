@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import failgood.Test
 import failgood.describe
-import restaurant.request
+import restaurant.sendRequest
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
@@ -36,12 +36,12 @@ class SealedClassTest {
             println(restaurant.routes)
             expectThat(
                 jacksonObjectMapper().readValue<SuccesfulLogin>(
-                    restaurant.request("/sealedclass/42").body()!!
+                    restaurant.sendRequest("/sealedclass/42").body()!!
                 ).token
             ).isEqualTo("1234")
             expectThat(
                 jacksonObjectMapper().readValue<LoginFailed>(
-                    restaurant.request("/sealedclass/41").body()!!
+                    restaurant.sendRequest("/sealedclass/41").body()!!
                 ).message
             ).isEqualTo("sorry")
         }

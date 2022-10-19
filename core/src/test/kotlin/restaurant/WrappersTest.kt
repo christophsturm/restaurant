@@ -30,7 +30,7 @@ class WrappersTest {
                 }
             }
         )
-        val response = restaurant.request("/handlers/reverser") {
+        val response = restaurant.sendRequest("/handlers/reverser") {
             post("jakob")
         }
         it("calls the wrapped handler") {

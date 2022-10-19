@@ -22,7 +22,7 @@ class RequestTest {
                     }
                 }
             )
-            val response = restaurant.request("/path?p1=v1&p1=v2&p2=v3") {
+            val response = restaurant.sendRequest("/path?p1=v1&p1=v2&p2=v3") {
                 addHeader("header1", "value1")
                 addHeader("header1", "value2")
                 addHeader("header2", "value3")
@@ -58,7 +58,7 @@ class RequestTest {
                     }
                 }
             )
-            val response = restaurant.request("/path?query=string") { post("body") }
+            val response = restaurant.sendRequest("/path?query=string") { post("body") }
             expectThat(response).get { statusCode() }.isEqualTo(200)
             it("can convert to a request that has a body") {
                 expectThat(req).get { String(body!!) }.isEqualTo("body")

@@ -34,12 +34,12 @@ class RestaurantTest {
                 }
             )
             it("returns 404 if the route is not found") {
-                val response = restaurant.request("/unconfigured-url")
+                val response = restaurant.sendRequest("/unconfigured-url")
                 expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.NOT_FOUND_404)
             }
             it("calls handlers with body and returns result") {
                 val response =
-                    restaurant.request("/handlers/reverser") { post("""jakob""") }
+                    restaurant.sendRequest("/handlers/reverser") { post("""jakob""") }
                 expectThat(response) {
                     get { statusCode() }.isEqualTo(200)
                     get { body() }.isEqualTo("bokaj")
@@ -54,7 +54,7 @@ class RestaurantTest {
             }
             it("returns status 500 per default on error") {
                 val restaurant = autoClose(Restaurant { route(Method.GET, "/", ExceptionsHandler()) })
-                expectThat(restaurant.request("/")) {
+                expectThat(restaurant.sendRequest("/")) {
                     get { statusCode() }.isEqualTo(500)
                     get { body }.isNotNull().contains("internal server error")
                 }
@@ -66,7 +66,7 @@ class RestaurantTest {
                         result = "sorry: " + ex.message
                     )
                 }) { route(Method.GET, "/", ExceptionsHandler()) }
-                expectThat(restaurant.request("/")) {
+                expectThat(restaurant.sendRequest("/")) {
                     get { statusCode() }.isEqualTo(418)
                     get { body() }.isEqualTo("sorry: error message")
                 }
@@ -75,7 +75,7 @@ class RestaurantTest {
                 val restaurant = Restaurant(exceptionHandler = {
                     throw Exception("oops error handler failed")
                 }) { route(Method.GET, "/", ExceptionsHandler()) }
-                expectThat(restaurant.request("/")) {
+                expectThat(restaurant.sendRequest("/")) {
                     get { statusCode() }.isEqualTo(500)
                     get { body }.isNotNull().contains("error in error handler").contains("oops error handler failed")
                 }
@@ -88,7 +88,7 @@ class RestaurantTest {
                             "not found but anyway I'm teapot"
                         )
                     }) { }
-                expectThat(restaurant.request("/not-found")) {
+                expectThat(restaurant.sendRequest("/not-found")) {
                     get { statusCode() }.isEqualTo(418)
                     get { body() }.isEqualTo("not found but anyway I'm teapot")
                 }

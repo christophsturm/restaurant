@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.toList
 import restaurant.Restaurant
 import restaurant.client.RestaurantResponse
 import restaurant.internal.User
-import restaurant.request
-import restaurant.streamRequest
+import restaurant.sendRequest
+import restaurant.sendStreamingRequest
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
@@ -35,7 +35,7 @@ class StreamingExample {
         )
 
         it("works with the buffering http client") {
-            val response = restaurant.request("/streaming")
+            val response = restaurant.sendRequest("/streaming")
             expectThat(response) {
                 get { statusCode }.isEqualTo(200)
                 get { body }.isEqualTo(
@@ -47,7 +47,7 @@ class StreamingExample {
             }
         }
         it("works with the streaming http client") {
-            val response: RestaurantResponse<Flow<String>> = restaurant.streamRequest("/streaming")
+            val response: RestaurantResponse<Flow<String>> = restaurant.sendStreamingRequest("/streaming")
             expectThat(response) {
                 get { statusCode }.isEqualTo(200)
             }

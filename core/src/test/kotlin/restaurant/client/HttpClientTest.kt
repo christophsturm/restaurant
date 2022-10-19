@@ -7,8 +7,8 @@ import restaurant.HttpStatus
 import restaurant.Method
 import restaurant.Restaurant
 import restaurant.httpClient
-import restaurant.request
 import restaurant.response
+import restaurant.sendRequest
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.containsExactly
@@ -31,11 +31,11 @@ class HttpClientTest {
 
         describe("get requests") {
             it("are default") {
-                expectThat(restaurant.request("/get").body).isEqualTo("get reply")
+                expectThat(restaurant.sendRequest("/get").body).isEqualTo("get reply")
             }
         }
         describe("http response") {
-            val response = restaurant.request("/post") { post() }
+            val response = restaurant.sendRequest("/post") { post() }
             describe("toString method") {
                 it("contains the url") {
                     expectThat(response.toString()).contains("/post")

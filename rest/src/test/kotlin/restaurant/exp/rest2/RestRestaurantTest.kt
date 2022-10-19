@@ -10,10 +10,10 @@ import restaurant.HttpStatus
 import restaurant.Restaurant
 import restaurant.RoutingDSL
 import restaurant.internal.UsersService
-import restaurant.request
 import restaurant.response
 import restaurant.rest.RestService
 import restaurant.rest.path
+import restaurant.sendRequest
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEmpty
@@ -43,7 +43,7 @@ class RestRestaurantTest {
                         resources(EmptyReplyService(), "/handlers/empty").mapping(index = { index() })
                     }
                 )
-                val response = restaurant.request("/handlers/empty")
+                val response = restaurant.sendRequest("/handlers/empty")
                 expectThat(response) {
                     get { statusCode() }.isEqualTo(HttpStatus.NO_CONTENT_204)
                     get { body() }.isNotNull().isEmpty()
@@ -64,7 +64,7 @@ class RestRestaurantTest {
                 )
 
                 describe("post requests") {
-                    val response = restaurant.request("/api/users") { post("""{"name":"userName"}""") }
+                    val response = restaurant.sendRequest("/api/users") { post("""{"name":"userName"}""") }
                     it("returns 201 - Created on successful post request") {
                         expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.CREATED_201)
                     }
@@ -73,14 +73,14 @@ class RestRestaurantTest {
                     }
                 }
                 it("calls show method on get request with id") {
-                    val response = restaurant.request("/api/users/5")
+                    val response = restaurant.sendRequest("/api/users/5")
                     expectThat(response) {
                         get { statusCode() }.isEqualTo(200)
                         get { body() }.isEqualTo("""{"id":"5","name":"User 5"}""")
                     }
                 }
                 it("calls index method on get request without id") {
-                    val response = restaurant.request("/api/users")
+                    val response = restaurant.sendRequest("/api/users")
                     expectThat(response) {
                         get { statusCode() }.isEqualTo(200)
                         get { body() }.isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
@@ -88,7 +88,7 @@ class RestRestaurantTest {
                 }
                 it("calls update method on put request") {
                     val response =
-                        restaurant.request("/api/users/5") { put("""{"name":"userName"}""") }
+                        restaurant.sendRequest("/api/users/5") { put("""{"name":"userName"}""") }
                     expectThat(response) {
                         get { statusCode() }.isEqualTo(200)
                         get { body() }.isEqualTo("""{"id":"5","name":"userName"}""")
@@ -96,14 +96,14 @@ class RestRestaurantTest {
                 }
                 it("calls delete method on delete request") {
                     val response =
-                        restaurant.request("/api/users/5") { delete() }
+                        restaurant.sendRequest("/api/users/5") { delete() }
                     expectThat(response) {
                         get { statusCode() }.isEqualTo(200)
                         get { body() }.isEqualTo("""{"status":"user 5 deleted"}""")
                     }
                 }
                 it("sets json content type") {
-                    val response = restaurant.request("/api/users")
+                    val response = restaurant.sendRequest("/api/users")
                     expectThat(response).get { headers().allValues(HttpHeader.CONTENT_TYPE) }.single()
                         .isEqualTo(ContentType.APPLICATION_JSON)
                 }
@@ -111,7 +111,7 @@ class RestRestaurantTest {
                     describe("malformed requests") {
                         it("returns a useful error message") {
                             val requestBody = """{"nam":"userName"}"""
-                            val response = restaurant.request("/api/users") { post(requestBody) }
+                            val response = restaurant.sendRequest("/api/users") { post(requestBody) }
                             expectThat(response) {
                                 get { statusCode() }.isEqualTo(HttpStatus.BAD_REQUEST_400)
                                 get { body }.isNotNull().contains(requestBody)
@@ -133,7 +133,7 @@ class RestRestaurantTest {
                             result = "sorry: " + ex.message
                         )
                     }) { resources(ExceptionsService()) }
-                    expectThat(restaurant.request("/exceptions")) {
+                    expectThat(restaurant.sendRequest("/exceptions")) {
                         get { statusCode() }.isEqualTo(418)
                         get { body() }.isEqualTo("sorry: error message")
                     }
