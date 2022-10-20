@@ -14,6 +14,7 @@ import strikt.assertions.isGreaterThan
 import strikt.assertions.isNotNull
 import strikt.assertions.size
 import java.nio.ByteBuffer
+import kotlin.test.assertNotNull
 
 @Test
 class RestaurantTest {
@@ -33,6 +34,13 @@ class RestaurantTest {
                     }
                 }
             )
+            it("exposes routes") {
+                with(assertNotNull(restaurant.routes.single())) {
+                    assert(method == Method.POST)
+                    assert(path == "/handlers/reverser")
+                    assert(this.wrappers.isEmpty())
+                }
+            }
             it("returns 404 if the route is not found") {
                 val response = restaurant.sendRequest("/unconfigured-url")
                 expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.NOT_FOUND_404)

@@ -13,6 +13,7 @@ plugins {
     id("restaurant.common")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
+    id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
 }
 
 dependencies {
@@ -27,6 +28,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
+    testImplementation(kotlin("test"))
     testRuntimeOnly("org.apache.logging.log4j:log4j-core:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-jul:$log4j2Version")
