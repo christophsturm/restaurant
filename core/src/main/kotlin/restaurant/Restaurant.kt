@@ -25,10 +25,10 @@ private val defaultExceptionHandler: ExceptionHandler = {
 }
 private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 
-class Restaurant internal constructor(
+data class Restaurant internal constructor(
     val baseUrl: String,
     val routes: List<Route>,
-    val undertow: Undertow,
+    private val undertow: Undertow,
     @Suppress("unused")
     @Deprecated("use baseUrl")
     val port: Int
