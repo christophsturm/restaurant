@@ -33,7 +33,6 @@ class SealedClassTest {
                     resources(SealedClassService())
                 }
             )
-            println(restaurant.routes)
             expectThat(
                 jacksonObjectMapper().readValue<SuccesfulLogin>(
                     restaurant.sendRequest("/sealedclass/42").body()!!
