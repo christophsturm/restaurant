@@ -2,6 +2,7 @@
 
 package restaurant.rest
 
+import failgood.Ignored
 import failgood.Test
 import failgood.describe
 import restaurant.ContentType
@@ -130,28 +131,30 @@ class RestRestaurantTest {
                     }
                 }
             }
+            describe("planned features") {
 
-            ignore("nested routes") {
-                val restaurant = autoClose(
-                    restaurant {
-                        namespace("/api") {
-                            resources(UsersService()) {
-                                resources(HobbiesService()) // user has many hobbies
+                it("does not yet support nested routes", ignored = Ignored.Because("not yet implemented")) {
+                    val restaurant = autoClose(
+                        restaurant {
+                            namespace("/api") {
+                                resources(UsersService()) {
+                                    resources(HobbiesService()) // user has many hobbies
+                                }
                             }
                         }
-                    }
-                )
-            }
-            ignore("singular routes") {
-                class CartService : RestService
+                    )
+                }
+                it("does not yet support singular routes", ignored = Ignored.Because("not yet implemented")) {
+                    class CartService : RestService
 
-                val restaurant = autoClose(
-                    restaurant {
-                        namespace("/api") {
-                            resource(CartService()) // singular resource
+                    val restaurant = autoClose(
+                        restaurant {
+                            namespace("/api") {
+                                resource(CartService()) // singular resource
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
