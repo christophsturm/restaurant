@@ -103,8 +103,9 @@ class RestaurantTest {
             }
         }
         it("exposes its base url for easier testing") {
-            val restaurant = autoClose(Restaurant { })
-            expectThat(restaurant.baseUrl).isEqualTo("http://localhost:${restaurant.port}")
+            val port = findFreePort()
+            val restaurant = autoClose(Restaurant(host = "0.0.0.0", port = port) { })
+            expectThat(restaurant.baseUrl).isEqualTo("http://0.0.0.0:$port")
         }
         describe("async roundtrip") {
             it("works") {
@@ -123,7 +124,7 @@ class RestaurantTest {
                         }
                     }
                 )
-                val response = httpClient.sendStreaming("http://localhost:${restaurant.port}/async")
+                val response = restaurant.sendStreamingRequest("/async")
                 // the flow is still sending, but  we already got our answer. we must be streaming!
                 expectThat(response).get { statusCode }.isEqualTo(200)
                 var received = 0
