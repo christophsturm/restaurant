@@ -1,4 +1,4 @@
-package restaurant.internal
+package restaurant.rest.internal
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -12,9 +12,9 @@ import restaurant.RequestContext
 import restaurant.Response
 import restaurant.Route
 import restaurant.SuspendingHandler
+import restaurant.internal.Mapper
 import restaurant.response
 import restaurant.rest.RestService
-import restaurant.rest.internal.RestFunction
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.functions
 

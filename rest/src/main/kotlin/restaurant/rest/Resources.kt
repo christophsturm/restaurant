@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import restaurant.JacksonMapper
 import restaurant.RestDSL
 import restaurant.RoutingDSL
-import restaurant.internal.RoutesAdder
+import restaurant.rest.internal.RoutesAdder
 import java.util.Locale
 
 interface RestService
