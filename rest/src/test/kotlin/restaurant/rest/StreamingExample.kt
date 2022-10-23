@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
+import restaurant.JacksonMapper
 import restaurant.Restaurant
 import restaurant.client.RestaurantResponse
 import restaurant.internal.User
@@ -17,8 +18,10 @@ import strikt.assertions.isEqualTo
 
 @Test
 class StreamingExample {
+    @Suppress("unused")
     val tests = describe("streaming via kotlin flows") {
         class StreamingService : RestService {
+            @Suppress("unused")
             fun index(): Flow<User> {
                 return flow {
                     emit(User("5", "userName"))
@@ -29,7 +32,7 @@ class StreamingExample {
         }
 
         val restaurant = autoClose(
-            Restaurant {
+            Restaurant(mapper = JacksonMapper()) {
                 resources(StreamingService())
             }
         )

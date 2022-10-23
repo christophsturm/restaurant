@@ -8,6 +8,7 @@ import failgood.describe
 import restaurant.ContentType
 import restaurant.HttpHeader
 import restaurant.HttpStatus
+import restaurant.JacksonMapper
 import restaurant.Restaurant
 import restaurant.RoutingDSL
 import restaurant.internal.HobbiesService
@@ -21,7 +22,8 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.single
 
-fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
+fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
+    Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
 
 @Test
 class RestRestaurantTest {
@@ -119,7 +121,7 @@ class RestRestaurantTest {
                     }
                 }
                 it("calls error handler with the correct exception") {
-                    val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
+                    val restaurant = Restaurant(mapper = JacksonMapper(), exceptionHandler = { ex: Throwable ->
                         response(
                             status = 418,
                             result = "sorry: " + ex.message

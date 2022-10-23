@@ -17,7 +17,7 @@ class RoutesTest {
             val inner = Wrapper { null }
             val outer = Wrapper { null }
             val handler = mock<SuspendingHandler>()
-            val routes = routes {
+            val routes = routes(null) {
                 wrap(outer) {
                     wrap(inner) {
                         route(Method.GET, "/url", handler)

@@ -2,6 +2,7 @@ package restaurant
 
 import io.undertow.Undertow
 import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
+import restaurant.internal.Mapper
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
@@ -39,10 +40,11 @@ data class Restaurant internal constructor(
             port: Int = findFreePort(),
             exceptionHandler: ExceptionHandler = defaultExceptionHandler,
             defaultHandler: SuspendingHandler = defaultDefaultHandler,
+            mapper: Mapper? = null,
             serviceMapping: RoutingDSL.() -> Unit
         ): Restaurant {
             val baseUrl = "http://$host:$port"
-            val routes: List<Route> = routes(serviceMapping)
+            val routes: List<Route> = routes(mapper, serviceMapping)
             val rootHandlers = routes.map { route ->
                 Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
             }
