@@ -98,16 +98,16 @@ class RestRestaurantTest {
                         check()
                     }
                 }
-                describe("missing", ignored = Ignored.Because("working on it")) {
-                    describe("post requests") {
-                        val response = r.sendRequest("/api/users") { post("""{"name":"userName"}""") }
-                        it("returns 201 - Created on successful post request") {
-                            expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.CREATED_201)
-                        }
-                        it("calls create method on post request") {
-                            expectThat(response).get { body() }.isEqualTo("""{"id":"userId","name":"userName"}""")
-                        }
+                describe("post requests") {
+                    val response = r.sendRequest("/api/users") { post("""{"name":"userName"}""") }
+                    it("returns 201 - Created on successful post request") {
+                        assert(response.statusCode == HttpStatus.CREATED_201)
                     }
+                    it("calls create method on post request") {
+                        assert(response.body == """{"id":"userId","name":"userName"}""")
+                    }
+                }
+                describe("missing", ignored = Ignored.Because("working on it")) {
                     it("calls index method on get request without id") {
                         val response = r.sendRequest("/api/users")
                         expectThat(response) {

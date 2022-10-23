@@ -11,6 +11,7 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
     kotlin("plugin.serialization") version ("1.7.20")
+    id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
 }
 
 dependencies {
