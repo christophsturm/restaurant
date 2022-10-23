@@ -151,7 +151,7 @@ private fun Mapper.responseOrNull(result: Any?, statusCode: Int = HttpStatus.OK_
             FlowResponse(
                 mapOf(),
                 statusCode,
-                flow { result.collect { if (it != null) {emit(writeValueAsString(it)); emit("\n") }} })
+                flow { result.collect { if (it != null) { emit(writeValueAsString(it)); emit("\n") } } })
         } else {
             response(statusCode, writeValueAsBytes(result), contentTypeJson)
         }

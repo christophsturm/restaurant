@@ -1,10 +1,7 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
 import restaurant.versions.failgoodVersion
-import restaurant.versions.jacksonVersion
-import restaurant.versions.kotlinVersion
 import restaurant.versions.log4j2Version
-import restaurant.versions.striktVersion
 
 plugins {
     kotlin("jvm")
@@ -12,16 +9,15 @@ plugins {
     id("restaurant.common")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
-    kotlin("plugin.serialization") version("1.7.20")
+    kotlin("plugin.serialization") version ("1.7.20")
 }
 
 dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
-    api(project(":restaurant-core"))
-    testImplementation("io.strikt:strikt-core:$striktVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    api(project(":restaurant-rest"))
+    kotlin("test")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
     testRuntimeOnly("org.apache.logging.log4j:log4j-core:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:$log4j2Version")
