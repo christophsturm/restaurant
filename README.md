@@ -10,20 +10,22 @@ includes a http client based on the java 11 http client.
 
 Available from Maven Central.
 
-```kotlin
-dependencies {
-    implementation("com.christophsturm.restaurant:restaurant-core:0.0.7")
-}
-```
 
 ### High Level API
 
 Restaurant helps you implement REST apis in a simple way that is easy to test, and have your handlers not depend on any webserver classes.
 
 ```kotlin
+dependencies {
+    implementation("com.christophsturm.restaurant:restaurant-jackson:0.0.8")
+}
+```
+
+
+```kotlin
 
 fun main() {
-    Restaurant(8080) {
+    Restaurant(mapper = JacksonMapper()) {
         namespace("/api") {
             resources(UsersService())
         }
@@ -92,6 +94,13 @@ expectThat(list).containsExactly(
 ```
 
 ### The Low Level API
+
+```kotlin
+dependencies {
+    implementation("com.christophsturm.restaurant:restaurant-core:0.0.8")
+}
+```
+
 
 There is also a really nice low level api if you need more flexibility.
 
