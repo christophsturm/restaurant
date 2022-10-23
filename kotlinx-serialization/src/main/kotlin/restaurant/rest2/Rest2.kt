@@ -35,7 +35,6 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     ) {
         resourceMapper.create(responseSerializer, body)
     }
-
 }
 
 @Suppress("UNUSED_PARAMETER")
