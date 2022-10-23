@@ -2,6 +2,7 @@ package restaurant
 
 import io.undertow.Undertow
 import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
+import restaurant.internal.Mapper
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.ServerSocket
@@ -25,22 +26,32 @@ private val defaultExceptionHandler: ExceptionHandler = {
 }
 private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 
-class Restaurant(
-    host: String = "127.0.0.1",
-    val port: Int = findFreePort(),
-    private val exceptionHandler: ExceptionHandler = defaultExceptionHandler,
-    defaultHandler: SuspendingHandler = defaultDefaultHandler,
-    serviceMapping: RoutingDSL.() -> Unit
+data class Restaurant internal constructor(
+    val baseUrl: String,
+    val routes: List<Route>,
+    private val undertow: Undertow,
+    @Suppress("unused")
+    @Deprecated("use baseUrl")
+    val port: Int
 ) : AutoCloseable {
-
-    val baseUrl = "http://localhost:$port"
-    val routes: List<Route> = routes(serviceMapping)
-
-    private val rootHandlers = routes.map { route ->
-        Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
+    companion object {
+        operator fun invoke(
+            host: String = "127.0.0.1",
+            port: Int = findFreePort(),
+            exceptionHandler: ExceptionHandler = defaultExceptionHandler,
+            defaultHandler: SuspendingHandler = defaultDefaultHandler,
+            mapper: Mapper? = null,
+            serviceMapping: RoutingDSL.() -> Unit
+        ): Restaurant {
+            val baseUrl = "http://$host:$port"
+            val routes: List<Route> = routes(mapper, serviceMapping)
+            val rootHandlers = routes.map { route ->
+                Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
+            }
+            val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, port, host).apply { start() }
+            return Restaurant(baseUrl, routes, undertow, port)
+        }
     }
-
-    private val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, port, host).apply { start() }
 
     override fun close() {
         undertow.stop()

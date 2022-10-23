@@ -46,16 +46,16 @@ class HttpClientTest {
                 it("contains the status code") {
                     expectThat(response.toString()).contains("""status: 418""")
                 }
-                ignore("contains the headers") { // toString should contain nicely printed headers
+                it("contains the headers") { // toString should contain nicely printed headers
                     expectThat(response.toString()).contains(
-                        """headers: {"Content-Type" => ["only the best content"] """
+                        """content-type=[only the best content]"""
                     )
                 }
             }
         }
         describe("streaming the response") {
             it("works") {
-                val response = httpClient.sendStreaming("http://localhost:${restaurant.port}${"/post"}") { post() }
+                val response = httpClient.sendStreaming("${restaurant.baseUrl}${"/post"}") { post() }
                 expectThat(response.body?.toList()).isNotNull().containsExactly("post", "reply")
             }
         }

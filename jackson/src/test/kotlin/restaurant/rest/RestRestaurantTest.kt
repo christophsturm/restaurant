@@ -2,11 +2,13 @@
 
 package restaurant.rest
 
+import failgood.Ignored
 import failgood.Test
 import failgood.describe
 import restaurant.ContentType
 import restaurant.HttpHeader
 import restaurant.HttpStatus
+import restaurant.JacksonMapper
 import restaurant.Restaurant
 import restaurant.RoutingDSL
 import restaurant.internal.HobbiesService
@@ -20,7 +22,8 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.single
 
-fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
+fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
+    Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
 
 @Test
 class RestRestaurantTest {
@@ -118,7 +121,7 @@ class RestRestaurantTest {
                     }
                 }
                 it("calls error handler with the correct exception") {
-                    val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
+                    val restaurant = Restaurant(mapper = JacksonMapper(), exceptionHandler = { ex: Throwable ->
                         response(
                             status = 418,
                             result = "sorry: " + ex.message
@@ -130,28 +133,30 @@ class RestRestaurantTest {
                     }
                 }
             }
+            describe("planned features") {
 
-            ignore("nested routes") {
-                val restaurant = autoClose(
-                    restaurant {
-                        namespace("/api") {
-                            resources(UsersService()) {
-                                resources(HobbiesService()) // user has many hobbies
+                it("does not yet support nested routes", ignored = Ignored.Because("not yet implemented")) {
+                    val restaurant = autoClose(
+                        restaurant {
+                            namespace("/api") {
+                                resources(UsersService()) {
+                                    resources(HobbiesService()) // user has many hobbies
+                                }
                             }
                         }
-                    }
-                )
-            }
-            ignore("singular routes") {
-                class CartService : RestService
+                    )
+                }
+                it("does not yet support singular routes", ignored = Ignored.Because("not yet implemented")) {
+                    class CartService : RestService
 
-                val restaurant = autoClose(
-                    restaurant {
-                        namespace("/api") {
-                            resource(CartService()) // singular resource
+                    val restaurant = autoClose(
+                        restaurant {
+                            namespace("/api") {
+                                resource(CartService()) // singular resource
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }

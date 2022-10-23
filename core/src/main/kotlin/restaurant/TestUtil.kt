@@ -12,7 +12,7 @@ val httpClient = Java11HttpClient()
 suspend fun Restaurant.sendRequest(
     path: String,
     config: Java11HttpClient.RequestDSL.() -> Unit = { }
-): RestaurantResponse<String> = httpClient.send("http://localhost:$port$path", config)
+): RestaurantResponse<String> = httpClient.send("$baseUrl$path", config)
 
 /**
  * make a http request to a restaurant instance and stream the response
@@ -20,4 +20,4 @@ suspend fun Restaurant.sendRequest(
 suspend fun Restaurant.sendStreamingRequest(
     path: String,
     config: Java11HttpClient.RequestDSL.() -> Unit = { }
-): RestaurantResponse<Flow<String>> = httpClient.sendStreaming("http://localhost:$port$path", config)
+): RestaurantResponse<Flow<String>> = httpClient.sendStreaming("$baseUrl$path", config)

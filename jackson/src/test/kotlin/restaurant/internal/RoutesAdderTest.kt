@@ -8,6 +8,7 @@ import restaurant.JacksonMapper
 import restaurant.Method
 import restaurant.MutableRequestContext
 import restaurant.Route
+import restaurant.rest.internal.RoutesAdder
 import restaurant.test.MockRequest
 import strikt.api.expectThat
 import strikt.assertions.getValue

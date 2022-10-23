@@ -1,5 +1,6 @@
 package restaurant
 
+import failgood.Ignored
 import failgood.Test
 import failgood.describe
 import kotlinx.coroutines.delay
@@ -12,9 +13,9 @@ import java.time.temporal.ChronoUnit
 @Test
 class CoroutinesTest {
     val context = describe("coroutine handling") {
-        ignore("cancels coroutine scope when the client disconnects") {
-            // it seems undertow does not close the exchange when the client disconnects, so we have no way of detecting
-            // client disconnects.
+        it("cancels coroutine scope when the client disconnects",
+            ignored = Ignored.Because("it seems undertow does not close the exchange when the client disconnects," +
+                "so we have no way of detecting client disconnects.")) {
             val delayService = DelayService()
             val restaurant = Restaurant {
                 route(Method.GET, "/delay", delayService)

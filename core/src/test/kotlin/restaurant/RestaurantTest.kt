@@ -14,6 +14,7 @@ import strikt.assertions.isGreaterThan
 import strikt.assertions.isNotNull
 import strikt.assertions.size
 import java.nio.ByteBuffer
+import kotlin.test.assertNotNull
 
 @Test
 class RestaurantTest {
@@ -33,6 +34,13 @@ class RestaurantTest {
                     }
                 }
             )
+            it("exposes routes") {
+                with(assertNotNull(restaurant.routes.single())) {
+                    assert(method == Method.POST)
+                    assert(path == "/handlers/reverser")
+                    assert(this.wrappers.isEmpty())
+                }
+            }
             it("returns 404 if the route is not found") {
                 val response = restaurant.sendRequest("/unconfigured-url")
                 expectThat(response).get { statusCode() }.isEqualTo(HttpStatus.NOT_FOUND_404)
@@ -95,8 +103,9 @@ class RestaurantTest {
             }
         }
         it("exposes its base url for easier testing") {
-            val restaurant = autoClose(Restaurant { })
-            expectThat(restaurant.baseUrl).isEqualTo("http://localhost:${restaurant.port}")
+            val port = findFreePort()
+            val restaurant = autoClose(Restaurant(host = "0.0.0.0", port = port) { })
+            expectThat(restaurant.baseUrl).isEqualTo("http://0.0.0.0:$port")
         }
         describe("async roundtrip") {
             it("works") {
@@ -115,7 +124,7 @@ class RestaurantTest {
                         }
                     }
                 )
-                val response = httpClient.sendStreaming("http://localhost:${restaurant.port}/async")
+                val response = restaurant.sendStreamingRequest("/async")
                 // the flow is still sending, but  we already got our answer. we must be streaming!
                 expectThat(response).get { statusCode }.isEqualTo(200)
                 var received = 0
