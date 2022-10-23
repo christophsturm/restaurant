@@ -10,6 +10,7 @@ plugins {
     kotlin("jvm")
     id("info.solidsoft.pitest")
     id("restaurant.common")
+    id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
 }
