@@ -59,20 +59,32 @@ class RestRestaurantTest {
                         assert(response.isOk)
                         assert(response.body == """{"id":"5","name":"User 5"}""")
                     }
-                    it("calls show on get request with id") {
-                        val restaurant = autoClose(
-                            restaurant {
-                                namespace("/api") {
-                                    resources(UsersService(), User.serializer()).apply {
-                                        show { show(it.intId()) }
+                    describe("when the resource has a default type") {
+                        it("calls show on get request with id") {
+                            val restaurant = autoClose(
+                                restaurant {
+                                    namespace("/api") {
+                                        resources(UsersService(), User.serializer()).apply {
+                                            show { show(it.intId()) }
+                                        }
                                     }
                                 }
-                            }
-                        )
-
-                        check()
+                            )
+                            check()
+                        }
+                        it("calls show that returns custom type on get request with id") {
+                            val restaurant = autoClose(
+                                restaurant {
+                                    namespace("/api") {
+                                        resources(UsersService(), User.serializer()).apply {
+                                            show(User.serializer()) { show(it.intId()) }
+                                        }
+                                    }
+                                }
+                            )
+                            check()
+                        }
                     }
-
                     it("calls show that returns custom type on get request with id") {
                         val restaurant = autoClose(
                             restaurant {
@@ -222,19 +234,19 @@ class RestRestaurantTest {
 }
 
 private fun <Service : Any> RoutingDSL.resources(service: Service, path: String = path(service)) =
-    ResourceMapper(this, service, path)
+    CResourceMapper(this, service, path)
 
 private fun <Service : Any, ServiceResponse> RoutingDSL.resources(
     service: Service,
     responseSerializer: SerializationStrategy<ServiceResponse>,
     path: String = path(service)
 ) =
-    ResourceMapperWithDefaultType(responseSerializer, ResourceMapper(this, service, path))
+    ResourceMapperWithDefaultType(responseSerializer, CResourceMapper(this, service, path))
 
 class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     val responseSerializer: SerializationStrategy<DefaultType>,
     val resourceMapper: ResourceMapper<Service>
-) {
+) : ResourceMapper<Service> by resourceMapper {
     fun show(body: suspend Service.(ShowContext) -> DefaultType) {
         resourceMapper.show(responseSerializer, body)
     }
@@ -257,7 +269,7 @@ private inline fun <reified T : Any> Context.body(): T {
 private fun path(service: Any) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
-interface ResourceMapperImpl<T : Any> {
+interface ResourceMapper<T : Any> {
     fun <ServiceResponse> show(
         responseSerializer: SerializationStrategy<ServiceResponse>,
         body: suspend T.(ShowContext) -> ServiceResponse
@@ -265,11 +277,11 @@ interface ResourceMapperImpl<T : Any> {
 }
 
 @Suppress("UNUSED_PARAMETER")
-class ResourceMapper<Service : Any>(
+class CResourceMapper<Service : Any>(
     private val routingDSL: RoutingDSL,
     private val service: Service,
     private val path: String = path(service)
-) : ResourceMapperImpl<Service> {
+) : ResourceMapper<Service> {
     override fun <ServiceResponse> show(
         responseSerializer: SerializationStrategy<ServiceResponse>,
         body: suspend Service.(ShowContext) -> ServiceResponse
