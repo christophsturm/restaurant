@@ -6,8 +6,8 @@ import failgood.Ignored
 import failgood.Test
 import failgood.describe
 import kotlinx.coroutines.delay
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
 import restaurant.ContentType
 import restaurant.HttpHeader
@@ -17,6 +17,7 @@ import restaurant.Request
 import restaurant.RequestContext
 import restaurant.Response
 import restaurant.Restaurant
+import restaurant.RestaurantException
 import restaurant.RoutingDSL
 import restaurant.SuspendingHandler
 import restaurant.response
@@ -46,6 +47,7 @@ class RestRestaurantTest {
                             resources(UsersService()).apply {
 //                                index = { index() },
                                 show(User.serializer()) { show(it.intId()) }
+                                create(User.serializer()) { create(it.body()) }
 //                                create = { create(it.body()) },
 //                                update = { update(it.intId(), it.body()) }
                             }
@@ -174,7 +176,7 @@ class RestRestaurantTest {
     }
 
     @Serializable
-    data class User(val id: String?, val name: String)
+    data class User(val id: String? = null, val name: String)
     data class Hobby(val name: String)
     class UsersService : RestService {
         suspend fun index(): List<User> {
@@ -234,17 +236,17 @@ class RestRestaurantTest {
 }
 
 private fun <Service : Any> RoutingDSL.resources(service: Service, path: String = path(service)) =
-    CResourceMapper(this, service, path)
+    ResourceMapperImpl(this, service, path)
 
 private fun <Service : Any, ServiceResponse> RoutingDSL.resources(
     service: Service,
-    responseSerializer: SerializationStrategy<ServiceResponse>,
+    responseSerializer: KSerializer<ServiceResponse>,
     path: String = path(service)
 ) =
-    ResourceMapperWithDefaultType(responseSerializer, CResourceMapper(this, service, path))
+    ResourceMapperWithDefaultType(responseSerializer, ResourceMapperImpl(this, service, path))
 
 class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
-    val responseSerializer: SerializationStrategy<DefaultType>,
+    val responseSerializer: KSerializer<DefaultType>,
     val resourceMapper: ResourceMapper<Service>
 ) : ResourceMapper<Service> by resourceMapper {
     fun show(body: suspend Service.(ShowContext) -> DefaultType) {
@@ -269,25 +271,45 @@ private inline fun <reified T : Any> Context.body(): T {
 private fun path(service: Any) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
-interface ResourceMapper<T : Any> {
+interface ResourceMapper<Service : Any> {
     fun <ServiceResponse> show(
-        responseSerializer: SerializationStrategy<ServiceResponse>,
-        body: suspend T.(ShowContext) -> ServiceResponse
+        responseSerializer: KSerializer<ServiceResponse>,
+        body: suspend Service.(ShowContext) -> ServiceResponse
+    )
+
+    fun <RequestAndResponse> create(
+        serializer: KSerializer<RequestAndResponse>,
+        body: suspend Service.(CreateContext<RequestAndResponse>) -> RequestAndResponse
     )
 }
 
 @Suppress("UNUSED_PARAMETER")
-class CResourceMapper<Service : Any>(
+class ResourceMapperImpl<Service : Any>(
     private val routingDSL: RoutingDSL,
     private val service: Service,
     private val path: String = path(service)
 ) : ResourceMapper<Service> {
     override fun <ServiceResponse> show(
-        responseSerializer: SerializationStrategy<ServiceResponse>,
+        responseSerializer: KSerializer<ServiceResponse>,
         body: suspend Service.(ShowContext) -> ServiceResponse
     ) {
         routingDSL.route(Method.GET, "$path/{id}", ShowHandler(responseSerializer, service, body))
     }
+
+    override fun <RequestAndResponse> create(
+        serializer: KSerializer<RequestAndResponse>,
+        body: suspend Service.(CreateContext<RequestAndResponse>) -> RequestAndResponse
+    ) {
+        routingDSL.route(
+            Method.POST,
+            path,
+            CreateHandler(serializer, serializer, service, body)
+        )
+    }
+}
+
+interface CreateContext<ResponseType> {
+    fun body(): ResponseType
 }
 
 interface ShowContext {
@@ -295,7 +317,7 @@ interface ShowContext {
 }
 
 class ShowHandler<Service : Any, ServiceResponse>(
-    private val responseSerializer: SerializationStrategy<ServiceResponse>,
+    private val responseSerializer: KSerializer<ServiceResponse>,
     private val service: Service,
     val show: (suspend Service.(ShowContext) -> ServiceResponse)
 ) : SuspendingHandler {
@@ -304,12 +326,37 @@ class ShowHandler<Service : Any, ServiceResponse>(
             it["id"]?.singleOrNull()
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
         }
-        val result = service.show(ContextImpl(id))
+        val result = service.show(ShowContextImpl(id))
         return response(200, Json.encodeToString(responseSerializer, result))
     }
 }
 
-class ContextImpl(private val id: String) : ShowContext {
+class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
+    private val requestSerializer: KSerializer<ServiceRequest>,
+    private val responseSerializer: KSerializer<ServiceResponse>,
+    private val service: Service,
+    val show: (suspend Service.(CreateContext<ServiceRequest>) -> ServiceResponse)
+) : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val payload = request.withBody().body.let {
+            val string = String(it!!)
+            try {
+                Json.decodeFromString(requestSerializer, string)
+            } catch (e: Exception) {
+                throw RestaurantException("error deserializing request body: $string")
+            }
+        }
+
+        val result = service.show(CreateContextImpl(payload))
+        return response(201, Json.encodeToString(responseSerializer, result))
+    }
+}
+
+class CreateContextImpl<ServiceRequest>(val body: ServiceRequest) : CreateContext<ServiceRequest> {
+    override fun body(): ServiceRequest = body
+}
+
+class ShowContextImpl(private val id: String) : ShowContext {
     override fun intId(): Int {
         return id.toInt()
     }
