@@ -47,7 +47,7 @@ class RestRestaurantTest {
                             resources(UsersService()).apply {
 //                                index = { index() },
                                 show(User.serializer()) { show(it.intId()) }
-                                create(User.serializer()) { create(it.body()) }
+                                create(User.serializer()) { create(it.body) }
 //                                create = { create(it.body()) },
 //                                update = { update(it.intId(), it.body()) }
                             }
@@ -246,8 +246,8 @@ private fun <Service : Any, ServiceResponse> RoutingDSL.resources(
     ResourceMapperWithDefaultType(responseSerializer, ResourceMapperImpl(this, service, path))
 
 class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
-    val responseSerializer: KSerializer<DefaultType>,
-    val resourceMapper: ResourceMapper<Service>
+    private val responseSerializer: KSerializer<DefaultType>,
+    private val resourceMapper: ResourceMapper<Service>
 ) : ResourceMapper<Service> by resourceMapper {
     fun show(body: suspend Service.(ShowContext) -> DefaultType) {
         resourceMapper.show(responseSerializer, body)
@@ -309,7 +309,7 @@ class ResourceMapperImpl<Service : Any>(
 }
 
 interface CreateContext<ResponseType> {
-    fun body(): ResponseType
+    val body: ResponseType
 }
 
 interface ShowContext {
@@ -352,9 +352,7 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     }
 }
 
-class CreateContextImpl<ServiceRequest>(val body: ServiceRequest) : CreateContext<ServiceRequest> {
-    override fun body(): ServiceRequest = body
-}
+class CreateContextImpl<ServiceRequest>(override val body: ServiceRequest) : CreateContext<ServiceRequest>
 
 class ShowContextImpl(private val id: String) : ShowContext {
     override fun intId(): Int {

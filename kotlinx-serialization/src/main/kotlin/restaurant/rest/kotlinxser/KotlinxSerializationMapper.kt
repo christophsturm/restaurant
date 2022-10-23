@@ -3,7 +3,7 @@ package restaurant.rest.kotlinxser
 import kotlinx.serialization.json.Json
 import restaurant.internal.Mapper
 
-class KotlinxSerializationMapper(private val json: Json) : Mapper {
+class KotlinxSerializationMapper(@Suppress("unused") private val json: Json) : Mapper {
     override fun <T : Any> readValue(requestBody: ByteArray, clazz: Class<T>): T {
         TODO("Not yet implemented")
     }

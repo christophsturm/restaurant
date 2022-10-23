@@ -1,5 +1,3 @@
-import gradle.kotlin.dsl.accessors._0fb4ceb799762099ea9d453d482ee9d2.publishing
-import gradle.kotlin.dsl.accessors._0fb4ceb799762099ea9d453d482ee9d2.signing
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
