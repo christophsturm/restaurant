@@ -18,7 +18,7 @@ import strikt.assertions.single
 import java.util.LinkedList
 
 @Test
-class RoutesAdderTest {
+class RoutesAdderFunctionalTest {
     val context = describe(RoutesAdder::class) {
         val requestContext = MutableRequestContext()
         val routesAdder = RoutesAdder(JacksonMapper(jacksonObjectMapper()))

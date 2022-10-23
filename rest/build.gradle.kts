@@ -1,5 +1,7 @@
 @file:Suppress("GradlePackageUpdate")
 
+import restaurant.versions.failgoodVersion
+
 // buggy
 
 plugins {
@@ -14,4 +16,6 @@ plugins {
 dependencies {
     api(project(":restaurant-core"))
     implementation(kotlin("reflect"))
+    kotlin("test")
+    testImplementation("dev.failgood:failgood:$failgoodVersion")
 }
