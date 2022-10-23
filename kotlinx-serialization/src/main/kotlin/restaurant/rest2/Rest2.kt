@@ -30,6 +30,12 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     fun show(body: suspend Service.(ShowContext) -> DefaultType) {
         resourceMapper.show(responseSerializer, body)
     }
+    fun create(
+        body: suspend Service.(CreateContext<DefaultType>) -> DefaultType
+    ) {
+        resourceMapper.create(responseSerializer, body)
+    }
+
 }
 
 @Suppress("UNUSED_PARAMETER")
@@ -59,6 +65,12 @@ interface ResourceMapper<Service : Any> {
         serializer: KSerializer<RequestAndResponse>,
         body: suspend Service.(CreateContext<RequestAndResponse>) -> RequestAndResponse
     )
+
+    fun <Request, Response> create(
+        requestSerializer: KSerializer<Request>,
+        responseSerializer: KSerializer<Response>,
+        body: suspend Service.(CreateContext<Request>) -> Response
+    )
 }
 
 @Suppress("UNUSED_PARAMETER")
@@ -82,6 +94,17 @@ class ResourceMapperImpl<Service : Any>(
             Method.POST,
             path,
             CreateHandler(serializer, serializer, service, body)
+        )
+    }
+    override fun <Request, Response> create(
+        requestSerializer: KSerializer<Request>,
+        responseSerializer: KSerializer<Response>,
+        body: suspend Service.(CreateContext<Request>) -> Response
+    ) {
+        routingDSL.route(
+            Method.POST,
+            path,
+            CreateHandler(requestSerializer, responseSerializer, service, body)
         )
     }
 }
