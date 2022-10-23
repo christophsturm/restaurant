@@ -13,7 +13,6 @@ import restaurant.RoutingDSL
 import restaurant.internal.UsersService
 import restaurant.response
 import restaurant.rest.RestService
-import restaurant.rest.path
 import restaurant.sendRequest
 import strikt.api.expectThat
 import strikt.assertions.contains
@@ -21,6 +20,7 @@ import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.single
+import java.util.Locale
 import kotlin.reflect.KClass
 
 /*
@@ -157,6 +157,9 @@ class Context {
 private inline fun <reified T : Any> Context.get(): T {
     return this.get(T::class)
 }
+
+private fun path(service: Any) =
+    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
 
 @Suppress("UNUSED_PARAMETER")
 class ResourceMapper<T : Any>(service: T, path: String = path(service)) {

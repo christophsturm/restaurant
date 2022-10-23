@@ -20,7 +20,7 @@ dependencies {
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
-    api(project(":restaurant-core"))
+    api(project(":restaurant-rest"))
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
     testRuntimeOnly("org.apache.logging.log4j:log4j-core:$log4j2Version")
