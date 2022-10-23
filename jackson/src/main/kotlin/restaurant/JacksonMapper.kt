@@ -7,15 +7,15 @@ import restaurant.HttpStatus.BAD_REQUEST_400
 import restaurant.internal.Mapper
 
 class JacksonMapper(private val jackson: ObjectMapper = jacksonObjectMapper()) : Mapper {
-    override fun <T : Any> readValue(requestBody: ByteArray?, clazz: Class<T>): T =
+    override fun <T : Any> readValue(requestBody: ByteArray, clazz: Class<T>): T =
         try {
             jackson.readValue(requestBody, clazz)
         } catch (e: JsonProcessingException) {
             throw BadRequestException(e)
         }
 
-    override fun writeValueAsBytes(value: Any?): ByteArray = jackson.writeValueAsBytes(value)
-    override fun writeValueAsString(value: Any?): String = jackson.writeValueAsString(value)
+    override fun writeValueAsBytes(value: Any): ByteArray = jackson.writeValueAsBytes(value)
+    override fun writeValueAsString(value: Any): String = jackson.writeValueAsString(value)
 }
 
 class BadRequestException(e: JsonProcessingException) :

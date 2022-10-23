@@ -25,6 +25,9 @@ import strikt.assertions.single
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
     Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)
 
+/**
+ * this tests the rest support with jackson, not only the jackson support
+ */
 @Test
 class RestRestaurantTest {
     val context = describe(Restaurant::class) {
