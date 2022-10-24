@@ -30,13 +30,10 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
         resourceMapper.show(responseSerializer, body)
     }
 
-    fun create(
-        body: suspend Service.(CreateContext<DefaultType>) -> DefaultType
-    ) {
+    fun create(body: suspend Service.(CreateContext<DefaultType>) -> DefaultType) {
         resourceMapper.create(responseSerializer, body)
     }
 }
-
 
 private fun path(service: Any) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
@@ -62,6 +59,11 @@ interface ResourceMapper<Service : Any> {
         responseSerializer: KSerializer<ServiceResponse>,
         body: suspend Service.() -> ServiceResponse
     )
+
+    fun <RequestAndResponse> update(
+        serializer: KSerializer<RequestAndResponse>,
+        body: suspend Service.(UpdateContext<RequestAndResponse>) -> RequestAndResponse
+    )
 }
 
 class ResourceMapperImpl<Service : Any>(
@@ -75,6 +77,7 @@ class ResourceMapperImpl<Service : Any>(
     ) {
         routingDSL.route(Method.GET, path, IndexHandler(responseSerializer, service, body))
     }
+
     override fun <ServiceResponse> show(
         responseSerializer: KSerializer<ServiceResponse>,
         body: suspend Service.(ShowContext) -> ServiceResponse
@@ -99,21 +102,35 @@ class ResourceMapperImpl<Service : Any>(
         body: suspend Service.(CreateContext<Request>) -> Response
     ) {
         routingDSL.route(
-            Method.POST,
-            path,
-            CreateHandler(requestSerializer, responseSerializer, service, body)
+            Method.POST, path, CreateHandler(
+                requestSerializer, responseSerializer, service, body
+            )
+        )
+    }
+
+    override fun <RequestAndResponse> update(
+        serializer: KSerializer<RequestAndResponse>,
+        body: suspend Service.(UpdateContext<RequestAndResponse>) -> RequestAndResponse
+    ) {
+        routingDSL.route(
+            Method.PUT,
+            "$path/{id}",
+            UpdateHandler(serializer, serializer, service, body)
         )
     }
 }
 
-interface CreateContext<ResponseType> {
-    val body: ResponseType
+interface HasBody<RequestType> {
+    val body: RequestType
 }
 
-interface ShowContext {
+interface HasId {
     fun intId(): Int
 }
 
+interface CreateContext<RequestType> : HasBody<RequestType>
+interface ShowContext : HasId
+interface UpdateContext<RequestType> : HasBody<RequestType>, HasId
 class IndexHandler<Service : Any, ServiceResponse>(
     private val responseSerializer: KSerializer<ServiceResponse>,
     private val service: Service,
@@ -161,7 +178,37 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     }
 }
 
+class UpdateHandler<Service : Any, ServiceRequest, ServiceResponse>(
+    private val requestSerializer: KSerializer<ServiceRequest>,
+    private val responseSerializer: KSerializer<ServiceResponse>,
+    private val service: Service,
+    val function: (suspend Service.(UpdateContext<ServiceRequest>) -> ServiceResponse)
+) : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val id = request.queryParameters.let {
+            it["id"]?.singleOrNull()
+                ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
+        }
+        val payload = request.withBody().body.let {
+            val string = String(it!!)
+            try {
+                Json.decodeFromString(requestSerializer, string)
+            } catch (e: Exception) {
+                throw RestaurantException("error deserializing request body: $string")
+            }
+        }
+
+        val result = service.function(UpdateContextImpl(payload, id))
+        return response(200, Json.encodeToString(responseSerializer, result))
+    }
+}
+
 class CreateContextImpl<ServiceRequest>(override val body: ServiceRequest) : CreateContext<ServiceRequest>
+
+class UpdateContextImpl<ServiceRequest>(override val body: ServiceRequest, val id: String) :
+    UpdateContext<ServiceRequest> {
+    override fun intId(): Int = id.toInt()
+}
 
 class ShowContextImpl(private val id: String) : ShowContext {
     override fun intId(): Int {

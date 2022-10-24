@@ -24,7 +24,8 @@ import strikt.assertions.isNotNull
 import strikt.assertions.single
 
 /*
- new reflection-less rest support. uses kotlinx-serialization for now because that is harder to support than jackson
+ new reflection-less type safe rest support.
+  uses kotlinx-serialization for now because that is harder to support than jackson.
  */
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
 
@@ -40,7 +41,7 @@ class RestRestaurantTest {
                                 index(ListSerializer(User.serializer())) { index() }
                                 show(User.serializer()) { show(it.intId()) }
                                 create(User.serializer()) { create(it.body) }
-//                                create = { create(it.body()) },
+                                update(User.serializer()) { update(it.intId(), it.body) }
 //                                update = { update(it.intId(), it.body()) }
                             }
                         }
@@ -108,22 +109,15 @@ class RestRestaurantTest {
                         get { body() }.isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
                     }
                 }
+                it("calls update method on put request") {
+                    val response =
+                        r.sendRequest("/api/users/5") { put("""{"name":"userName"}""") }
+                    expectThat(response) {
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo("""{"id":"5","name":"userName"}""")
+                    }
+                }
                 describe("missing", ignored = Ignored.Because("working on it")) {
-                    it("calls index method on get request without id") {
-                        val response = r.sendRequest("/api/users")
-                        expectThat(response) {
-                            get { statusCode() }.isEqualTo(200)
-                            get { body() }.isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
-                        }
-                    }
-                    it("calls update method on put request") {
-                        val response =
-                            r.sendRequest("/api/users/5") { put("""{"name":"userName"}""") }
-                        expectThat(response) {
-                            get { statusCode() }.isEqualTo(200)
-                            get { body() }.isEqualTo("""{"id":"5","name":"userName"}""")
-                        }
-                    }
                     it("calls delete method on delete request") {
                         val response =
                             r.sendRequest("/api/users/5") { delete() }
