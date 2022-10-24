@@ -11,7 +11,6 @@ import restaurant.RoutingDSL
 import restaurant.SuspendingHandler
 import restaurant.response
 import java.util.Locale
-import kotlin.reflect.KClass
 
 fun <Service : Any> RoutingDSL.resources(service: Service, path: String = path(service)) =
     ResourceMapperImpl(this, service, path)
@@ -30,6 +29,7 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     fun show(body: suspend Service.(ShowContext) -> DefaultType) {
         resourceMapper.show(responseSerializer, body)
     }
+
     fun create(
         body: suspend Service.(CreateContext<DefaultType>) -> DefaultType
     ) {
@@ -37,19 +37,6 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     }
 }
 
-@Suppress("UNUSED_PARAMETER")
-interface Context {
-    fun <T : Any> get(kClass: KClass<T>): T {
-        TODO()
-    }
-
-    fun id(): String
-    fun intId(): Int
-}
-
-private inline fun <reified T : Any> Context.body(): T {
-    return this.get(T::class)
-}
 
 private fun path(service: Any) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
@@ -70,14 +57,24 @@ interface ResourceMapper<Service : Any> {
         responseSerializer: KSerializer<Response>,
         body: suspend Service.(CreateContext<Request>) -> Response
     )
+
+    fun <ServiceResponse> index(
+        responseSerializer: KSerializer<ServiceResponse>,
+        body: suspend Service.() -> ServiceResponse
+    )
 }
 
-@Suppress("UNUSED_PARAMETER")
 class ResourceMapperImpl<Service : Any>(
     private val routingDSL: RoutingDSL,
     private val service: Service,
     private val path: String = path(service)
 ) : ResourceMapper<Service> {
+    override fun <ServiceResponse> index(
+        responseSerializer: KSerializer<ServiceResponse>,
+        body: suspend Service.() -> ServiceResponse
+    ) {
+        routingDSL.route(Method.GET, path, IndexHandler(responseSerializer, service, body))
+    }
     override fun <ServiceResponse> show(
         responseSerializer: KSerializer<ServiceResponse>,
         body: suspend Service.(ShowContext) -> ServiceResponse
@@ -95,6 +92,7 @@ class ResourceMapperImpl<Service : Any>(
             CreateHandler(serializer, serializer, service, body)
         )
     }
+
     override fun <Request, Response> create(
         requestSerializer: KSerializer<Request>,
         responseSerializer: KSerializer<Response>,
@@ -116,17 +114,28 @@ interface ShowContext {
     fun intId(): Int
 }
 
+class IndexHandler<Service : Any, ServiceResponse>(
+    private val responseSerializer: KSerializer<ServiceResponse>,
+    private val service: Service,
+    val function: (suspend Service.() -> ServiceResponse)
+) : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val result = service.function()
+        return response(200, Json.encodeToString(responseSerializer, result))
+    }
+}
+
 class ShowHandler<Service : Any, ServiceResponse>(
     private val responseSerializer: KSerializer<ServiceResponse>,
     private val service: Service,
-    val show: (suspend Service.(ShowContext) -> ServiceResponse)
+    val function: (suspend Service.(ShowContext) -> ServiceResponse)
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         val id = request.queryParameters.let {
             it["id"]?.singleOrNull()
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
         }
-        val result = service.show(ShowContextImpl(id))
+        val result = service.function(ShowContextImpl(id))
         return response(200, Json.encodeToString(responseSerializer, result))
     }
 }
@@ -135,7 +144,7 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     private val requestSerializer: KSerializer<ServiceRequest>,
     private val responseSerializer: KSerializer<ServiceResponse>,
     private val service: Service,
-    val show: (suspend Service.(CreateContext<ServiceRequest>) -> ServiceResponse)
+    val function: (suspend Service.(CreateContext<ServiceRequest>) -> ServiceResponse)
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: RequestContext): Response {
         val payload = request.withBody().body.let {
@@ -147,7 +156,7 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
             }
         }
 
-        val result = service.show(CreateContextImpl(payload))
+        val result = service.function(CreateContextImpl(payload))
         return response(201, Json.encodeToString(responseSerializer, result))
     }
 }

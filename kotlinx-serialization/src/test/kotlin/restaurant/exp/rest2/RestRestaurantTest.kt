@@ -7,6 +7,7 @@ import failgood.Test
 import failgood.describe
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 import restaurant.ContentType
 import restaurant.HttpHeader
 import restaurant.HttpStatus
@@ -36,7 +37,7 @@ class RestRestaurantTest {
                     restaurant {
                         namespace("/api") {
                             resources(UsersService()).apply {
-//                                index = { index() },
+                                index(ListSerializer(User.serializer())) { index() }
                                 show(User.serializer()) { show(it.intId()) }
                                 create(User.serializer()) { create(it.body) }
 //                                create = { create(it.body()) },
@@ -98,6 +99,13 @@ class RestRestaurantTest {
                     }
                     it("calls create method on post request") {
                         assert(response.body == """{"id":"userId","name":"userName"}""")
+                    }
+                }
+                it("calls index method on get request without id") {
+                    val response = r.sendRequest("/api/users")
+                    expectThat(response) {
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo("""[{"id":"5","name":"userName"},{"id":"6","name":"userName"}]""")
                     }
                 }
                 describe("missing", ignored = Ignored.Because("working on it")) {
