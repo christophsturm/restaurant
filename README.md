@@ -64,7 +64,7 @@ easy to test.
 #### Streaming
 
 You can stream responses from your service class by using a
-flow: [StreamingExample](rest/src/test/kotlin/restaurant/rest/StreamingExample.kt)
+flow: [StreamingExample](jackson/src/test/kotlin/restaurant/rest/StreamingExample.kt)
 
 ```kotlin
 class StreamingService : RestService {

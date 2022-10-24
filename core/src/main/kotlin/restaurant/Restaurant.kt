@@ -164,7 +164,7 @@ interface Request {
 
 interface RequestWithBody : Request {
     /**
-     * Body of the request. This is null when no body was sent for example for get requests.
+     * Body of the request. This is null when no request body was sent for example for get requests.
      */
     val body: ByteArray?
 }
