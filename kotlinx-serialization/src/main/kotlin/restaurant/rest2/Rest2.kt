@@ -205,7 +205,7 @@ class UpdateHandler<Service : Any, ServiceRequest, ServiceResponse>(
 
 class CreateContextImpl<ServiceRequest>(override val body: ServiceRequest) : CreateContext<ServiceRequest>
 
-class UpdateContextImpl<ServiceRequest>(override val body: ServiceRequest, val id: String) :
+class UpdateContextImpl<ServiceRequest>(override val body: ServiceRequest, private val id: String) :
     UpdateContext<ServiceRequest> {
     override fun intId(): Int = id.toInt()
 }
