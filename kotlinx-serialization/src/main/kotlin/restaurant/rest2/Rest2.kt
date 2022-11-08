@@ -169,7 +169,7 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
             try {
                 Json.decodeFromString(requestSerializer, string)
             } catch (e: Exception) {
-                throw RestaurantException("error deserializing request body: $string")
+                throw RestaurantException("error deserializing request body: $string", e)
             }
         }
 
@@ -194,7 +194,7 @@ class UpdateHandler<Service : Any, ServiceRequest, ServiceResponse>(
             try {
                 Json.decodeFromString(requestSerializer, string)
             } catch (e: Exception) {
-                throw RestaurantException("error deserializing request body: $string")
+                throw RestaurantException("error deserializing request body: $string", e)
             }
         }
 
