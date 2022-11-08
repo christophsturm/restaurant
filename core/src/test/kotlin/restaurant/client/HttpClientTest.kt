@@ -54,7 +54,7 @@ class HttpClientTest {
                 it("contains the status code") {
                     expectThat(response.toString()).contains("""status: 418""")
                 }
-                it("contains the headers") { // toString should contain nicely printed headers
+                it("contains the headers") {
                     expectThat(response.toString()).contains(
                         """content-type=[only the best content]"""
                     )
