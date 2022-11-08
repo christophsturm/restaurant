@@ -18,16 +18,24 @@ import strikt.assertions.isNotNull
 @Test
 class HttpClientTest {
     val context = describe(Java11HttpClient::class) {
-        val restaurant = autoClose(
-            Restaurant {
-                route(Method.GET, "get") { _, _ ->
-                    response("get reply")
-                }
-                route(Method.POST, "post") { _, _ ->
-                    response(HttpStatus.TEAPOT_418, "post\nreply", mapOf("Content-Type" to "only the best content"))
-                }
+        val restaurant = autoClose(Restaurant {
+            route(Method.GET, "get") { _, _ ->
+                response("get reply")
             }
-        )
+            route(Method.POST, "post") { _, _ ->
+                response(HttpStatus.TEAPOT_418, "post\nreply", mapOf("Content-Type" to "only the best content"))
+            }
+        })
+
+        describe("standalone") {
+            it("can send url requests") {
+                expectThat(httpClient.send("${restaurant.baseUrl}${"/get"}").body).isEqualTo("get reply")
+            }
+            it("can send requests") {
+                expectThat(httpClient.send(Java11HttpClient.buildRequest("${restaurant.baseUrl}${"/get"}") {}).body)
+                    .isEqualTo("get reply")
+            }
+        }
 
         describe("get requests") {
             it("are default") {

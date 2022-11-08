@@ -114,7 +114,7 @@ class RestaurantTest {
         }
         describe("to string method for request") {
             val toString = CompletableDeferred<String>()
-            val restaurant = autoClose(Restaurant { route(Method.GET, "/path") { req, ctx ->
+            val restaurant = autoClose(Restaurant { route(Method.GET, "/path") { req, _ ->
                 toString.complete(req.toString())
                 response()
             } })

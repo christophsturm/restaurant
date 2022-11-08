@@ -2,7 +2,6 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.java
-import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.`maven-publish`
 import org.gradle.kotlin.dsl.signing
 
