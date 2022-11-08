@@ -37,19 +37,20 @@ data class Restaurant internal constructor(
     companion object {
         operator fun invoke(
             host: String = "127.0.0.1",
-            port: Int = findFreePort(),
+            port: Int? = null,
             exceptionHandler: ExceptionHandler = defaultExceptionHandler,
             defaultHandler: SuspendingHandler = defaultDefaultHandler,
             mapper: Mapper? = null,
             serviceMapping: RoutingDSL.() -> Unit
         ): Restaurant {
-            val baseUrl = "http://$host:$port"
+            val realPort = port ?: findFreePort()
+            val baseUrl = "http://$host:$realPort"
             val routes: List<Route> = routes(mapper, serviceMapping)
             val rootHandlers = routes.map { route ->
                 Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
             }
-            val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, port, host).apply { start() }
-            return Restaurant(baseUrl, routes, undertow, port)
+            val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, realPort, host).apply { start() }
+            return Restaurant(baseUrl, routes, undertow, realPort)
         }
     }
 

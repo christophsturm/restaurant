@@ -107,6 +107,10 @@ class RestaurantTest {
             val restaurant = autoClose(Restaurant(host = "0.0.0.0", port = port) { })
             expectThat(restaurant.baseUrl).isEqualTo("http://0.0.0.0:$port")
         }
+        it("can be called with null as port for autodetect") {
+            val restaurant = autoClose(Restaurant(port = null) { })
+            assert(restaurant.sendRequest("/").statusCode == HttpStatus.NOT_FOUND_404)
+        }
         describe("async roundtrip") {
             it("works") {
                 var stopFlow = false
