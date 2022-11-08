@@ -49,6 +49,11 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
     }
 
     override val queryParameters: Map<String, Collection<String>> = exchange.queryParameters
+    override fun toString(): String =
+        if (queryString.isEmpty())
+            "Request(method:$method, path:$requestPath)"
+        else
+            "Request(method:$method, path:$requestPath?$queryString)"
 }
 
 class UndertowRequestWithBody(private val undertowRequest: UndertowRequest, override val body: ByteArray?) :
@@ -70,7 +75,5 @@ internal fun buildUndertow(
 
     return Undertow.builder()
         //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-        .addHttpListener(port, host)
-        .setHandler(SimpleErrorPageHandler(routingHandler))
-        .build()
+        .addHttpListener(port, host).setHandler(SimpleErrorPageHandler(routingHandler)).build()
 }

@@ -2,6 +2,7 @@ package restaurant
 
 import failgood.Test
 import failgood.describe
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -110,6 +111,23 @@ class RestaurantTest {
         it("can be called with null as port for autodetect") {
             val restaurant = autoClose(Restaurant(port = null) { })
             assert(restaurant.sendRequest("/").statusCode == HttpStatus.NOT_FOUND_404)
+        }
+        describe("to string method for request") {
+            val toString = CompletableDeferred<String>()
+            val restaurant = autoClose(Restaurant { route(Method.GET, "/path") { req, ctx ->
+                toString.complete(req.toString())
+                response()
+            } })
+            it("works without query string") {
+                restaurant.sendRequest("/path")
+                val await = toString.await()
+                assert(await.contains("/path"))
+                assert(!await.contains("/path?"))
+            }
+            it("works with query string") {
+                restaurant.sendRequest("/path?blah")
+                assert(toString.await().contains("/path?blah"))
+            }
         }
         describe("async roundtrip") {
             it("works") {
