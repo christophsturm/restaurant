@@ -43,3 +43,9 @@ jobs:
           fail_on_test_failures: true
           fail_if_no_tests: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: build-reports-jdk-${{matrix.java}}
+          path: "**/build/reports"
