@@ -22,5 +22,5 @@ dependencies {
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-jul:$log4j2Version")
     testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-    testRuntimeOnly("org.slf4j:slf4j-api:2.0.4")
+    testRuntimeOnly("org.slf4j:slf4j-api:2.0.5")
 }
