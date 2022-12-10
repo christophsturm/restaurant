@@ -12,7 +12,7 @@ dependencies {
     // hotfix to make kotlin scratch files work in idea
     implementation(kotlin("script-runtime"))
 
-    implementation(kotlin("gradle-plugin", "1.7.21"))
+    implementation(kotlin("gradle-plugin", "1.7.22"))
     implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.9.11")
 }
 
