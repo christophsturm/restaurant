@@ -1,7 +1,10 @@
 package restaurant.rest2
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import restaurant.FlowResponse
 import restaurant.Method
 import restaurant.Request
 import restaurant.RequestContext
@@ -64,6 +67,11 @@ interface ResourceMapper<Service : Any> {
         serializer: KSerializer<RequestAndResponse>,
         body: suspend Service.(UpdateContext<RequestAndResponse>) -> RequestAndResponse
     )
+
+    fun <ServiceResponse> streamIndex(
+        responseSerializer: KSerializer<ServiceResponse>,
+        body: suspend Service.() -> Flow<ServiceResponse>
+    )
 }
 
 class ResourceMapperImpl<Service : Any>(
@@ -76,6 +84,12 @@ class ResourceMapperImpl<Service : Any>(
         body: suspend Service.() -> ServiceResponse
     ) {
         routingDSL.route(Method.GET, path, IndexHandler(responseSerializer, service, body))
+    }
+    override fun <ServiceResponse> streamIndex(
+        responseSerializer: KSerializer<ServiceResponse>,
+        body: suspend Service.() -> Flow<ServiceResponse>
+    ) {
+        routingDSL.route(Method.GET, path, FlowIndexHandler(responseSerializer, service, body))
     }
 
     override fun <ServiceResponse> show(
@@ -213,5 +227,16 @@ class UpdateContextImpl<ServiceRequest>(override val body: ServiceRequest, priva
 class ShowContextImpl(private val id: String) : ShowContext {
     override fun intId(): Int {
         return id.toInt()
+    }
+}
+
+class FlowIndexHandler<Service : Any, ServiceResponse>(
+    private val responseSerializer: KSerializer<ServiceResponse>,
+    private val service: Service,
+    val function: (suspend Service.() -> Flow<ServiceResponse>)
+) : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+        val result = service.function()
+        return FlowResponse(mapOf(), 200, result.map { Json.encodeToString(responseSerializer, it) + "\n" })
     }
 }

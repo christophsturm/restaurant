@@ -6,6 +6,8 @@ import failgood.Ignored
 import failgood.Test
 import failgood.describe
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import restaurant.ContentType
@@ -30,7 +32,7 @@ import strikt.assertions.single
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
 
 @Test
-class RestRestaurantTest {
+object RestRestaurantTest {
     val context = describe(Restaurant::class) {
         describe("rest services") {
             describe("rest routes") {
@@ -165,6 +167,25 @@ class RestRestaurantTest {
                     }
                 }
             }
+            describe("streaming rest routes") {
+                val r = autoClose(
+                    restaurant {
+                        namespace("/api") {
+                            resources(StreamingUsersService()).apply {
+                                streamIndex(User.serializer()) { index() }
+                            }
+                        }
+                    })
+                it("calls index method on get request without id") {
+                    val response = r.sendRequest("/api/streamingusers")
+                    expectThat(response) {
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo("""{"id":"5","name":"userName"}
+                            |{"id":"6","name":"userName"}
+                            |""".trimMargin())
+                    }
+                }
+            }
         }
     }
 
@@ -226,4 +247,10 @@ class RestRestaurantTest {
     }
 
     data class DeleteReply(val status: String)
+}
+class StreamingUsersService : RestService {
+    suspend fun index(): Flow<RestRestaurantTest.User> {
+        delay(1)
+        return flowOf(RestRestaurantTest.User("5", "userName"), RestRestaurantTest.User("6", "userName"))
+    }
 }
