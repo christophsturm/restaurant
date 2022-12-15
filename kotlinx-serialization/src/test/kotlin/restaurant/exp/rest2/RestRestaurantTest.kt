@@ -2,7 +2,6 @@
 
 package restaurant.exp.rest2
 
-import failgood.Failure
 import failgood.Ignored
 import failgood.Test
 import failgood.describe
@@ -187,10 +186,6 @@ object RestRestaurantTest {
                             |""".trimMargin()
                         )
                     }
-                }
-                afterEach { result ->
-                    if (result is Failure)
-                        println(r.routes)
                 }
             }
         }
