@@ -20,7 +20,7 @@ import strikt.assertions.isEqualTo
 class StreamingExample {
     @Suppress("unused")
     val tests = describe("streaming via kotlin flows") {
-        class StreamingService : RestService {
+        class StreamService : RestService {
             @Suppress("unused")
             fun index(): Flow<User> {
                 return flow {
@@ -33,12 +33,12 @@ class StreamingExample {
 
         val restaurant = autoClose(
             Restaurant(mapper = JacksonMapper()) {
-                resources(StreamingService())
+                resources(StreamService())
             }
         )
 
         it("works with the buffering http client") {
-            val response = restaurant.sendRequest("/streaming")
+            val response = restaurant.sendRequest("/streams")
             expectThat(response) {
                 get { statusCode }.isEqualTo(200)
                 get { body }.isEqualTo(
@@ -50,7 +50,7 @@ class StreamingExample {
             }
         }
         it("works with the streaming http client") {
-            val response: RestaurantResponse<Flow<String>> = restaurant.sendStreamingRequest("/streaming")
+            val response: RestaurantResponse<Flow<String>> = restaurant.sendStreamingRequest("/streams")
             expectThat(response) {
                 get { statusCode }.isEqualTo(200)
             }

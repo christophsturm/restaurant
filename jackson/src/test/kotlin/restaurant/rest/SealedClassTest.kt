@@ -18,7 +18,7 @@ class LoginFailed(val message: String) : LoginResult()
 class SealedClassTest {
     val context = describe("Different return types with sealed classes") {
         it("is supported") {
-            class SealedClassService : RestService {
+            class SealService : RestService {
                 fun show(id: Long): LoginResult {
                     return if (id == 42L) {
                         SuccesfulLogin("1234")
@@ -30,17 +30,17 @@ class SealedClassTest {
 
             val restaurant = autoClose(
                 restaurant {
-                    resources(SealedClassService())
+                    resources(SealService())
                 }
             )
             expectThat(
                 jacksonObjectMapper().readValue<SuccesfulLogin>(
-                    restaurant.sendRequest("/sealedclass/42").body()!!
+                    restaurant.sendRequest("/seals/42").body()!!
                 ).token
             ).isEqualTo("1234")
             expectThat(
                 jacksonObjectMapper().readValue<LoginFailed>(
-                    restaurant.sendRequest("/sealedclass/41").body()!!
+                    restaurant.sendRequest("/seals/41").body()!!
                 ).message
             ).isEqualTo("sorry")
         }

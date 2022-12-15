@@ -10,7 +10,7 @@ import java.util.Locale
 interface RestService
 
 internal fun path(service: Any) =
-    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
+    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service") + "s"
 
 @Suppress("UNUSED_PARAMETER")
 @RestDSL

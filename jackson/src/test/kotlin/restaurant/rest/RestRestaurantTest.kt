@@ -11,8 +11,8 @@ import restaurant.HttpStatus
 import restaurant.JacksonMapper
 import restaurant.Restaurant
 import restaurant.RoutingDSL
-import restaurant.internal.HobbiesService
-import restaurant.internal.UsersService
+import restaurant.internal.HobbyService
+import restaurant.internal.UserService
 import restaurant.response
 import restaurant.sendRequest
 import strikt.api.expectThat
@@ -55,7 +55,7 @@ class RestRestaurantTest {
                 val restaurant = autoClose(
                     restaurant {
                         namespace("/api") {
-                            resources(UsersService())
+                            resources(UserService())
                         }
                     }
                 )
@@ -118,7 +118,7 @@ class RestRestaurantTest {
                 }
             }
             describe("error handling") {
-                class ExceptionsService : RestService {
+                class ExceptionService : RestService {
                     fun index() {
                         throw RuntimeException("error message")
                     }
@@ -129,7 +129,7 @@ class RestRestaurantTest {
                             status = 418,
                             result = "sorry: " + ex.message
                         )
-                    }) { resources(ExceptionsService()) }
+                    }) { resources(ExceptionService()) }
                     expectThat(restaurant.sendRequest("/exceptions")) {
                         get { statusCode() }.isEqualTo(418)
                         get { body() }.isEqualTo("sorry: error message")
@@ -142,8 +142,8 @@ class RestRestaurantTest {
                     val restaurant = autoClose(
                         restaurant {
                             namespace("/api") {
-                                resources(UsersService()) {
-                                    resources(HobbiesService()) // user has many hobbies
+                                resources(UserService()) {
+                                    resources(HobbyService()) // user has many hobbies
                                 }
                             }
                         }

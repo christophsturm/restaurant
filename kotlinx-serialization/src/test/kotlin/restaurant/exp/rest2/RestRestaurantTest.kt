@@ -2,6 +2,7 @@
 
 package restaurant.exp.rest2
 
+import failgood.Failure
 import failgood.Ignored
 import failgood.Test
 import failgood.describe
@@ -39,7 +40,7 @@ object RestRestaurantTest {
                 val r = autoClose(
                     restaurant {
                         namespace("/api") {
-                            resources(UsersService()).apply {
+                            resources(UserService()).apply {
                                 index(ListSerializer(User.serializer())) { index() }
                                 show(User.serializer()) { show(it.intId()) }
                                 create(User.serializer()) { create(it.body) }
@@ -61,7 +62,7 @@ object RestRestaurantTest {
                             val restaurant = autoClose(
                                 restaurant {
                                     namespace("/api") {
-                                        resources(UsersService(), User.serializer()).apply {
+                                        resources(UserService(), User.serializer()).apply {
                                             show { show(it.intId()) }
                                         }
                                     }
@@ -73,7 +74,7 @@ object RestRestaurantTest {
                             val restaurant = autoClose(
                                 restaurant {
                                     namespace("/api") {
-                                        resources(UsersService(), User.serializer()).apply {
+                                        resources(UserService(), User.serializer()).apply {
                                             show(User.serializer()) { show(it.intId()) }
                                         }
                                     }
@@ -86,7 +87,7 @@ object RestRestaurantTest {
                         val restaurant = autoClose(
                             restaurant {
                                 namespace("/api") {
-                                    resources(UsersService()).apply {
+                                    resources(UserService()).apply {
                                         show(User.serializer()) { show(it.intId()) }
                                     }
                                 }
@@ -171,7 +172,7 @@ object RestRestaurantTest {
                 val r = autoClose(
                     restaurant {
                         namespace("/api") {
-                            resources(StreamingUsersService()).apply {
+                            resources(StreamingUserService()).apply {
                                 streamIndex(User.serializer()) { index() }
                             }
                         }
@@ -180,10 +181,16 @@ object RestRestaurantTest {
                     val response = r.sendRequest("/api/streamingusers")
                     expectThat(response) {
                         get { statusCode() }.isEqualTo(200)
-                        get { body() }.isEqualTo("""{"id":"5","name":"userName"}
+                        get { body() }.isEqualTo(
+                            """{"id":"5","name":"userName"}
                             |{"id":"6","name":"userName"}
-                            |""".trimMargin())
+                            |""".trimMargin()
+                        )
                     }
+                }
+                afterEach { result ->
+                    if (result is Failure)
+                        println(r.routes)
                 }
             }
         }
@@ -192,7 +199,7 @@ object RestRestaurantTest {
     @Serializable
     data class User(val id: String? = null, val name: String)
     data class Hobby(val name: String)
-    class UsersService : RestService {
+    class UserService : RestService {
         suspend fun index(): List<User> {
             delay(1)
             return listOf(User("5", "userName"), User("6", "userName"))
@@ -219,7 +226,7 @@ object RestRestaurantTest {
         }
     }
 
-    class UsersStringPKService : RestService {
+    class UserStringPKService : RestService {
         suspend fun index(): List<User> {
             delay(1)
             return listOf(User("5", "userName"), User("6", "userName"))
@@ -248,7 +255,8 @@ object RestRestaurantTest {
 
     data class DeleteReply(val status: String)
 }
-class StreamingUsersService : RestService {
+
+class StreamingUserService : RestService {
     suspend fun index(): Flow<RestRestaurantTest.User> {
         delay(1)
         return flowOf(RestRestaurantTest.User("5", "userName"), RestRestaurantTest.User("6", "userName"))

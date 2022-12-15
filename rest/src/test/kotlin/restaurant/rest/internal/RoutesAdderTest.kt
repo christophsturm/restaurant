@@ -15,12 +15,12 @@ class RoutesAdderTest {
         it("does not crash when called") {
 
             val routesAdder = RoutesAdder(mock())
-            val service = UsersService()
+            val service = UserService()
             val rootPath = "root"
             routesAdder.routesFor(service, rootPath)
         }
     }
-    class UsersService : RestService {
+    class UserService : RestService {
         suspend fun index(): List<User> {
             delay(1)
             return listOf(User("5", "userName"), User("6", "userName"))

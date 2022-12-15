@@ -23,11 +23,11 @@ class RoutesAdderFunctionalTest {
         val requestContext = MutableRequestContext()
         val routesAdder = RoutesAdder(JacksonMapper(jacksonObjectMapper()))
         listOf(
-            Pair(UsersService(), "service with suspend functions and Int primary keys"),
-            Pair(NonSuspendUsersService(), "service with blocking functions and Int primary keys"),
-            Pair(UsersStringPKService(), "service with suspend functions and String primary keys"),
+            Pair(UserService(), "service with suspend functions and Int primary keys"),
+            Pair(NonSuspendUserService(), "service with blocking functions and Int primary keys"),
+            Pair(UserStringPKService(), "service with suspend functions and String primary keys"),
             Pair(
-                NonSuspendStringPKUsersService(),
+                NonSuspendStringPKUserService(),
                 "service with blocking functions and String primary keys"
             )
         ).forEach { (service, description) ->

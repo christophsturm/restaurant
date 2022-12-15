@@ -7,7 +7,7 @@ import restaurant.rest.RestService
 
 data class User(val id: String?, val name: String)
 data class Hobby(val name: String)
-class UsersService : RestService {
+class UserService : RestService {
     suspend fun index(): List<User> {
         delay(1)
         return listOf(User("5", "userName"), User("6", "userName"))
@@ -34,7 +34,7 @@ class UsersService : RestService {
     }
 }
 
-class UsersStringPKService : RestService {
+class UserStringPKService : RestService {
     suspend fun index(): List<User> {
         delay(1)
         return listOf(User("5", "userName"), User("6", "userName"))
@@ -63,7 +63,7 @@ class UsersStringPKService : RestService {
 
 data class DeleteReply(val status: String)
 
-class NonSuspendUsersService : RestService {
+class NonSuspendUserService : RestService {
     fun index(): List<User> = listOf(User("5", "userName"), User("6", "userName"))
     fun create(user: User): User = user.copy(id = "userId")
     fun show(userId: Int): User = User(id = userId.toString(), name = "User $userId")
@@ -71,7 +71,7 @@ class NonSuspendUsersService : RestService {
     fun delete(userId: Int): DeleteReply = DeleteReply("user $userId deleted")
 }
 
-class NonSuspendStringPKUsersService : RestService {
+class NonSuspendStringPKUserService : RestService {
     fun index(): List<User> = listOf(User("5", "userName"), User("6", "userName"))
     fun create(user: User): User = user.copy(id = "userId")
     fun show(userId: String): User = User(id = userId, name = "User $userId")
@@ -79,7 +79,7 @@ class NonSuspendStringPKUsersService : RestService {
     fun delete(userId: String): DeleteReply = DeleteReply("user $userId deleted")
 }
 
-class HobbiesService : RestService {
+class HobbyService : RestService {
     suspend fun create(userId: Int, hobby: Hobby): Hobby {
         delay(1)
         return Hobby("user $userId's hobby ${hobby.name}")

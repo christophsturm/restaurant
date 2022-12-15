@@ -39,7 +39,7 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
 }
 
 private fun path(service: Any) =
-    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service")
+    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service") + "s"
 
 interface ResourceMapper<Service : Any> {
     fun <ServiceResponse> show(
