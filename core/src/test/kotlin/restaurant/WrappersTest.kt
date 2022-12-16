@@ -11,13 +11,13 @@ import java.nio.ByteBuffer
 class WrappersTest {
     val context = describe("Wrapper Support") {
         val events = mutableListOf<String>()
-        val inner = RealWrapper { wrapped ->
+        val inner = Wrapper { wrapped ->
             SuspendingHandler { request, requestContext ->
                 events.add("inner")
                 wrapped.handle(request, requestContext)
             }
         }
-        val outer = RealWrapper { wrapped ->
+        val outer = Wrapper { wrapped ->
             SuspendingHandler { request, requestContext ->
                 events.add("outer")
                 wrapped.handle(request, requestContext)

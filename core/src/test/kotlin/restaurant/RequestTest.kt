@@ -95,7 +95,7 @@ class RequestTest {
     }
 }
 
-class BodyReader : RealWrapper {
+class BodyReader : Wrapper {
     override fun wrap(wrapped: SuspendingHandler): SuspendingHandler = SuspendingHandler { request, requestContext ->
         wrapped.handle(request.withBody(), requestContext)
     }

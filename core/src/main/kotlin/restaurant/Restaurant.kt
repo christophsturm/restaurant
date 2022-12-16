@@ -53,7 +53,7 @@ data class Restaurant internal constructor(
             return Restaurant(baseUrl, routes, undertow, realPort)
         }
         private fun RootHandler(
-            wrappers: List<RealWrapper>,
+            wrappers: List<Wrapper>,
             exceptionHandler: (Throwable) -> Response,
             handler: SuspendingHandler
         ): SuspendingHandler {
@@ -82,21 +82,14 @@ data class Restaurant internal constructor(
 @RestDSL
 interface RoutingDSL {
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
-    fun wrap(wrapper: RealWrapper, function: RoutingDSL.() -> Unit)
+    fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
     fun route(method: Method, path: String, service: SuspendingHandler)
 }
 // fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
 
-sealed class WrapperResult
-data class FinishRequest(val response: Response) : WrapperResult()
-data class AddRequestConstant<T : Any>(val key: Key<T>, val value: T) : WrapperResult()
-
 interface Key<T>
 
 fun interface Wrapper {
-    suspend fun invoke(request: Request): WrapperResult?
-}
-fun interface RealWrapper {
     fun wrap(wrapped: SuspendingHandler): SuspendingHandler
 }
 
@@ -177,7 +170,7 @@ data class Route(
     val method: Method,
     val path: String,
     val handler: SuspendingHandler,
-    val wrappers: List<RealWrapper> = listOf()
+    val wrappers: List<Wrapper> = listOf()
 )
 
 open class RestaurantException(override val message: String, override val cause: Throwable? = null) :
