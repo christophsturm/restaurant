@@ -7,7 +7,6 @@ import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
-import strikt.assertions.isSameInstanceAs
 
 @Test
 class RequestTest {
@@ -59,13 +58,13 @@ class RequestTest {
                 }
             )
             val response = restaurant.sendRequest("/path?query=string") { post("body") }
-            expectThat(response).get { statusCode() }.isEqualTo(200)
+            assert(response.isOk)
             it("can convert to a request that has a body") {
-                expectThat(req).get { String(body!!) }.isEqualTo("body")
+                assert(String(req.body!!) == "body")
             }
             it("returns this when it already has a body") {
                 val requestWithBody = req.withBody()
-                expectThat(requestWithBody).isSameInstanceAs(req)
+                assert(requestWithBody === req)
             }
         }
     }
