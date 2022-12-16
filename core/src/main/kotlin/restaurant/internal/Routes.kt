@@ -1,10 +1,10 @@
 package restaurant.internal
 
 import restaurant.Method
+import restaurant.RealWrapper
 import restaurant.Route
 import restaurant.RoutingDSL
 import restaurant.SuspendingHandler
-import restaurant.Wrapper
 
 internal fun routes(mapper: Mapper?, serviceMapping: RoutingDSL.() -> Unit): List<Route> {
     return Routing(mapper, "").apply(serviceMapping).routes
@@ -17,7 +17,7 @@ class Routing(val mapper: Mapper?, private val prefix: String) : RoutingDSL {
         routes.add(Route(method, prefix + path, service))
     }
 
-    override fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit) {
+    override fun wrap(wrapper: RealWrapper, function: RoutingDSL.() -> Unit) {
         val nested = Routing(mapper, prefix)
         nested.function()
         routes += nested.routes.map { it.copy(wrappers = listOf(wrapper) + it.wrappers) }

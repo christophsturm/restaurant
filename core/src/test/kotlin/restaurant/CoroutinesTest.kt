@@ -31,7 +31,7 @@ class CoroutinesTest {
 
 class DelayService : SuspendingHandler {
     var afterDelay = false
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         delay(100)
         afterDelay = true
         return response()

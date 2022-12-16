@@ -26,7 +26,7 @@ object JWTConfig {
 }
 
 class JWTWelcomeHandler : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         return (response("welcome user " + requestContext[JWTWrapper].getClaim("jti")))
     }
 }

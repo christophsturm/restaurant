@@ -4,9 +4,10 @@ import failgood.Test
 import failgood.describe
 import failgood.mock.mock
 import restaurant.Method
+import restaurant.RealWrapper
 import restaurant.Route
 import restaurant.SuspendingHandler
-import restaurant.Wrapper
+import restaurant.response
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 
@@ -14,8 +15,8 @@ import strikt.assertions.containsExactly
 class RoutesTest {
     val context = describe("Routes") {
         test("creates routes for wrapped handlers") {
-            val inner = Wrapper { null }
-            val outer = Wrapper { null }
+            val inner = RealWrapper { SuspendingHandler { request, requestContext -> response(200) } }
+            val outer = RealWrapper { SuspendingHandler { request, requestContext -> response(200) } }
             val handler = mock<SuspendingHandler>()
             val routes = routes(null) {
                 wrap(outer) {

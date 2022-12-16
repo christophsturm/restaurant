@@ -3,7 +3,6 @@ package restaurant
 import failgood.Test
 import failgood.describe
 import restaurant.test.MockRequest
-import restaurant.test.RequestContext
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
@@ -11,7 +10,7 @@ import strikt.assertions.isNotNull
 import java.nio.ByteBuffer
 
 class Reverser : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         return (response(ByteBuffer.wrap(request.withBody().body!!.reversedArray())))
     }
 }
@@ -22,7 +21,7 @@ class TestabilityTest {
         test("handlers can be invoked with a MockRequest") {
             val handler = Reverser()
             expectThat(
-                handler.handle(MockRequest("jakob".toByteArray()), RequestContext()).bodyString()
+                handler.handle(MockRequest("jakob".toByteArray()), MutableRequestContext()).bodyString()
             ).isEqualTo("bokaj")
         }
         describe("the mock request") {

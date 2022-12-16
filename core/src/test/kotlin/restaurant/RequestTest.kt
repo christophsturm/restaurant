@@ -82,7 +82,8 @@ class RequestTest {
                                 req = request.withBody()
                                 response(200)
                             }
-                        } }
+                        }
+                    }
                 )
                 val response = restaurant.sendRequest("/path?query=string") { post("body") }
                 assert(response.isOk)
@@ -94,9 +95,8 @@ class RequestTest {
     }
 }
 
-class BodyReader : Wrapper {
-    override suspend fun invoke(request: Request): WrapperResult? {
-        request.withBody()
-        return null
+class BodyReader : RealWrapper {
+    override fun wrap(wrapped: SuspendingHandler): SuspendingHandler = SuspendingHandler { request, requestContext ->
+        wrapped.handle(request.withBody(), requestContext)
     }
 }
