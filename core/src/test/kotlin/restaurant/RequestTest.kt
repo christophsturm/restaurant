@@ -48,24 +48,55 @@ class RequestTest {
             }
         }
         describe("body handling") {
-            lateinit var req: RequestWithBody
-            val restaurant = autoClose(
-                Restaurant {
-                    route(Method.POST, "/path") { request, _ ->
-                        req = request.withBody()
-                        response(200)
+            describe("without wrapper") {
+                lateinit var req: RequestWithBody
+                val restaurant = autoClose(
+                    Restaurant {
+                        route(Method.POST, "/path") { request, _ ->
+                            req = request.withBody()
+                            response(200)
+                        }
                     }
+                )
+                val response = restaurant.sendRequest("/path?query=string") { post("body") }
+                assert(response.isOk)
+                it("can convert to a request that has a body") {
+                    assert(String(req.body!!) == "body")
                 }
-            )
-            val response = restaurant.sendRequest("/path?query=string") { post("body") }
-            assert(response.isOk)
-            it("can convert to a request that has a body") {
-                assert(String(req.body!!) == "body")
+                it("returns this when it already has a body") {
+                    val requestWithBody = req.withBody()
+                    assert(requestWithBody === req)
+                }
             }
-            it("returns this when it already has a body") {
-                val requestWithBody = req.withBody()
-                assert(requestWithBody === req)
+            describe("with wrapper") {
+                lateinit var req: RequestWithBody
+                val restaurant = autoClose(
+                    Restaurant {
+                        wrap(BodyReader()) {
+
+                            route(Method.POST, "/path") { request, _ ->
+                                req = request.withBody()
+                                response(200)
+                            }
+                        } }
+                )
+                val response = restaurant.sendRequest("/path?query=string") { post("body") }
+                assert(response.isOk)
+                it("can convert to a request that has a body") {
+                    assert(String(req.body!!) == "body")
+                }
+                it("returns this when it already has a body") {
+                    val requestWithBody = req.withBody()
+                    assert(requestWithBody === req)
+                }
             }
         }
+    }
+}
+
+class BodyReader : Wrapper {
+    override suspend fun invoke(request: Request): WrapperResult? {
+        request.withBody()
+        return null
     }
 }

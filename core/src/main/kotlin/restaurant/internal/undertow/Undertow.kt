@@ -25,14 +25,17 @@ fun Route.methodToHttpString(): HttpString = when (method) {
 }
 
 class UndertowRequest(private val exchange: HttpServerExchange) : Request {
-
+    private var requestWithBody: RequestWithBody? = null
     override suspend fun withBody(): RequestWithBody {
+        if (requestWithBody != null)
+            return requestWithBody!!
         val body: ByteArray = suspendCoroutine {
             exchange.requestReceiver.receiveFullBytes { _, body ->
                 it.resume(body)
             }
         }
-        return UndertowRequestWithBody(this, body)
+        requestWithBody = UndertowRequestWithBody(this, body)
+        return requestWithBody!!
     }
 
     override val requestPath: String = exchange.requestPath
