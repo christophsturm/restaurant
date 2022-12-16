@@ -7,6 +7,7 @@ import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
+import kotlin.test.assertEquals
 
 @Test
 class RequestTest {
@@ -67,6 +68,9 @@ class RequestTest {
                     val requestWithBody = req.withBody()
                     assert(requestWithBody === req)
                 }
+                it("includes body in toString") {
+                    assertEquals("Request(method:POST, path:/path?query=string, body:body)", req.toString())
+                }
             }
             describe("with wrapper") {
                 lateinit var req: RequestWithBody
@@ -84,10 +88,6 @@ class RequestTest {
                 assert(response.isOk)
                 it("can convert to a request that has a body") {
                     assert(String(req.body!!) == "body")
-                }
-                it("returns this when it already has a body") {
-                    val requestWithBody = req.withBody()
-                    assert(requestWithBody === req)
                 }
             }
         }

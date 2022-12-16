@@ -62,6 +62,14 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
 class UndertowRequestWithBody(private val undertowRequest: UndertowRequest, override val body: ByteArray?) :
     RequestWithBody, Request by undertowRequest {
     override suspend fun withBody(): RequestWithBody = this
+    override fun toString(): String {
+        val withoutBody = undertowRequest.toString()
+        val body = body?.let { String(it) }
+        return if (body != null)
+            withoutBody.dropLast(1) + ", body:" + body + ")"
+        else
+            withoutBody
+    }
 }
 
 internal fun buildUndertow(
