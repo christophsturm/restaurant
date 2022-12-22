@@ -61,7 +61,7 @@ object RestRestaurantTest {
                             val restaurant = autoClose(
                                 restaurant {
                                     namespace("/api") {
-                                        resources(UserService(), User.serializer()).apply {
+                                        resources(UserService(), User.serializer()) {
                                             show { show(it.intId()) }
                                         }
                                     }
@@ -73,7 +73,7 @@ object RestRestaurantTest {
                             val restaurant = autoClose(
                                 restaurant {
                                     namespace("/api") {
-                                        resources(UserService(), User.serializer()).apply {
+                                        resources(UserService(), User.serializer()) {
                                             show(User.serializer()) { show(it.intId()) }
                                         }
                                     }

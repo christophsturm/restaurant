@@ -22,12 +22,14 @@ inline fun <Service : Any> RoutingDSL.resources(
 ) =
     ResourceMapperImpl(this, service, path).config()
 
-fun <Service : Any, ServiceResponse> RoutingDSL.resources(
+inline fun <Service : Any, ServiceResponse> RoutingDSL.resources(
     service: Service,
     responseSerializer: KSerializer<ServiceResponse>,
-    path: String = ___path(service)
+    path: String = ___path(service),
+    config: ResourceMapperWithDefaultType<Service, ServiceResponse>.() -> Unit
+
 ) =
-    ResourceMapperWithDefaultType(responseSerializer, ResourceMapperImpl(this, service, path))
+    ResourceMapperWithDefaultType(responseSerializer, ResourceMapperImpl(this, service, path)).config()
 
 class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     private val responseSerializer: KSerializer<DefaultType>,
@@ -89,6 +91,7 @@ class ResourceMapperImpl<Service : Any>(
     ) {
         routingDSL.route(Method.GET, path, IndexHandler(responseSerializer, service, body))
     }
+
     override fun <ServiceResponse> streamIndex(
         responseSerializer: KSerializer<ServiceResponse>,
         body: suspend Service.() -> Flow<ServiceResponse>
