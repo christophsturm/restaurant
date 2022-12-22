@@ -52,6 +52,26 @@ data class Restaurant internal constructor(
             val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, realPort, host).apply { start() }
             return Restaurant(baseUrl, routes, undertow, realPort)
         }
+        private fun RootHandler(
+            wrappers: List<Wrapper>,
+            exceptionHandler: (Throwable) -> Response,
+            handler: SuspendingHandler
+        ): SuspendingHandler {
+            val realhandler = wrappers.reversed().fold(handler) { acc, wrapper ->
+                wrapper.wrap(acc)
+            }
+            return SuspendingHandler { request, requestContext ->
+                try {
+                    realhandler.handle(request, requestContext)
+                } catch (e: Exception) {
+                    try {
+                        exceptionHandler(e)
+                    } catch (e: Exception) {
+                        response(INTERNAL_SERVER_ERROR_500, "error in error handler" + e.stackTraceToString())
+                    }
+                }
+            }
+        }
     }
 
     override fun close() {
@@ -67,54 +87,17 @@ interface RoutingDSL {
 }
 // fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
 
-sealed class WrapperResult
-data class FinishRequest(val response: Response) : WrapperResult()
-data class AddRequestConstant<T : Any>(val key: Key<T>, val value: T) : WrapperResult()
-
 interface Key<T>
 
 fun interface Wrapper {
-    suspend fun invoke(request: Request): WrapperResult?
+    fun wrap(wrapped: SuspendingHandler): SuspendingHandler
 }
 
 @DslMarker
 annotation class RestDSL
 
 fun interface SuspendingHandler {
-    suspend fun handle(request: Request, requestContext: RequestContext): Response
-}
-
-/**
- * the Root Handler is the main request entry point after the coroutine context is created.
- * It executes the wrappers, and the real handler for this route. It also catches exception and
- * translates them to http replies via [ExceptionHandler]
- */
-internal class RootHandler(
-    private val wrappers: List<Wrapper>,
-    private val exceptionHandler: ExceptionHandler,
-    private val restHandler: SuspendingHandler
-) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
-        return try {
-            // wrappers can add request constants, finish the request, or do nothing
-            @Suppress("NAME_SHADOWING")
-            val requestContext =
-                wrappers.fold(requestContext as MutableRequestContext) { wrapperContext, wrapper ->
-                    when (val wrapperResult = wrapper.invoke(request)) {
-                        is AddRequestConstant<*> -> wrapperContext.apply { add(wrapperResult.key, wrapperResult.value) }
-                        is FinishRequest -> return wrapperResult.response
-                        null -> wrapperContext
-                    }
-                }
-            restHandler.handle(request, requestContext)
-        } catch (e: Throwable) {
-            return try {
-                exceptionHandler(e)
-            } catch (e: Exception) {
-                response(INTERNAL_SERVER_ERROR_500, "error in error handler" + e.stackTraceToString())
-            }
-        }
-    }
+    suspend fun handle(request: Request, requestContext: MutableRequestContext): Response
 }
 
 interface RequestContext {

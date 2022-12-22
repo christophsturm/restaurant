@@ -11,7 +11,6 @@ import restaurant.Method
 import restaurant.Request
 import restaurant.RequestWithBody
 import restaurant.RestaurantException
-import restaurant.RootHandler
 import restaurant.Route
 import restaurant.SuspendingHandler
 import kotlin.coroutines.resume
@@ -73,7 +72,7 @@ class UndertowRequestWithBody(private val undertowRequest: UndertowRequest, over
 }
 
 internal fun buildUndertow(
-    rootHandlers: List<Pair<RootHandler, Route>>,
+    rootHandlers: List<Pair<SuspendingHandler, Route>>,
     defaultHandler: SuspendingHandler,
     port: Int,
     host: String

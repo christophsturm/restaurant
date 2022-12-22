@@ -57,7 +57,7 @@ class RestaurantTest {
         }
         describe("error handling") {
             class ExceptionsHandler : SuspendingHandler {
-                override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+                override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
                     throw RuntimeException("error message")
                 }
             }

@@ -7,8 +7,8 @@ import restaurant.FlowResponse
 import restaurant.HttpHeader
 import restaurant.HttpStatus
 import restaurant.Method
+import restaurant.MutableRequestContext
 import restaurant.Request
-import restaurant.RequestContext
 import restaurant.Response
 import restaurant.Route
 import restaurant.SuspendingHandler
@@ -95,7 +95,7 @@ private class PutRestServiceHandler(
 ) : SuspendingHandler {
     val payloadType = function.payloadType!!
 
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val id = request.queryParameters.let {
             it["id"]?.singleOrNull()
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
@@ -112,7 +112,7 @@ private class PostRestServiceHandler(
 ) : SuspendingHandler {
     private val payloadType = restFunction.payloadType!!
 
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val payload = request.withBody().body?.let { objectMapper.readValue(it, payloadType) }
         val result = restFunction.callSuspend(payload, null, requestContext)
         return objectMapper.responseOrNull(result, HttpStatus.CREATED_201)
@@ -123,7 +123,7 @@ private class GetRestServiceHandler(
     private val objectMapper: Mapper,
     val function: RestFunction
 ) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val id = request.queryParameters.let {
             it["id"]?.singleOrNull()
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
@@ -137,7 +137,7 @@ private class GetListRestServiceHandler(
     private val objectMapper: Mapper,
     val function: RestFunction
 ) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val result = function.callSuspend(null, null, requestContext)
         return objectMapper.responseOrNull(result)
     }

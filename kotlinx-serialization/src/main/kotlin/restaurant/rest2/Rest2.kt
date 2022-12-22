@@ -6,8 +6,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import restaurant.FlowResponse
 import restaurant.Method
+import restaurant.MutableRequestContext
 import restaurant.Request
-import restaurant.RequestContext
 import restaurant.Response
 import restaurant.RestaurantException
 import restaurant.RoutingDSL
@@ -150,7 +150,7 @@ class IndexHandler<Service : Any, ServiceResponse>(
     private val service: Service,
     val function: (suspend Service.() -> ServiceResponse)
 ) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val result = service.function()
         return response(200, Json.encodeToString(responseSerializer, result))
     }
@@ -161,7 +161,7 @@ class ShowHandler<Service : Any, ServiceResponse>(
     private val service: Service,
     val function: (suspend Service.(ShowContext) -> ServiceResponse)
 ) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val id = request.queryParameters.let {
             it["id"]?.singleOrNull()
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
@@ -177,7 +177,7 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     private val service: Service,
     val function: (suspend Service.(CreateContext<ServiceRequest>) -> ServiceResponse)
 ) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val payload = request.withBody().body.let {
             val string = String(it!!)
             try {
@@ -198,7 +198,7 @@ class UpdateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     private val service: Service,
     val function: (suspend Service.(UpdateContext<ServiceRequest>) -> ServiceResponse)
 ) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val id = request.queryParameters.let {
             it["id"]?.singleOrNull()
                 ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
@@ -235,7 +235,7 @@ class FlowIndexHandler<Service : Any, ServiceResponse>(
     private val service: Service,
     val function: (suspend Service.() -> Flow<ServiceResponse>)
 ) : SuspendingHandler {
-    override suspend fun handle(request: Request, requestContext: RequestContext): Response {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val result = service.function()
         return FlowResponse(mapOf(), 200, result.map { Json.encodeToString(responseSerializer, it) + "\n" })
     }
