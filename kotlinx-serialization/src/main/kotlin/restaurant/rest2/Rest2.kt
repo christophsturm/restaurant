@@ -15,13 +15,17 @@ import restaurant.SuspendingHandler
 import restaurant.response
 import java.util.Locale
 
-fun <Service : Any> RoutingDSL.resources(service: Service, path: String = path(service)) =
-    ResourceMapperImpl(this, service, path)
+inline fun <Service : Any> RoutingDSL.resources(
+    service: Service,
+    path: String = ___path(service),
+    config: ResourceMapper<Service>.() -> Unit
+) =
+    ResourceMapperImpl(this, service, path).config()
 
 fun <Service : Any, ServiceResponse> RoutingDSL.resources(
     service: Service,
     responseSerializer: KSerializer<ServiceResponse>,
-    path: String = path(service)
+    path: String = ___path(service)
 ) =
     ResourceMapperWithDefaultType(responseSerializer, ResourceMapperImpl(this, service, path))
 
@@ -38,7 +42,7 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     }
 }
 
-private fun path(service: Any) =
+fun ___path(service: Any) =
     service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service") + "s"
 
 interface ResourceMapper<Service : Any> {
@@ -77,7 +81,7 @@ interface ResourceMapper<Service : Any> {
 class ResourceMapperImpl<Service : Any>(
     private val routingDSL: RoutingDSL,
     private val service: Service,
-    private val path: String = path(service)
+    private val path: String = ___path(service)
 ) : ResourceMapper<Service> {
     override fun <ServiceResponse> index(
         responseSerializer: KSerializer<ServiceResponse>,

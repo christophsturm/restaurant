@@ -39,7 +39,7 @@ object RestRestaurantTest {
                 val r = autoClose(
                     restaurant {
                         namespace("/api") {
-                            resources(UserService()).apply {
+                            resources(UserService()) {
                                 index(ListSerializer(User.serializer())) { index() }
                                 show(User.serializer()) { show(it.intId()) }
                                 create(User.serializer()) { create(it.body) }
@@ -86,7 +86,7 @@ object RestRestaurantTest {
                         val restaurant = autoClose(
                             restaurant {
                                 namespace("/api") {
-                                    resources(UserService()).apply {
+                                    resources(UserService()) {
                                         show(User.serializer()) { show(it.intId()) }
                                     }
                                 }
@@ -158,7 +158,7 @@ object RestRestaurantTest {
                                     status = 418,
                                     result = "sorry: " + ex.message
                                 )
-                            }) { resources(ExceptionsService()) }
+                            }) { resources(ExceptionsService()) {} }
                             expectThat(restaurant.sendRequest("/exceptions")) {
                                 get { statusCode() }.isEqualTo(418)
                                 get { body() }.isEqualTo("sorry: error message")
@@ -171,7 +171,7 @@ object RestRestaurantTest {
                 val r = autoClose(
                     restaurant {
                         namespace("/api") {
-                            resources(StreamingUserService()).apply {
+                            resources(StreamingUserService()) {
                                 streamIndex(User.serializer()) { index() }
                             }
                         }
