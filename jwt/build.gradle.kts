@@ -15,7 +15,7 @@ plugins {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api(project(":restaurant-core"))
-    api("com.auth0:java-jwt:4.2.1")
+    api("com.auth0:java-jwt:4.2.2")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
     testRuntimeOnly("org.apache.logging.log4j:log4j-core:$log4j2Version")
