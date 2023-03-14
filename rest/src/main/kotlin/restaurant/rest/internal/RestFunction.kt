@@ -72,7 +72,7 @@ class MultiplePossibleBodyTypesException(function: KFunction<*>, it: List<KParam
 )
 
 private fun <R> KCallable<R>.niceName(): String = "${this.parameters.first().type.shortName()}#${this.name}(${
-parameters.drop(1).joinToString { it.type.shortName() ?: "" }
+    parameters.drop(1).joinToString { it.type.shortName() ?: "" }
 })"
 
 private fun KType.shortName(): String? = (this.classifier as KClass<*>).simpleName

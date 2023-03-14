@@ -7,7 +7,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("com.autonomousapps.dependency-analysis") version "1.19.0"
     id("org.jetbrains.kotlinx.kover") version "0.6.1" apply false
-    id("org.jmailen.kotlinter") version "3.13.0" apply false
+    id("org.jmailen.kotlinter") version "3.14.0" apply false
 }
 // to release:
 // ./gradlew publishToSonatype closeSonatypeStagingRepository (or ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository)
