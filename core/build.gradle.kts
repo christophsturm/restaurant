@@ -14,7 +14,7 @@ plugins {
     id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
-    id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
+    id("com.bnorm.power.kotlin-power-assert") version "0.12.2"
 }
 
 dependencies {
