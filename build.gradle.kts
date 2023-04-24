@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.LintTask
 
 plugins {
     id("com.github.ben-manes.versions") version "0.46.0"
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("com.autonomousapps.dependency-analysis") version "1.20.0"
     id("org.jetbrains.kotlinx.kover") version "0.6.1" apply false
     id("org.jmailen.kotlinter") version "3.14.0" apply false
