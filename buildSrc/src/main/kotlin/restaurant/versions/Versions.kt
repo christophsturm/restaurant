@@ -1,10 +1,10 @@
 package restaurant.versions
 
-const val failgoodVersion = "0.8.2"
+const val failgoodVersion = "0.8.3"
 const val striktVersion = "0.34.1"
-const val kotlinVersion = "1.7.21"
-const val jacksonVersion = "2.13.4"
-const val coroutinesVersion = "1.6.4"
-const val log4j2Version = "2.19.0"
+const val kotlinVersion = "1.8.21"
+const val jacksonVersion = "2.15.0"
+const val coroutinesVersion = "1.7.0"
+const val log4j2Version = "2.20.0"
 const val pitestVersion = "1.9.8"
-const val undertowVersion = "2.3.0.Final"
+const val undertowVersion = "2.3.5.Final"

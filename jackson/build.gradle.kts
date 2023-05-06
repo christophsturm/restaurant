@@ -17,7 +17,7 @@ plugins {
 
 dependencies {
     api("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    api("com.fasterxml.jackson.core:jackson-databind:2.14.1")
+    api("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))

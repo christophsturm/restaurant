@@ -10,12 +10,12 @@ plugins {
     id("restaurant.common")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
-    kotlin("plugin.serialization") version ("1.7.21")
-    id("com.bnorm.power.kotlin-power-assert") version "0.12.2"
+    kotlin("plugin.serialization") version ("1.8.21")
+    id("com.bnorm.power.kotlin-power-assert")
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     api(project(":restaurant-rest"))
