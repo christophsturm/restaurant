@@ -13,7 +13,7 @@ dependencies {
     implementation(kotlin("script-runtime"))
 
     implementation(kotlin("gradle-plugin", "1.9.10"))
-    implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.9.11")
+    implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
 }
 
 idea {
