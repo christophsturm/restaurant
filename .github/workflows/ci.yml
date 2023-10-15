@@ -28,7 +28,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Build with Gradle
-        continue-on-error: true
         env:
           CI: true
         run: ./gradlew build
@@ -36,6 +35,7 @@ jobs:
         with:
           files: core/build/reports/kover/report.xml,rest/build/reports/kover/report.xml
       - name: Test Report ${{matrix.java}}
+        if: always()
         uses: ScaCap/action-surefire-report@v1.7.2
         with:
           check_name: Test Report ${{matrix.java}}
