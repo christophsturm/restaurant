@@ -10,7 +10,7 @@ plugins {
     id("restaurant.common")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
-    kotlin("plugin.serialization") version ("1.9.10")
+    kotlin("plugin.serialization") version ("1.9.20")
     id("com.bnorm.power.kotlin-power-assert")
 }
 
