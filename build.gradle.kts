@@ -8,7 +8,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("com.autonomousapps.dependency-analysis") version "1.26.0"
     id("org.jetbrains.kotlinx.kover") version "0.7.5" apply false
-    id("org.jmailen.kotlinter") version "3.14.0" apply false
+    id("org.jmailen.kotlinter") version "4.1.0" apply false
     id("com.bnorm.power.kotlin-power-assert") version "0.13.0" apply false
 }
 // to release:
