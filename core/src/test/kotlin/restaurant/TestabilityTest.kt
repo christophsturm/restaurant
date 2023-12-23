@@ -2,6 +2,7 @@ package restaurant
 
 import failgood.Test
 import failgood.describe
+import failgood.testsAbout
 import restaurant.test.MockRequest
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
@@ -17,7 +18,7 @@ class Reverser : SuspendingHandler {
 
 @Test
 class TestabilityTest {
-    val context = describe("testability") {
+    val context = testsAbout("testability") {
         test("handlers can be invoked with a MockRequest") {
             val handler = Reverser()
             expectThat(

@@ -2,6 +2,7 @@ package restaurant.client
 
 import failgood.Test
 import failgood.describe
+import failgood.testsAbout
 import kotlinx.coroutines.flow.toList
 import restaurant.HttpStatus
 import restaurant.Method
@@ -17,7 +18,7 @@ import strikt.assertions.isNotNull
 
 @Test
 class HttpClientTest {
-    val context = describe(Java11HttpClient::class) {
+    val context = testsAbout(Java11HttpClient::class) {
         val restaurant = autoClose(Restaurant {
             route(Method.GET, "get") { _, _ ->
                 response("get reply")

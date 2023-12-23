@@ -1,7 +1,7 @@
 package restaurant
 
 import failgood.Test
-import failgood.describe
+import failgood.testsAbout
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 
 @Test
 class WrappersTest {
-    val context = describe("Wrapper Support") {
+    val context = testsAbout("Wrapper Support") {
         val events = mutableListOf<String>()
         val inner = Wrapper { wrapped ->
             SuspendingHandler { request, requestContext ->

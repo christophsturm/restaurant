@@ -5,6 +5,7 @@ package restaurant.exp.rest2
 import failgood.Ignored
 import failgood.Test
 import failgood.describe
+import failgood.testsAbout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -33,7 +34,7 @@ fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMappin
 
 @Test
 object RestRestaurantTest {
-    val context = describe(Restaurant::class) {
+    val context = testsAbout(Restaurant::class) {
         describe("rest services") {
             describe("rest routes") {
                 val r = autoClose(

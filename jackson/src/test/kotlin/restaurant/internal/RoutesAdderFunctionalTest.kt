@@ -3,6 +3,7 @@ package restaurant.internal
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import failgood.Test
 import failgood.describe
+import failgood.testsAbout
 import kotlinx.coroutines.runBlocking
 import restaurant.JacksonMapper
 import restaurant.Method
@@ -19,7 +20,7 @@ import java.util.LinkedList
 
 @Test
 class RoutesAdderFunctionalTest {
-    val context = describe(RoutesAdder::class) {
+    val context = testsAbout(RoutesAdder::class) {
         val requestContext = MutableRequestContext()
         val routesAdder = RoutesAdder(JacksonMapper(jacksonObjectMapper()))
         listOf(

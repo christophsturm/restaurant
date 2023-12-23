@@ -1,8 +1,8 @@
 package restaurant.rest.internal
 
 import failgood.Test
-import failgood.describe
 import failgood.mock.mock
+import failgood.testsAbout
 import kotlinx.coroutines.delay
 import restaurant.rest.RestService
 
@@ -11,7 +11,7 @@ import restaurant.rest.RestService
  */
 @Test
 class RoutesAdderTest {
-    val context = describe<RoutesAdder> {
+    val context = testsAbout(RoutesAdder::class) {
         it("does not crash when called") {
 
             val routesAdder = RoutesAdder(mock())
@@ -20,6 +20,7 @@ class RoutesAdderTest {
             routesAdder.routesFor(service, rootPath)
         }
     }
+
     class UserService : RestService {
         suspend fun index(): List<User> {
             delay(1)

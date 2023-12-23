@@ -2,6 +2,7 @@ package restaurant.rest.internal
 
 import failgood.Test
 import failgood.describe
+import failgood.testsAbout
 import restaurant.MutableRequestContext
 import restaurant.RequestContext
 import restaurant.rest.RestService
@@ -13,7 +14,7 @@ import strikt.assertions.message
 
 @Test
 class RestFunctionTest {
-    val context = describe(RestFunction::class) {
+    val context = testsAbout(RestFunction::class) {
         data class Body(val field: String)
 
         val requestContext = MutableRequestContext()

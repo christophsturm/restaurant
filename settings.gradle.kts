@@ -3,7 +3,6 @@
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        maven("https://s01.oss.sonatype.org/content/repositories/devfailgood-1050")
     }
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 }
@@ -16,4 +15,3 @@ include(modules.map { "$projectName-$it" })
 modules.forEach {
     project(":$projectName-$it").projectDir = file(it)
 }
-// includeBuild("../failgood")

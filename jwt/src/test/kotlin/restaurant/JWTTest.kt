@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.JWTVerifier
 import failgood.Test
-import failgood.describe
+import failgood.testsAbout
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
@@ -33,7 +33,7 @@ class JWTWelcomeHandler : SuspendingHandler {
 
 @Test
 class JWTTest {
-    val context = describe("JWT Support") {
+    val context = testsAbout("JWT Support") {
         val restaurant = autoClose(
             Restaurant {
                 jwt(JWTConfig.makeJwtVerifier()) {

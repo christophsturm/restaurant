@@ -2,6 +2,7 @@ package restaurant
 
 import failgood.Test
 import failgood.describe
+import failgood.testsAbout
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
@@ -11,7 +12,7 @@ import kotlin.test.assertEquals
 
 @Test
 class RequestTest {
-    val context = describe(Request::class) {
+    val context = testsAbout(Request::class) {
         describe("get requests") {
             lateinit var req: Request
             val restaurant = autoClose(

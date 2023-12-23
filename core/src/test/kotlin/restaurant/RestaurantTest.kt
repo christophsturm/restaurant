@@ -2,6 +2,7 @@ package restaurant
 
 import failgood.Test
 import failgood.describe
+import failgood.testsAbout
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -19,7 +20,7 @@ import kotlin.test.assertNotNull
 
 @Test
 class RestaurantTest {
-    val context = describe(Restaurant::class) {
+    val context = testsAbout(Restaurant::class) {
 
         describe("routing") {
             val restaurant = autoClose(
@@ -114,10 +115,12 @@ class RestaurantTest {
         }
         describe("to string method for request") {
             val toString = CompletableDeferred<String>()
-            val restaurant = autoClose(Restaurant { route(Method.GET, "/path") { req, _ ->
-                toString.complete(req.toString())
-                response()
-            } })
+            val restaurant = autoClose(Restaurant {
+                route(Method.GET, "/path") { req, _ ->
+                    toString.complete(req.toString())
+                    response()
+                }
+            })
             it("works without query string") {
                 restaurant.sendRequest("/path")
                 val await = toString.await()
