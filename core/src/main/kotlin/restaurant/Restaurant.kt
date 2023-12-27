@@ -5,11 +5,10 @@ import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
 import restaurant.internal.Mapper
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
+import java.net.BindException
 import java.net.ServerSocket
 
-/**
- * return an unused port for servers to listen on
- */
+/** return an unused port for servers to listen on */
 fun findFreePort(): Int = ServerSocket(0).use {
     it.reuseAddress = true
     it.localPort
@@ -43,15 +42,27 @@ data class Restaurant internal constructor(
             mapper: Mapper? = null,
             serviceMapping: RoutingDSL.() -> Unit
         ): Restaurant {
-            val realPort = port ?: findFreePort()
-            val baseUrl = "http://$host:$realPort"
             val routes: List<Route> = routes(mapper, serviceMapping)
             val rootHandlers = routes.map { route ->
                 Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
             }
-            val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, realPort, host).apply { start() }
-            return Restaurant(baseUrl, routes, undertow, realPort)
+            // retry undertow construction when listening on a random port and a bind exception occurs.
+            var tries = 3
+            while (true) {
+                val realPort = port ?: findFreePort()
+                val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, realPort, host)
+                try {
+                    undertow.start()
+                } catch (e: BindException) {
+                    if (port == 0 && tries-- < 0)
+                        throw e
+                    continue
+                }
+                val baseUrl = "http://$host:$realPort"
+                return Restaurant(baseUrl, routes, undertow, realPort)
+            }
         }
+
         private fun RootHandler(
             wrappers: List<Wrapper>,
             exceptionHandler: (Throwable) -> Response,
@@ -116,40 +127,29 @@ class MutableRequestContext : RequestContext {
 
 interface Request {
 
-    /**
-     * The Request Path. Everything before the query string
-     */
+    /** The Request Path. Everything before the query string */
     val requestPath: String
 
-    /**
-     * The Query String. Everything after the "?"
-     */
+    /** The Query String. Everything after the "?" */
     val queryString: String
 
-    /**
-     * The Headers.
-     */
+    /** The Headers. */
     val headers: HeaderMap
 
-    /**
-     * The Request Method.
-     */
+    /** The Request Method. */
     val method: Method
 
     val queryParameters: Map<String, Collection<String>>
 
     /**
-     * read the body of the request and return a request that has a body set.
-     * if the request body was already read this returns this
-     *
+     * read the body of the request and return a request that has a body set. if the request body was already read this
+     * returns this
      */
     suspend fun withBody(): RequestWithBody
 }
 
 interface RequestWithBody : Request {
-    /**
-     * Body of the request. This is null when no request body was sent for example for get requests.
-     */
+    /** Body of the request. This is null when no request body was sent for example for get requests. */
     val body: ByteArray?
 }
 
@@ -160,10 +160,7 @@ class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
 }
 
 enum class Method {
-    GET,
-    PUT,
-    POST,
-    DELETE
+    GET, PUT, POST, DELETE
 }
 
 data class Route(
