@@ -54,7 +54,8 @@ data class Restaurant internal constructor(
                 try {
                     undertow.start()
                 } catch (e: BindException) {
-                    if (port == 0 && tries-- < 0)
+                    // if no port was specified, we retry
+                    if (port != 0 || tries-- < 0)
                         throw e
                     continue
                 }
