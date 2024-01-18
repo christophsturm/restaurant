@@ -6,7 +6,7 @@ import java.util.*
 plugins {
     id("com.github.ben-manes.versions") version "0.50.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("com.autonomousapps.dependency-analysis") version "1.26.0"
+    id("com.autonomousapps.dependency-analysis") version "1.29.0"
     id("org.jetbrains.kotlinx.kover") version "0.7.5" apply false
     id("org.jmailen.kotlinter") version "3.14.0" apply false
     id("com.bnorm.power.kotlin-power-assert") version "0.13.0" apply false
