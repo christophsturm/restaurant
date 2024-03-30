@@ -19,6 +19,8 @@ plugins {
 }
 
 dependencies {
+    api(project(":restaurant-client"))
+
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     implementation(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
 
