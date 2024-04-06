@@ -53,6 +53,14 @@ data class Restaurant internal constructor(
                 val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, realPort, host)
                 try {
                     undertow.start()
+                } catch (e: RuntimeException) {
+                    // it seems that undertow now wraps the bind exception in a runtime exception
+                    if (e.cause is BindException) {
+                        // if no port was specified, we retry
+                        if (port != 0 || tries-- < 0)
+                            throw e
+                        continue
+                    }
                 } catch (e: BindException) {
                     // if no port was specified, we retry
                     if (port != 0 || tries-- < 0)
