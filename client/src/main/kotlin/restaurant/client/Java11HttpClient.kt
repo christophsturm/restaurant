@@ -3,6 +3,7 @@ package restaurant.client
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.stream.consumeAsFlow
+import java.net.ConnectException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpHeaders
@@ -15,12 +16,15 @@ import java.util.stream.Stream
 class Java11HttpClient {
     private val httpClient = HttpClient.newHttpClient()!!
     suspend fun send(
-        path: String,
-        config: RequestDSL.() -> Unit = {}
+        path: String, config: RequestDSL.() -> Unit = {}
     ) = send(buildRequest(path, config))
 
     suspend fun send(request: HttpRequest): RestaurantResponse<String> {
-        val response = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
+        val response = try {
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
+        } catch (e: ConnectException) {
+            throw HttpClientException("Error connecting to ${request.uri()}.", e)
+        }
         return RestaurantResponse(response.statusCode(), response.body(), response.headers(), response.uri())
     }
 
@@ -29,20 +33,18 @@ class Java11HttpClient {
         val response: HttpResponse<Stream<String>> =
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines()).await()
         return RestaurantResponse(
-            response.statusCode(),
-            response.body().consumeAsFlow(),
-            response.headers(),
-            response.uri()
+            response.statusCode(), response.body().consumeAsFlow(), response.headers(), response.uri()
         )
     }
 
     interface RequestDSL {
         fun post(body: String)
+        fun post()
         fun put(body: String)
+        fun put()
         fun delete()
         fun addHeader(key: String, value: String)
         fun timeout(amount: Long, unit: ChronoUnit)
-        fun post()
     }
 
     class J11ClientRequestDSL(val delegate: HttpRequest.Builder) : RequestDSL {
@@ -56,6 +58,10 @@ class Java11HttpClient {
 
         override fun put(body: String) {
             delegate.PUT(HttpRequest.BodyPublishers.ofString(body))
+        }
+
+        override fun put() {
+            delegate.PUT(HttpRequest.BodyPublishers.noBody())
         }
 
         override fun delete() {
@@ -77,8 +83,7 @@ class Java11HttpClient {
         private const val DEFAULT_TIMEOUT_SECONDS = 5L
 
         fun buildRequest(
-            path: String,
-            config: RequestDSL.() -> Unit
+            path: String, config: RequestDSL.() -> Unit = {}
         ): HttpRequest {
             val builder = J11ClientRequestDSL(
                 HttpRequest.newBuilder(URI(path)).timeout(
@@ -92,11 +97,10 @@ class Java11HttpClient {
     }
 }
 
+class HttpClientException(message: String, cause: Exception) : RuntimeException(message, cause)
+
 data class RestaurantResponse<BodyType>(
-    val statusCode: Int,
-    val body: BodyType?,
-    val headers: HttpHeaders,
-    val uri: URI?
+    val statusCode: Int, val body: BodyType?, val headers: HttpHeaders, val uri: URI?
 ) {
     val isOk = statusCode in 200..299
     fun statusCode(): Int = statusCode
