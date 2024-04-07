@@ -23,6 +23,9 @@ class HttpClientTest {
             route(Method.GET, "get") { _, _ ->
                 response("get reply")
             }
+            route(Method.GET, "empty_get") { _, _ ->
+                response()
+            }
             route(Method.POST, "post") { _, _ ->
                 response(HttpStatus.TEAPOT_418, "post\nreply", mapOf("Content-Type" to "only the best content"))
             }
@@ -33,7 +36,7 @@ class HttpClientTest {
                 expectThat(httpClient.send("${restaurant.baseUrl}${"/get"}").body).isEqualTo("get reply")
             }
             it("can send requests") {
-                expectThat(httpClient.send(Java11HttpClient.buildRequest("${restaurant.baseUrl}${"/get"}") {}).body)
+                expectThat(httpClient.send(Java11HttpClient.buildRequest("${restaurant.baseUrl}${"/get"}")).body)
                     .isEqualTo("get reply")
             }
         }
@@ -41,6 +44,9 @@ class HttpClientTest {
         describe("get requests") {
             it("are default") {
                 expectThat(restaurant.sendRequest("/get").body).isEqualTo("get reply")
+            }
+            it("can have empty replies") {
+                expectThat(restaurant.sendRequest("/empty_get").body).isEqualTo("")
             }
         }
         describe("http response") {
