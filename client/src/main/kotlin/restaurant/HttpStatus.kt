@@ -10,5 +10,6 @@ object HttpStatus {
     const val NOT_FOUND_404 = 404
     const val CONFLICT_409 = 409
     const val TEAPOT_418 = 418
+    const val LOCKED_423 = 423
     const val INTERNAL_SERVER_ERROR_500 = 500
 }
