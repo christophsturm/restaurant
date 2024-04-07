@@ -3,7 +3,9 @@ package restaurant
 import kotlinx.coroutines.flow.Flow
 import java.nio.ByteBuffer
 
-fun response(status: Int = 200, headers: Map<String, String> = mapOf()) = StatusResponse(status, headers)
+fun response(status: Int = HttpStatus.NO_CONTENT_204, headers: Map<String, String> = mapOf()) =
+    StatusResponse(status, headers)
+
 fun response(status: Int, result: String, headers: Map<String, String> = mapOf()) =
     StringResponse(status, result, headers)
 
