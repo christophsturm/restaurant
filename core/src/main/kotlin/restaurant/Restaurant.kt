@@ -77,12 +77,12 @@ data class Restaurant internal constructor(
             exceptionHandler: (Throwable) -> Response,
             handler: SuspendingHandler
         ): SuspendingHandler {
-            val realhandler = wrappers.reversed().fold(handler) { acc, wrapper ->
+            val wrappedHandler = wrappers.reversed().fold(handler) { acc, wrapper ->
                 wrapper.wrap(acc)
             }
             return SuspendingHandler { request, requestContext ->
                 try {
-                    realhandler.handle(request, requestContext)
+                    wrappedHandler.handle(request, requestContext)
                 } catch (e: Exception) {
                     try {
                         exceptionHandler(e)
