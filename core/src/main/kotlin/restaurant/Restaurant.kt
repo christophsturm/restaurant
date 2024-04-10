@@ -61,6 +61,7 @@ data class Restaurant internal constructor(
                             throw e
                         continue
                     }
+                    throw e
                 } catch (e: BindException) {
                     // if no port was specified, we retry
                     if (port != 0 || tries-- < 0)
