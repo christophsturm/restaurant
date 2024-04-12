@@ -5,16 +5,12 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.stream.consumeAsFlow
 import java.net.ConnectException
 import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpHeaders
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-import java.net.http.HttpTimeoutException
+import java.net.http.*
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.stream.Stream
 
-class Java11HttpClient {
+class Java11HttpClient(val baseUrl: String = "") {
     private val httpClient = HttpClient.newHttpClient()!!
     suspend fun send(
         path: String, config: RequestDSL.() -> Unit = {}
@@ -85,18 +81,19 @@ class Java11HttpClient {
         // because we don't want a test to hang, but we also don't want a test to fail because of too much load on CI
         private const val DEFAULT_TIMEOUT_SECONDS = 5L
 
-        fun buildRequest(
-            path: String, config: RequestDSL.() -> Unit = {}
-        ): HttpRequest {
-            val builder = J11ClientRequestDSL(
-                HttpRequest.newBuilder(URI(path)).timeout(
-                    Duration.ofSeconds(
-                        DEFAULT_TIMEOUT_SECONDS
-                    )
+    }
+
+    fun buildRequest(
+        path: String, config: RequestDSL.() -> Unit = {}
+    ): HttpRequest {
+        val builder = J11ClientRequestDSL(
+            HttpRequest.newBuilder(URI(baseUrl + path)).timeout(
+                Duration.ofSeconds(
+                    DEFAULT_TIMEOUT_SECONDS
                 )
             )
-            return builder.apply { config() }.delegate.build()
-        }
+        )
+        return builder.apply { config() }.delegate.build()
     }
 }
 

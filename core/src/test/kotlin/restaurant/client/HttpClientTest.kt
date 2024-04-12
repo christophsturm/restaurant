@@ -1,13 +1,11 @@
 package restaurant.client
 
 import failgood.Test
-import failgood.describe
 import failgood.testsAbout
 import kotlinx.coroutines.flow.toList
 import restaurant.HttpStatus
 import restaurant.Method
 import restaurant.Restaurant
-import restaurant.httpClient
 import restaurant.response
 import restaurant.sendRequest
 import strikt.api.expectThat
@@ -19,6 +17,7 @@ import strikt.assertions.isNotNull
 @Test
 class HttpClientTest {
     val context = testsAbout(Java11HttpClient::class) {
+
         val restaurant = autoClose(Restaurant {
             route(Method.GET, "get") { _, _ ->
                 response("get reply")
@@ -30,13 +29,14 @@ class HttpClientTest {
                 response(HttpStatus.TEAPOT_418, "post\nreply", mapOf("Content-Type" to "only the best content"))
             }
         })
+        val httpClient = Java11HttpClient(restaurant.baseUrl)
 
         describe("standalone") {
             it("can send url requests") {
-                expectThat(httpClient.send("${restaurant.baseUrl}${"/get"}").body).isEqualTo("get reply")
+                expectThat(httpClient.send("/get").body).isEqualTo("get reply")
             }
             it("can send requests") {
-                expectThat(httpClient.send(Java11HttpClient.buildRequest("${restaurant.baseUrl}${"/get"}")).body)
+                expectThat(httpClient.send(httpClient.buildRequest("/get")).body)
                     .isEqualTo("get reply")
             }
         }
@@ -70,7 +70,7 @@ class HttpClientTest {
         }
         describe("streaming the response") {
             it("works") {
-                val response = httpClient.sendStreaming("${restaurant.baseUrl}${"/post"}") { post() }
+                val response = httpClient.sendStreaming("/post") { post() }
                 expectThat(response.body?.toList()).isNotNull().containsExactly("post", "reply")
             }
         }

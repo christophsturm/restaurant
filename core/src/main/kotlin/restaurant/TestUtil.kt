@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import restaurant.client.Java11HttpClient
 import restaurant.client.RestaurantResponse
 
-val httpClient = Java11HttpClient()
+private val httpClient = Java11HttpClient()
 
 /**
  * make a http request to a restaurant instance.

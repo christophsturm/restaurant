@@ -14,7 +14,7 @@ class ClassPathTest {
         }
 
         test("client and server work without any other dependencies") {
-            assert(Java11HttpClient().send(mock.baseUrl).isOk)
+            assert(Java11HttpClient(mock.baseUrl).send("/").isOk)
         }
     }
 }
