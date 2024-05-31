@@ -11,8 +11,7 @@ plugins {
     id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
-    kotlin("plugin.serialization") version ("1.9.24")
-    id("com.bnorm.power.kotlin-power-assert")
+    kotlin("plugin.serialization") version ("2.0.0")
 }
 
 dependencies {

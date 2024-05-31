@@ -14,7 +14,6 @@ plugins {
     id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
-    id("com.bnorm.power.kotlin-power-assert")
     id("dev.jacomet.logging-capabilities") version "0.11.1"
 }
 

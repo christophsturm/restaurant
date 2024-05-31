@@ -9,7 +9,6 @@ plugins {
     id("com.autonomousapps.dependency-analysis") version "1.30.0"
     id("org.jetbrains.kotlinx.kover") version "0.8.0" apply false
     id("org.jmailen.kotlinter") version "3.14.0" apply false
-    id("com.bnorm.power.kotlin-power-assert") version "0.13.0" apply false
 }
 // to release:
 // ./gradlew publishToSonatype closeSonatypeStagingRepository (or ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository)

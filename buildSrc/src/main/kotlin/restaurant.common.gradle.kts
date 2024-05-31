@@ -22,15 +22,12 @@ tasks {
         kotlinOptions {
             jvmTarget = "11" // need at least jdk 11 for the http11 httpclient anyway
             freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
-            languageVersion = "1.9"
-            apiVersion = "1.9"
         }
     }
 }
 kotlin {
     sourceSets.all {
         languageSettings.apply {
-            languageVersion = "1.9"
             progressiveMode = true
         }
     }
