@@ -10,3 +10,4 @@ out/
 /.autotest.failgood
 /.vscode
 .autotest.failgood
+.kotlin
