@@ -29,7 +29,7 @@ class HttpClientTest {
                 response(HttpStatus.TEAPOT_418, "post\nreply", mapOf("Content-Type" to "only the best content"))
             }
         })
-        val httpClient = Java11HttpClient(restaurant.baseUrl)
+        val httpClient = Java11HttpClient(HttpClientConfig(restaurant.baseUrl))
 
         describe("standalone") {
             it("can send url requests") {

@@ -6,11 +6,15 @@ import kotlinx.coroutines.stream.consumeAsFlow
 import java.net.ConnectException
 import java.net.URI
 import java.net.http.*
-import java.time.Duration
-import java.time.temporal.ChronoUnit
 import java.util.stream.Stream
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
-class Java11HttpClient(val baseUrl: String = "") {
+data class HttpClientConfig(val baseUrl: String = "", val timeout: Duration = 5.seconds)
+class Java11HttpClient(config: HttpClientConfig = HttpClientConfig()) {
+    private val baseUrl = config.baseUrl
+    private val timeout = config.timeout.toJavaDuration()
     private val httpClient = HttpClient.newHttpClient()!!
     suspend fun send(
         path: String, config: RequestDSL.() -> Unit = {}
@@ -43,7 +47,7 @@ class Java11HttpClient(val baseUrl: String = "") {
         fun put()
         fun delete()
         fun addHeader(key: String, value: String)
-        fun timeout(amount: Long, unit: ChronoUnit)
+        fun timeout(duration: Duration)
     }
 
     class J11ClientRequestDSL(val delegate: HttpRequest.Builder) : RequestDSL {
@@ -71,8 +75,8 @@ class Java11HttpClient(val baseUrl: String = "") {
             delegate.header(key, value)
         }
 
-        override fun timeout(amount: Long, unit: ChronoUnit) {
-            delegate.timeout(Duration.of(amount, unit))
+        override fun timeout(duration: Duration) {
+            delegate.timeout(duration.toJavaDuration())
         }
     }
 
@@ -88,9 +92,7 @@ class Java11HttpClient(val baseUrl: String = "") {
     ): HttpRequest {
         val builder = J11ClientRequestDSL(
             HttpRequest.newBuilder(URI(baseUrl + path)).timeout(
-                Duration.ofSeconds(
-                    DEFAULT_TIMEOUT_SECONDS
-                )
+                timeout
             )
         )
         return builder.apply { config() }.delegate.build()

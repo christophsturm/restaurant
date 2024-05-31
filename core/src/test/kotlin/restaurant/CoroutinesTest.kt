@@ -6,7 +6,7 @@ import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isFalse
 import java.net.http.HttpTimeoutException
-import java.time.temporal.ChronoUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 @Test
 class CoroutinesTest {
@@ -23,7 +23,7 @@ class CoroutinesTest {
                 route(Method.GET, "/delay", delayService)
             }
             expectThrows<HttpTimeoutException> {
-                restaurant.sendRequest("/delay") { timeout(30, ChronoUnit.MILLIS) }
+                restaurant.sendRequest("/delay") { timeout(30.milliseconds) }
             }
             delay(200)
             expectThat(delayService).get { afterDelay }.isFalse()

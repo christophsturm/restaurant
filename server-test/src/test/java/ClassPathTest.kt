@@ -2,6 +2,7 @@ package restaurant
 
 import failgood.Test
 import failgood.tests
+import restaurant.client.HttpClientConfig
 import restaurant.client.Java11HttpClient
 
 @Test
@@ -14,7 +15,7 @@ class ClassPathTest {
         }
 
         test("client and server work without any other dependencies") {
-            assert(Java11HttpClient(mock.baseUrl).send("/").isOk)
+            assert(Java11HttpClient(HttpClientConfig(mock.baseUrl)).send("/").isOk)
         }
     }
 }
