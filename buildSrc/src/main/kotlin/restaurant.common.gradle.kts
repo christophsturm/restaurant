@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.power-assert")
     java
     `maven-publish`
     signing
@@ -51,4 +52,13 @@ plugins.withId("info.solidsoft.pitest") {
         )
         outputFormats.set(setOf("XML", "HTML"))
     }
+}
+@Suppress("OPT_IN_USAGE")
+powerAssert {
+    functions = listOf(
+        "kotlin.assert",
+        "kotlin.test.assertTrue",
+        "kotlin.test.assertNotNull",
+        "failgood.softly.AssertDSL.assert"
+    )
 }
