@@ -80,21 +80,10 @@ class Java11HttpClient(config: HttpClientConfig = HttpClientConfig()) {
         }
     }
 
-    companion object {
-        // THE JDK11 http client defaults to no timeout. We set a 5 seconds timeout per default, which is pretty long
-        // because we don't want a test to hang, but we also don't want a test to fail because of too much load on CI
-        private const val DEFAULT_TIMEOUT_SECONDS = 5L
-
-    }
-
     fun buildRequest(
         path: String, config: RequestDSL.() -> Unit = {}
     ): HttpRequest {
-        val builder = J11ClientRequestDSL(
-            HttpRequest.newBuilder(URI(baseUrl + path)).timeout(
-                timeout
-            )
-        )
+        val builder = J11ClientRequestDSL(HttpRequest.newBuilder(URI(baseUrl + path)).timeout(timeout))
         return builder.apply { config() }.delegate.build()
     }
 }

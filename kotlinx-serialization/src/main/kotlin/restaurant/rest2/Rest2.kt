@@ -4,16 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import restaurant.FlowResponse
-import restaurant.Method
-import restaurant.MutableRequestContext
-import restaurant.Request
-import restaurant.Response
-import restaurant.RestaurantException
-import restaurant.RoutingDSL
-import restaurant.SuspendingHandler
-import restaurant.response
-import java.util.Locale
+import restaurant.*
+import java.util.*
 
 inline fun <Service : Any> RoutingDSL.resources(
     service: Service,

@@ -4,22 +4,15 @@ package restaurant.exp.rest2
 
 import failgood.Ignored
 import failgood.Test
-import failgood.describe
 import failgood.testsAbout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
-import restaurant.ContentType
-import restaurant.HttpHeader
-import restaurant.HttpStatus
-import restaurant.Restaurant
-import restaurant.RoutingDSL
-import restaurant.response
+import restaurant.*
 import restaurant.rest.RestService
 import restaurant.rest2.resources
-import restaurant.sendRequest
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEqualTo
@@ -153,7 +146,6 @@ object RestRestaurantTest {
                             }
                         }
                         it("calls error handler with the correct exception") {
-                            @Suppress("NAME_SHADOWING")
                             val restaurant = Restaurant(exceptionHandler = { ex: Throwable ->
                                 response(
                                     status = 418,

@@ -4,24 +4,12 @@ package restaurant.rest
 
 import failgood.Ignored
 import failgood.Test
-import failgood.describe
 import failgood.testsAbout
-import restaurant.ContentType
-import restaurant.HttpHeader
-import restaurant.HttpStatus
-import restaurant.JacksonMapper
-import restaurant.Restaurant
-import restaurant.RoutingDSL
+import restaurant.*
 import restaurant.internal.HobbyService
 import restaurant.internal.UserService
-import restaurant.response
-import restaurant.sendRequest
 import strikt.api.expectThat
-import strikt.assertions.contains
-import strikt.assertions.isEmpty
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
-import strikt.assertions.single
+import strikt.assertions.*
 
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
     Restaurant(mapper = JacksonMapper(), serviceMapping = serviceMapping)

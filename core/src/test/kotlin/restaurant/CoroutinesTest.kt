@@ -1,6 +1,8 @@
 package restaurant
 
-import failgood.*
+import failgood.Ignored
+import failgood.Test
+import failgood.testsAbout
 import kotlinx.coroutines.delay
 import strikt.api.expectThat
 import strikt.api.expectThrows

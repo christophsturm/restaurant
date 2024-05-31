@@ -3,11 +3,7 @@ package restaurant.client
 import failgood.Test
 import failgood.testsAbout
 import kotlinx.coroutines.flow.toList
-import restaurant.HttpStatus
-import restaurant.Method
-import restaurant.Restaurant
-import restaurant.response
-import restaurant.sendRequest
+import restaurant.*
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.containsExactly

@@ -5,7 +5,7 @@ import restaurant.RestaurantException
 import restaurant.RoutingDSL
 import restaurant.internal.Routing
 import restaurant.rest.internal.RoutesAdder
-import java.util.Locale
+import java.util.*
 
 interface RestService
 

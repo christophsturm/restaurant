@@ -9,19 +9,19 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 object JWTConfig {
-    private const val issuer = "https://restaurant.dev/"
-    private const val audience = "jwtAudience"
+    private const val ISSUER = "https://restaurant.dev/"
+    private const val AUDIENCE = "jwtAudience"
     private val algorithm = Algorithm.HMAC256("psst, secret")!!
     fun makeToken(userId: Long): String = JWT.create()
-        .withAudience(audience)
+        .withAudience(AUDIENCE)
         .withSubject("Authentication")
-        .withIssuer(issuer)
+        .withIssuer(ISSUER)
         .withClaim("jti", userId)
         .sign(algorithm)!!
 
     fun makeJwtVerifier(): JWTVerifier = JWT.require(algorithm)
-        .withAudience(audience)
-        .withIssuer(issuer)
+        .withAudience(AUDIENCE)
+        .withIssuer(ISSUER)
         .build()
 }
 

@@ -1,10 +1,6 @@
 package restaurant.internal
 
-import restaurant.Method
-import restaurant.Route
-import restaurant.RoutingDSL
-import restaurant.SuspendingHandler
-import restaurant.Wrapper
+import restaurant.*
 
 internal fun routes(mapper: Mapper?, serviceMapping: RoutingDSL.() -> Unit): List<Route> {
     return Routing(mapper, "").apply(serviceMapping).routes

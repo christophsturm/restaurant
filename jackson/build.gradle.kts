@@ -1,10 +1,6 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
-import restaurant.versions.failgoodVersion
-import restaurant.versions.jacksonVersion
-import restaurant.versions.kotlinVersion
-import restaurant.versions.log4j2Version
-import restaurant.versions.striktVersion
+import restaurant.versions.*
 
 plugins {
     kotlin("jvm")

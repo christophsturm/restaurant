@@ -1,10 +1,6 @@
 package restaurant.test
 
-import restaurant.HeaderMap
-import restaurant.Key
-import restaurant.Method
-import restaurant.RequestContext
-import restaurant.RequestWithBody
+import restaurant.*
 
 class MockRequest(
     override val body: ByteArray? = null,

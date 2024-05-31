@@ -3,11 +3,7 @@ package restaurant.internal
 import failgood.Test
 import failgood.mock.mock
 import failgood.testsAbout
-import restaurant.Method
-import restaurant.Route
-import restaurant.SuspendingHandler
-import restaurant.Wrapper
-import restaurant.response
+import restaurant.*
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 

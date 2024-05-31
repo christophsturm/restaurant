@@ -1,7 +1,6 @@
 package restaurant.rest.internal
 
 import failgood.Test
-import failgood.describe
 import failgood.testsAbout
 import restaurant.MutableRequestContext
 import restaurant.RequestContext

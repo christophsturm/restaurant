@@ -6,13 +6,7 @@ import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
 import io.undertow.util.HttpString
 import io.undertow.util.Methods
-import restaurant.HeaderMap
-import restaurant.Method
-import restaurant.Request
-import restaurant.RequestWithBody
-import restaurant.RestaurantException
-import restaurant.Route
-import restaurant.SuspendingHandler
+import restaurant.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 

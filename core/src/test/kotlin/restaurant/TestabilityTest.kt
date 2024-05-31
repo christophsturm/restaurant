@@ -1,7 +1,6 @@
 package restaurant
 
 import failgood.Test
-import failgood.describe
 import failgood.testsAbout
 import restaurant.test.MockRequest
 import strikt.api.expectThat

@@ -44,7 +44,7 @@ data class Restaurant internal constructor(
         ): Restaurant {
             val routes: List<Route> = routes(mapper, serviceMapping)
             val rootHandlers = routes.map { route ->
-                Pair(RootHandler(route.wrappers, exceptionHandler, route.handler), route)
+                Pair(rootHandler(route.wrappers, exceptionHandler, route.handler), route)
             }
             // retry undertow construction when listening on a random port and a bind exception occurs.
             var tries = 3
@@ -73,7 +73,7 @@ data class Restaurant internal constructor(
             }
         }
 
-        private fun RootHandler(
+        private fun rootHandler(
             wrappers: List<Wrapper>,
             exceptionHandler: (Throwable) -> Response,
             handler: SuspendingHandler
