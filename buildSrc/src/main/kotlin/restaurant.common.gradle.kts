@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -20,8 +21,8 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "11" // need at least jdk 11 for the http11 httpclient anyway
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11 // need at least jdk 11 for the http11 httpclient anyway
             freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn")
         }
     }
