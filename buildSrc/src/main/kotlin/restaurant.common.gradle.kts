@@ -14,6 +14,10 @@ tasks {
     test {
         useJUnitPlatform()
         outputs.upToDateWhen { false }
+        testLogging {
+            setExceptionFormat("full")
+            setEvents(listOf("passed", "skipped", "failed", "standardOut", "standardError"))
+        }
     }
     withType<JavaCompile> {
         sourceCompatibility = "11"
