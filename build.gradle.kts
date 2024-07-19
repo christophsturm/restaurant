@@ -7,7 +7,7 @@ plugins {
     id("com.github.ben-manes.versions") version "0.51.0"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.autonomousapps.dependency-analysis") version "1.32.0"
-    id("org.jetbrains.kotlinx.kover") version "0.8.2" apply false
+    id("org.jetbrains.kotlinx.kover") version "0.8.3" apply false
     id("org.jmailen.kotlinter") version "3.14.0" apply false
 }
 // to release:
