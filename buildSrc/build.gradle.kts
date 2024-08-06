@@ -12,8 +12,8 @@ dependencies {
     // hotfix to make kotlin scratch files work in idea
     implementation(kotlin("script-runtime"))
 
-    implementation(kotlin("gradle-plugin", "2.0.0"))
-    implementation("org.jetbrains.kotlin.plugin.power-assert:org.jetbrains.kotlin.plugin.power-assert.gradle.plugin:2.0.0")
+    implementation(kotlin("gradle-plugin", "2.0.10"))
+    implementation("org.jetbrains.kotlin.plugin.power-assert:org.jetbrains.kotlin.plugin.power-assert.gradle.plugin:2.0.10")
     implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
 }
 

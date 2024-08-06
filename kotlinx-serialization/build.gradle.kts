@@ -11,7 +11,7 @@ plugins {
     id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
     id("org.jmailen.kotlinter")
-    kotlin("plugin.serialization") version ("2.0.0")
+    kotlin("plugin.serialization") version ("2.0.10")
 }
 
 dependencies {
