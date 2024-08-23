@@ -25,6 +25,7 @@ private val defaultExceptionHandler: ExceptionHandler = {
 }
 private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 
+@ConsistentCopyVisibility
 data class Restaurant internal constructor(
     val baseUrl: String,
     val routes: List<Route>,
