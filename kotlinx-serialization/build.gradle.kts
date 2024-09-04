@@ -15,9 +15,9 @@ plugins {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
     api(project(":restaurant-rest"))
     kotlin("test")
     testImplementation("dev.failgood:failgood:$failgoodVersion")
