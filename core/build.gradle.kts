@@ -24,13 +24,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:3.0.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
     testImplementation("io.strikt:strikt-core:$striktVersion")
-    testImplementation("dev.failgood:failgood:$failgoodVersion")
-    testImplementation(kotlin("test"))
-    testRuntimeOnly("org.apache.logging.log4j:log4j-core:$log4j2Version")
-    testRuntimeOnly("org.apache.logging.log4j:log4j-api:$log4j2Version")
-    testRuntimeOnly("org.apache.logging.log4j:log4j-jul:$log4j2Version")
-    testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-    testRuntimeOnly("org.slf4j:slf4j-api:2.0.16")
+    testImplementation(project(":restaurant-test-common"))
 }
 
 
