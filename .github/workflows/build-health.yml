@@ -32,8 +32,13 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            const path = 'build/reports/dependency-analysis/build-health-report.txt'
             const fs = require('fs')
-            const fileContent = fs.readFileSync('build/reports/dependency-analysis/build-health-report.txt', 'utf8')
+            if (!fs.existsSync(path)) {
+              console.error('Generated file not found!');
+              process.exit(1);
+            }
+            const fileContent = fs.readFileSync(path, 'utf8')
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
