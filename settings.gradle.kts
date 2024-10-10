@@ -6,6 +6,10 @@ dependencyResolutionManagement {
     }
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 }
+plugins {
+    id("com.autonomousapps.build-health") version "2.1.2"
+    id("org.jetbrains.kotlin.jvm") version "2.0.21" apply false
+}
 
 val projectName = "restaurant"
 rootProject.name = "$projectName-root"
