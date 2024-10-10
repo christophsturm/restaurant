@@ -65,7 +65,6 @@ data class Restaurant internal constructor(
                         if (port != null || --tries == 0)
                             throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
                                 " ports tried: $triedPorts")
-                        Thread.sleep(100)
                         continue
                     }
                     throw e
@@ -74,7 +73,6 @@ data class Restaurant internal constructor(
                     if (port != null || --tries == 0)
                         throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
                             " ports tried: $triedPorts")
-                    Thread.sleep(100)
                     continue
                 }
                 val baseUrl = "http://$host:$realPort"
