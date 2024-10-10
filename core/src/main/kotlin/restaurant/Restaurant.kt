@@ -7,6 +7,7 @@ import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
 import java.net.BindException
 import java.net.ServerSocket
+import java.net.SocketException
 
 /** return an unused port for servers to listen on */
 fun findFreePort(): Int = ServerSocket(0).use {
@@ -59,9 +60,9 @@ data class Restaurant internal constructor(
                     undertow.start()
                 } catch (e: RuntimeException) {
                     // it seems that undertow now wraps the bind exception in a runtime exception
-                    if (e.cause is BindException) {
+                    if (e.cause is BindException || e.cause is IllegalStateException || e.cause is SocketException) {
                         // if no port was specified, we retry
-                        if (port != 0 || tries-- < 0)
+                        if (port != null || --tries == 0)
                             throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
                                 " ports tried: $triedPorts")
                         Thread.sleep(100)
@@ -70,7 +71,7 @@ data class Restaurant internal constructor(
                     throw e
                 } catch (e: BindException) {
                     // if no port was specified, we retry
-                    if (port != 0 || tries-- < 0)
+                    if (port != null || --tries == 0)
                         throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
                             " ports tried: $triedPorts")
                     Thread.sleep(100)
