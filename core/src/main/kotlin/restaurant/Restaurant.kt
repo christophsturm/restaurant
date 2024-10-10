@@ -60,6 +60,7 @@ data class Restaurant internal constructor(
                         // if no port was specified, we retry
                         if (port != 0 || tries-- < 0)
                             throw e
+                        Thread.sleep(100)
                         continue
                     }
                     throw e
@@ -67,6 +68,7 @@ data class Restaurant internal constructor(
                     // if no port was specified, we retry
                     if (port != 0 || tries-- < 0)
                         throw e
+                    Thread.sleep(100)
                     continue
                 }
                 val baseUrl = "http://$host:$realPort"
