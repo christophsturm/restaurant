@@ -48,9 +48,12 @@ data class Restaurant internal constructor(
                 Pair(rootHandler(route.wrappers, exceptionHandler, route.handler), route)
             }
             // retry undertow construction when listening on a random port and a bind exception occurs.
-            var tries = 3
+            val TOTAL_TRIES = 3
+            var tries = TOTAL_TRIES
+            val triedPorts = mutableListOf<Int>()
             while (true) {
                 val realPort = port ?: findFreePort()
+                triedPorts.add(realPort)
                 val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, realPort, host)
                 try {
                     undertow.start()
@@ -59,7 +62,8 @@ data class Restaurant internal constructor(
                     if (e.cause is BindException) {
                         // if no port was specified, we retry
                         if (port != 0 || tries-- < 0)
-                            throw e
+                            throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
+                                " ports tried: $triedPorts")
                         Thread.sleep(100)
                         continue
                     }
@@ -67,7 +71,8 @@ data class Restaurant internal constructor(
                 } catch (e: BindException) {
                     // if no port was specified, we retry
                     if (port != 0 || tries-- < 0)
-                        throw e
+                        throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
+                            " ports tried: $triedPorts")
                     Thread.sleep(100)
                     continue
                 }
