@@ -12,6 +12,6 @@ plugins {
 dependencies {
     api("dev.failgood:failgood:$failgoodVersion")
     api(kotlin("test"))
-    implementation("ch.qos.logback:logback-classic:1.5.10")
+    implementation("ch.qos.logback:logback-classic:1.5.11")
 }
 
