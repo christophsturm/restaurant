@@ -79,5 +79,5 @@ internal fun buildUndertow(
 
     return Undertow.builder()
         //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-        .addHttpListener(port, host).setHandler(SimpleErrorPageHandler(routingHandler)).build()
+        .addHttpListener(port, host).setHandler(SimpleErrorPageHandler(routingHandler)).build().apply { start() }
 }

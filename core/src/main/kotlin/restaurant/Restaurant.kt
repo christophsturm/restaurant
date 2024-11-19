@@ -50,29 +50,34 @@ data class Restaurant internal constructor(
             }
             // retry undertow construction when listening on a random port and a bind exception occurs.
             val TOTAL_TRIES = 3
-            var tries = TOTAL_TRIES
-            val triedPorts = mutableListOf<Int>()
+            val triedPorts = ArrayList<Int>(TOTAL_TRIES)
             while (true) {
                 val realPort = port ?: findFreePort()
                 triedPorts.add(realPort)
-                val undertow: Undertow = buildUndertow(rootHandlers, defaultHandler, realPort, host)
-                try {
-                    undertow.start()
+                val undertow = try {
+                    buildUndertow(rootHandlers, defaultHandler, realPort, host)
                 } catch (e: RuntimeException) {
                     // it seems that undertow now wraps the bind exception in a runtime exception
                     if (e.cause is BindException || e.cause is IllegalStateException || e.cause is SocketException) {
-                        // if no port was specified, we retry
-                        if (port != null || --tries == 0)
-                            throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
-                                " ports tried: $triedPorts")
+                        if (port != null)
+                            throw RestaurantException("could not start server on port $port")
+                        if (triedPorts.size == TOTAL_TRIES)
+                            throw RestaurantException(
+                                "could not start restaurant after trying $TOTAL_TRIES times." +
+                                    " ports tried: $triedPorts"
+                            )
                         continue
                     }
                     throw e
                 } catch (e: BindException) {
                     // if no port was specified, we retry
-                    if (port != null || --tries == 0)
-                        throw RestaurantException("could not start restaurant after trying $TOTAL_TRIES times." +
-                            " ports tried: $triedPorts")
+                    if (port != null)
+                        throw RestaurantException("could not start server on port $port")
+                    if (triedPorts.size == TOTAL_TRIES)
+                        throw RestaurantException(
+                            "could not start restaurant after trying $TOTAL_TRIES times." +
+                                " ports tried: $triedPorts"
+                        )
                     continue
                 }
                 val baseUrl = "http://$host:$realPort"
