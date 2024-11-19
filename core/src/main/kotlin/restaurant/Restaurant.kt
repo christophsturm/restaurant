@@ -5,9 +5,7 @@ import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
 import restaurant.internal.Mapper
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
-import java.net.BindException
 import java.net.ServerSocket
-import java.net.SocketException
 
 /** return an unused port for servers to listen on */
 fun findFreePort(): Int = ServerSocket(0).use {
@@ -48,41 +46,9 @@ data class Restaurant internal constructor(
             val rootHandlers = routes.map { route ->
                 Pair(rootHandler(route.wrappers, exceptionHandler, route.handler), route)
             }
-            // retry undertow construction when listening on a random port and a bind exception occurs.
-            val TOTAL_TRIES = 3
-            val triedPorts = ArrayList<Int>(TOTAL_TRIES)
-            while (true) {
-                val realPort = port ?: findFreePort()
-                triedPorts.add(realPort)
-                val undertow = try {
-                    buildUndertow(rootHandlers, defaultHandler, realPort, host)
-                } catch (e: RuntimeException) {
-                    // it seems that undertow now wraps the bind exception in a runtime exception
-                    if (e.cause is BindException || e.cause is IllegalStateException || e.cause is SocketException) {
-                        if (port != null)
-                            throw RestaurantException("could not start server on port $port")
-                        if (triedPorts.size == TOTAL_TRIES)
-                            throw RestaurantException(
-                                "could not start restaurant after trying $TOTAL_TRIES times." +
-                                    " ports tried: $triedPorts"
-                            )
-                        continue
-                    }
-                    throw e
-                } catch (e: BindException) {
-                    // if no port was specified, we retry
-                    if (port != null)
-                        throw RestaurantException("could not start server on port $port")
-                    if (triedPorts.size == TOTAL_TRIES)
-                        throw RestaurantException(
-                            "could not start restaurant after trying $TOTAL_TRIES times." +
-                                " ports tried: $triedPorts"
-                        )
-                    continue
-                }
-                val baseUrl = "http://$host:$realPort"
-                return Restaurant(baseUrl, routes, undertow, realPort)
-            }
+            val undertowAndPort = buildUndertow(rootHandlers, defaultHandler, port, host)
+            val baseUrl = "http://$host:${undertowAndPort.port}"
+            return Restaurant(baseUrl, routes, undertowAndPort.undertow, undertowAndPort.port)
         }
 
         private fun rootHandler(

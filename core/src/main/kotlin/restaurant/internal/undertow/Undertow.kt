@@ -7,6 +7,8 @@ import io.undertow.server.handlers.error.SimpleErrorPageHandler
 import io.undertow.util.HttpString
 import io.undertow.util.Methods
 import restaurant.*
+import java.net.BindException
+import java.net.SocketException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -68,16 +70,51 @@ class UndertowRequestWithBody(private val undertowRequest: UndertowRequest, over
 internal fun buildUndertow(
     rootHandlers: List<Pair<SuspendingHandler, Route>>,
     defaultHandler: SuspendingHandler,
-    port: Int,
+    port: Int?,
     host: String
-): Undertow {
+): UndertowAndPort {
     val routingHandler = rootHandlers.fold(RoutingHandler()) { routingHandler, (handler, route) ->
         val httpHandler = CoroutinesHandler(handler)
         routingHandler.add(route.methodToHttpString(), route.path, httpHandler)
     }
     routingHandler.fallbackHandler = CoroutinesHandler(defaultHandler)
 
-    return Undertow.builder()
-        //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-        .addHttpListener(port, host).setHandler(SimpleErrorPageHandler(routingHandler)).build().apply { start() }
+    // retry undertow construction when listening on a random port and a bind exception occurs.
+    val TOTAL_TRIES = 3
+    val triedPorts = ArrayList<Int>(TOTAL_TRIES)
+    while (true) {
+        val realPort = port ?: findFreePort()
+        triedPorts.add(realPort)
+        try {
+            return UndertowAndPort(Undertow.builder()
+                //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+                .addHttpListener(realPort, host).setHandler(SimpleErrorPageHandler(routingHandler)).build()
+                .apply { start() }, realPort)
+        } catch (e: RuntimeException) {
+            // it seems that undertow now wraps the bind exception in a runtime exception
+            if (e.cause is BindException || e.cause is IllegalStateException || e.cause is SocketException) {
+                if (port != null)
+                    throw RestaurantException("could not start server on port $port")
+                if (triedPorts.size == TOTAL_TRIES)
+                    throw RestaurantException(
+                        "could not start restaurant after trying $TOTAL_TRIES times." +
+                            " ports tried: $triedPorts"
+                    )
+                continue
+            }
+            throw e
+        } catch (e: BindException) {
+            // if no port was specified, we retry
+            if (port != null)
+                throw RestaurantException("could not start server on port $port")
+            if (triedPorts.size == TOTAL_TRIES)
+                throw RestaurantException(
+                    "could not start restaurant after trying $TOTAL_TRIES times." +
+                        " ports tried: $triedPorts"
+                )
+            continue
+        }
+    }
 }
+
+data class UndertowAndPort(val undertow: Undertow, val port: Int)
