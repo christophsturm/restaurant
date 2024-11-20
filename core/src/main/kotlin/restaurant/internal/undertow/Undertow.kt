@@ -71,7 +71,8 @@ internal fun buildUndertow(
     rootHandlers: List<Pair<SuspendingHandler, Route>>,
     defaultHandler: SuspendingHandler,
     port: Int?,
-    host: String
+    host: String,
+    getPort: () -> Int = { findFreePort() }
 ): UndertowAndPort {
     val routingHandler = rootHandlers.fold(RoutingHandler()) { routingHandler, (handler, route) ->
         val httpHandler = CoroutinesHandler(handler)
@@ -83,7 +84,7 @@ internal fun buildUndertow(
     val TOTAL_TRIES = 3
     val triedPorts = ArrayList<Int>(TOTAL_TRIES)
     while (true) {
-        val realPort = port ?: findFreePort()
+        val realPort = port ?: getPort()
         triedPorts.add(realPort)
         try {
             return UndertowAndPort(Undertow.builder()
