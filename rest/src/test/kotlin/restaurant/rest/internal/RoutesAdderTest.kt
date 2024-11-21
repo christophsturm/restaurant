@@ -6,20 +6,18 @@ import failgood.testsAbout
 import kotlinx.coroutines.delay
 import restaurant.rest.RestService
 
-/**
- * look at RoutesAdderFunctionalTest.kt for the real test
- */
+/** look at RoutesAdderFunctionalTest.kt for the real test */
 @Test
 class RoutesAdderTest {
-    val context = testsAbout(RoutesAdder::class) {
-        it("does not crash when called") {
-
-            val routesAdder = RoutesAdder(mock())
-            val service = UserService()
-            val rootPath = "root"
-            routesAdder.routesFor(service, rootPath)
+    val context =
+        testsAbout(RoutesAdder::class) {
+            it("does not crash when called") {
+                val routesAdder = RoutesAdder(mock())
+                val service = UserService()
+                val rootPath = "root"
+                routesAdder.routesFor(service, rootPath)
+            }
         }
-    }
 
     class UserService : RestService {
         suspend fun index(): List<User> {
@@ -48,5 +46,7 @@ class RoutesAdderTest {
         }
     }
 }
+
 data class User(val id: String?, val name: String)
+
 data class DeleteReply(val status: String)

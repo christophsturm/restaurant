@@ -7,7 +7,6 @@ plugins {
     id("info.solidsoft.pitest")
     id("restaurant.common")
     id("restaurant.publish")
-    id("org.jmailen.kotlinter")
 }
 
 dependencies {

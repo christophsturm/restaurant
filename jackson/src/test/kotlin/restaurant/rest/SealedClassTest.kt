@@ -11,7 +11,9 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 sealed class LoginResult
+
 class SuccesfulLogin(val token: String) : LoginResult()
+
 class LoginFailed(val message: String) : LoginResult()
 
 @Test
@@ -29,21 +31,17 @@ class SealedClassTest {
                     }
                 }
 
-                val restaurant = autoClose(
-                    restaurant {
-                        resources(SealService())
-                    }
-                )
+                val restaurant = autoClose(restaurant { resources(SealService()) })
                 expectThat(
-                    jacksonObjectMapper().readValue<SuccesfulLogin>(
-                        restaurant.sendRequest("/seals/42").body()!!
-                    ).token
-                ).isEqualTo("1234")
+                        jacksonObjectMapper()
+                            .readValue<SuccesfulLogin>(restaurant.sendRequest("/seals/42").body()!!)
+                            .token)
+                    .isEqualTo("1234")
                 expectThat(
-                    jacksonObjectMapper().readValue<LoginFailed>(
-                        restaurant.sendRequest("/seals/41").body()!!
-                    ).message
-                ).isEqualTo("sorry")
+                        jacksonObjectMapper()
+                            .readValue<LoginFailed>(restaurant.sendRequest("/seals/41").body()!!)
+                            .message)
+                    .isEqualTo("sorry")
             }
         }
 }

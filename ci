@@ -1,2 +1,2 @@
-./gradlew clean formatBuildscripts formatKotlin
-CI=true ./gradlew lintBuildScripts check
+./gradlew ktfmtFormat
+CI=true ./gradlew check

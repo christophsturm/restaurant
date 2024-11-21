@@ -1,11 +1,11 @@
 package restaurant.rest
 
+import java.util.*
 import restaurant.RestDSL
 import restaurant.RestaurantException
 import restaurant.RoutingDSL
 import restaurant.internal.Routing
 import restaurant.rest.internal.RoutesAdder
-import java.util.*
 
 interface RestService
 
@@ -20,7 +20,11 @@ class ResourceDSL(resolvedPath: String) {
     }
 }
 
-fun RoutingDSL.resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {}) {
+fun RoutingDSL.resources(
+    service: RestService,
+    path: String = path(service),
+    function: ResourceDSL.() -> Unit = {}
+) {
     val objectMapper = (this as Routing).mapper ?: throw RestaurantException("no mapper configured")
     val routesAdder = RoutesAdder(objectMapper)
     routesAdder.routesFor(service, path).forEach { restRoute ->
