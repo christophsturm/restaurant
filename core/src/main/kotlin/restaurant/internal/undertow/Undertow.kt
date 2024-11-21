@@ -87,10 +87,12 @@ internal fun buildUndertow(
         val realPort = port ?: getPort()
         triedPorts.add(realPort)
         try {
-            return UndertowAndPort(Undertow.builder()
-                //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-                .addHttpListener(realPort, host).setHandler(SimpleErrorPageHandler(routingHandler)).build()
-                .apply { start() }, realPort)
+            return UndertowAndPort(
+                Undertow.builder()
+                    //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+                    .addHttpListener(realPort, host).setHandler(SimpleErrorPageHandler(routingHandler)).build()
+                    .apply { start() }, realPort
+            )
         } catch (e: RuntimeException) {
             // it seems that undertow now wraps the bind exception in a runtime exception
             if (e.cause is BindException || e.cause is IllegalStateException || e.cause is SocketException) {
@@ -104,16 +106,6 @@ internal fun buildUndertow(
                 continue
             }
             throw e
-        } catch (e: BindException) {
-            // if no port was specified, we retry
-            if (port != null)
-                throw RestaurantException("could not start server on port $port")
-            if (triedPorts.size == TOTAL_TRIES)
-                throw RestaurantException(
-                    "could not start restaurant after trying $TOTAL_TRIES times." +
-                        " ports tried: $triedPorts"
-                )
-            continue
         }
     }
 }

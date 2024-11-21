@@ -2,14 +2,28 @@ package restaurant.internal.undertow
 
 import failgood.Test
 import failgood.tests
+import restaurant.findFreePort
 import restaurant.response
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+
 @Test
 class UndertowTest {
     val test = tests {
-        it("can create an undertow server") {
+        it("can create an undertow server on a random port") {
             autoClose(buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost")) { it.undertow.stop() }
+        }
+        it("can create an undertow server on a fixed port") {
+            val port = findFreePort()
+            val result = autoClose(
+                buildUndertow(
+                    emptyList(),
+                    { _, _ -> response(200) },
+                    port,
+                    "localhost"
+                )
+            ) { it.undertow.stop() }
+            assert(result.port == port)
         }
         it("fails when the port is already used") {
             val usedPort = autoClose(
@@ -25,9 +39,12 @@ class UndertowTest {
                 buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost")
             ) { it.undertow.stop() }.port
             val exception = assertNotNull(kotlin.runCatching {
-                buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost", {usedPort})
+                buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost", { usedPort })
             }.exceptionOrNull())
-            assertEquals(exception.message!!,"could not start restaurant after trying 3 times. ports tried: [$usedPort, $usedPort, $usedPort]")
+            assertEquals(
+                exception.message!!,
+                "could not start restaurant after trying 3 times. ports tried: [$usedPort, $usedPort, $usedPort]"
+            )
         }
     }
 }
