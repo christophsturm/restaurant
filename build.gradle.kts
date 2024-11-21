@@ -1,13 +1,10 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.jmailen.gradle.kotlinter.tasks.FormatTask
-import org.jmailen.gradle.kotlinter.tasks.LintTask
 import java.util.*
 
 plugins {
     id("com.github.ben-manes.versions") version "0.51.0"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("org.jetbrains.kotlinx.kover") version "0.8.3" apply false
-    id("org.jmailen.kotlinter") version "3.14.0" apply false
 }
 // to release:
 // ./gradlew publishToSonatype closeSonatypeStagingRepository (or ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository)
@@ -39,7 +36,7 @@ nexusPublishing {
         }
     }
 }
-
+/* todo: create ktfmt version
 tasks.register<LintTask>("lintBuildscripts") {
     group = "verification"
     source(layout.projectDirectory.asFileTree.matching { include("**.kts") })
@@ -48,3 +45,4 @@ tasks.register<FormatTask>("formatBuildscripts") {
     group = "verification"
     source(layout.projectDirectory.asFileTree.matching { include("**.kts") })
 }
+*/

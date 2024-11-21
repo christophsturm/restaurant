@@ -8,7 +8,6 @@ plugins {
     id("restaurant.common")
     id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
-    id("org.jmailen.kotlinter")
     id("dev.jacomet.logging-capabilities") version "0.11.1"
 }
 
