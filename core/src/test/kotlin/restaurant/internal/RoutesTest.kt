@@ -9,19 +9,18 @@ import strikt.assertions.containsExactly
 
 @Test
 class RoutesTest {
-    val context = testsAbout("Routes") {
-        test("creates routes for wrapped handlers") {
-            val inner = Wrapper { SuspendingHandler { _, _ -> response(200) } }
-            val outer = Wrapper { SuspendingHandler { _, _ -> response(200) } }
-            val handler = mock<SuspendingHandler>()
-            val routes = routes(null) {
-                wrap(outer) {
-                    wrap(inner) {
-                        route(Method.GET, "/url", handler)
+    val context =
+        testsAbout("Routes") {
+            test("creates routes for wrapped handlers") {
+                val inner = Wrapper { SuspendingHandler { _, _ -> response(200) } }
+                val outer = Wrapper { SuspendingHandler { _, _ -> response(200) } }
+                val handler = mock<SuspendingHandler>()
+                val routes =
+                    routes(null) {
+                        wrap(outer) { wrap(inner) { route(Method.GET, "/url", handler) } }
                     }
-                }
+                expectThat(routes)
+                    .containsExactly(Route(Method.GET, "/url", handler, listOf(outer, inner)))
             }
-            expectThat(routes).containsExactly(Route(Method.GET, "/url", handler, listOf(outer, inner)))
         }
-    }
 }

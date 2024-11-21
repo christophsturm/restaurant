@@ -6,6 +6,9 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.util.HttpString
 import io.undertow.util.SameThreadExecutor
+import java.io.IOException
+import java.lang.Runnable
+import java.nio.ByteBuffer
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,9 +16,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import restaurant.*
-import java.io.IOException
-import java.lang.Runnable
-import java.nio.ByteBuffer
 
 private val logger = KotlinLogging.logger {}
 
@@ -34,7 +34,8 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
             SameThreadExecutor.INSTANCE,
             Runnable {
                 requestScope.launch {
-                    val response = suspendHandler.handle(UndertowRequest(exchange), MutableRequestContext())
+                    val response =
+                        suspendHandler.handle(UndertowRequest(exchange), MutableRequestContext())
                     exchange.statusCode = response.status
                     response.headers.forEach {
                         exchange.responseHeaders.add(HttpString(it.key), it.value)
@@ -52,22 +53,17 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
 
                         is FlowResponse -> {
                             send(exchange) { responseSender ->
-                                response.body.collect {
-                                    responseSender.asyncSend(it)
-                                }
+                                response.body.collect { responseSender.asyncSend(it) }
                             }
                         }
                         is ByteArrayFlowResponse -> {
                             send(exchange) { responseSender ->
-                                response.body.collect {
-                                    responseSender.asyncSend(it)
-                                }
+                                response.body.collect { responseSender.asyncSend(it) }
                             }
                         }
                     }
                 }
-            }
-        )
+            })
     }
 
     private suspend fun Sender.asyncSend(it: ByteArray) {
@@ -82,10 +78,7 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
         deferred.await()
     }
 
-    private suspend fun send(
-        exchange: HttpServerExchange,
-        cb: suspend (Sender) -> Unit
-    ) {
+    private suspend fun send(exchange: HttpServerExchange, cb: suspend (Sender) -> Unit) {
         val responseSender = exchange.responseSender
         cb(responseSender)
         responseSender.close()

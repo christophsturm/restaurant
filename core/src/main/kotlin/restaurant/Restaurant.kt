@@ -1,17 +1,18 @@
 package restaurant
 
 import io.undertow.Undertow
+import java.net.ServerSocket
 import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
 import restaurant.internal.Mapper
 import restaurant.internal.routes
 import restaurant.internal.undertow.buildUndertow
-import java.net.ServerSocket
 
 /** return an unused port for servers to listen on */
-fun findFreePort(): Int = ServerSocket(0).use {
-    it.reuseAddress = true
-    it.localPort
-}
+fun findFreePort(): Int =
+    ServerSocket(0).use {
+        it.reuseAddress = true
+        it.localPort
+    }
 
 typealias ExceptionHandler = (Throwable) -> Response
 
@@ -25,13 +26,12 @@ private val defaultExceptionHandler: ExceptionHandler = {
 private val defaultDefaultHandler = SuspendingHandler { _, _ -> response(404) }
 
 @ConsistentCopyVisibility
-data class Restaurant internal constructor(
+data class Restaurant
+internal constructor(
     val baseUrl: String,
     val routes: List<Route>,
     private val undertow: Undertow,
-    @Suppress("unused")
-    @Deprecated("use baseUrl")
-    val port: Int
+    @Suppress("unused") @Deprecated("use baseUrl") val port: Int
 ) : AutoCloseable {
     companion object {
         operator fun invoke(
@@ -43,9 +43,10 @@ data class Restaurant internal constructor(
             serviceMapping: RoutingDSL.() -> Unit
         ): Restaurant {
             val routes: List<Route> = routes(mapper, serviceMapping)
-            val rootHandlers = routes.map { route ->
-                Pair(rootHandler(route.wrappers, exceptionHandler, route.handler), route)
-            }
+            val rootHandlers =
+                routes.map { route ->
+                    Pair(rootHandler(route.wrappers, exceptionHandler, route.handler), route)
+                }
             val undertowAndPort = buildUndertow(rootHandlers, defaultHandler, port, host)
             val baseUrl = "http://$host:${undertowAndPort.port}"
             return Restaurant(baseUrl, routes, undertowAndPort.undertow, undertowAndPort.port)
@@ -56,9 +57,8 @@ data class Restaurant internal constructor(
             exceptionHandler: (Throwable) -> Response,
             handler: SuspendingHandler
         ): SuspendingHandler {
-            val wrappedHandler = wrappers.reversed().fold(handler) { acc, wrapper ->
-                wrapper.wrap(acc)
-            }
+            val wrappedHandler =
+                wrappers.reversed().fold(handler) { acc, wrapper -> wrapper.wrap(acc) }
             return SuspendingHandler { request, requestContext ->
                 try {
                     wrappedHandler.handle(request, requestContext)
@@ -66,7 +66,9 @@ data class Restaurant internal constructor(
                     try {
                         exceptionHandler(e)
                     } catch (e: Exception) {
-                        response(INTERNAL_SERVER_ERROR_500, "error in error handler" + e.stackTraceToString())
+                        response(
+                            INTERNAL_SERVER_ERROR_500,
+                            "error in error handler" + e.stackTraceToString())
                     }
                 }
             }
@@ -81,10 +83,14 @@ data class Restaurant internal constructor(
 @RestDSL
 interface RoutingDSL {
     fun namespace(prefix: String, function: RoutingDSL.() -> Unit)
+
     fun wrap(wrapper: Wrapper, function: RoutingDSL.() -> Unit)
+
     fun route(method: Method, path: String, service: SuspendingHandler)
 }
-// fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() -> Unit = {})
+
+// fun resources(service: RestService, path: String = path(service), function: ResourceDSL.() ->
+// Unit = {})
 
 interface Key<T>
 
@@ -92,8 +98,7 @@ fun interface Wrapper {
     fun wrap(wrapped: SuspendingHandler): SuspendingHandler
 }
 
-@DslMarker
-annotation class RestDSL
+@DslMarker annotation class RestDSL
 
 fun interface SuspendingHandler {
     suspend fun handle(request: Request, requestContext: MutableRequestContext): Response
@@ -105,12 +110,12 @@ interface RequestContext {
 
 class MutableRequestContext : RequestContext {
     private val map = mutableMapOf<Key<*>, Any>()
+
     fun <T : Any> add(key: Key<T>, value: Any) {
         map[key] = value
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override operator fun <T> get(key: Key<T>): T = map[key] as T
+    @Suppress("UNCHECKED_CAST") override operator fun <T> get(key: Key<T>): T = map[key] as T
 }
 
 interface Request {
@@ -130,14 +135,16 @@ interface Request {
     val queryParameters: Map<String, Collection<String>>
 
     /**
-     * read the body of the request and return a request that has a body set. if the request body was already read this
-     * returns this
+     * read the body of the request and return a request that has a body set. if the request body
+     * was already read this returns this
      */
     suspend fun withBody(): RequestWithBody
 }
 
 interface RequestWithBody : Request {
-    /** Body of the request. This is null when no request body was sent for example for get requests. */
+    /**
+     * Body of the request. This is null when no request body was sent for example for get requests.
+     */
     val body: ByteArray?
 }
 
@@ -148,7 +155,10 @@ class HeaderMap(private val requestHeaders: io.undertow.util.HeaderMap) {
 }
 
 enum class Method {
-    GET, PUT, POST, DELETE
+    GET,
+    PUT,
+    POST,
+    DELETE
 }
 
 data class Route(
@@ -158,5 +168,7 @@ data class Route(
     val wrappers: List<Wrapper> = listOf()
 )
 
-open class RestaurantException(override val message: String, override val cause: Throwable? = null) :
-    RuntimeException(message, cause)
+open class RestaurantException(
+    override val message: String,
+    override val cause: Throwable? = null
+) : RuntimeException(message, cause)

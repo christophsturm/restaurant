@@ -7,6 +7,7 @@ plugins {
     java
     `maven-publish`
     signing
+    id("com.ncorti.ktfmt.gradle")
 }
 
 
@@ -66,4 +67,8 @@ powerAssert {
         "kotlin.test.assertNotNull",
         "failgood.softly.AssertDSL.assert"
     )
+}
+ktfmt {
+    kotlinLangStyle()
+    manageTrailingCommas = false
 }

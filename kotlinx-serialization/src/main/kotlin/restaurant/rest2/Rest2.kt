@@ -1,27 +1,26 @@
 package restaurant.rest2
 
+import java.util.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import restaurant.*
-import java.util.*
 
 inline fun <Service : Any> RoutingDSL.resources(
     service: Service,
     path: String = ___path(service),
     config: ResourceMapper<Service>.() -> Unit
-) =
-    ResourceMapperImpl(this, service, path).config()
+) = ResourceMapperImpl(this, service, path).config()
 
 inline fun <Service : Any, ServiceResponse> RoutingDSL.resources(
     service: Service,
     responseSerializer: KSerializer<ServiceResponse>,
     path: String = ___path(service),
     config: ResourceMapperWithDefaultType<Service, ServiceResponse>.() -> Unit
-
 ) =
-    ResourceMapperWithDefaultType(responseSerializer, ResourceMapperImpl(this, service, path)).config()
+    ResourceMapperWithDefaultType(responseSerializer, ResourceMapperImpl(this, service, path))
+        .config()
 
 class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     private val responseSerializer: KSerializer<DefaultType>,
@@ -102,11 +101,7 @@ class ResourceMapperImpl<Service : Any>(
         serializer: KSerializer<RequestAndResponse>,
         body: suspend Service.(CreateContext<RequestAndResponse>) -> RequestAndResponse
     ) {
-        routingDSL.route(
-            Method.POST,
-            path,
-            CreateHandler(serializer, serializer, service, body)
-        )
+        routingDSL.route(Method.POST, path, CreateHandler(serializer, serializer, service, body))
     }
 
     override fun <Request, Response> create(
@@ -115,10 +110,7 @@ class ResourceMapperImpl<Service : Any>(
         body: suspend Service.(CreateContext<Request>) -> Response
     ) {
         routingDSL.route(
-            Method.POST, path, CreateHandler(
-                requestSerializer, responseSerializer, service, body
-            )
-        )
+            Method.POST, path, CreateHandler(requestSerializer, responseSerializer, service, body))
     }
 
     override fun <RequestAndResponse> update(
@@ -126,10 +118,7 @@ class ResourceMapperImpl<Service : Any>(
         body: suspend Service.(UpdateContext<RequestAndResponse>) -> RequestAndResponse
     ) {
         routingDSL.route(
-            Method.PUT,
-            "$path/{id}",
-            UpdateHandler(serializer, serializer, service, body)
-        )
+            Method.PUT, "$path/{id}", UpdateHandler(serializer, serializer, service, body))
     }
 }
 
@@ -142,8 +131,11 @@ interface HasId {
 }
 
 interface CreateContext<RequestType> : HasBody<RequestType>
+
 interface ShowContext : HasId
+
 interface UpdateContext<RequestType> : HasBody<RequestType>, HasId
+
 class IndexHandler<Service : Any, ServiceResponse>(
     private val responseSerializer: KSerializer<ServiceResponse>,
     private val service: Service,
@@ -161,10 +153,12 @@ class ShowHandler<Service : Any, ServiceResponse>(
     val function: (suspend Service.(ShowContext) -> ServiceResponse)
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
-        val id = request.queryParameters.let {
-            it["id"]?.singleOrNull()
-                ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
-        }
+        val id =
+            request.queryParameters.let {
+                it["id"]?.singleOrNull()
+                    ?: throw RuntimeException(
+                        "id variable not found. variables: ${it.keys.joinToString()}")
+            }
         val result = service.function(ShowContextImpl(id))
         return response(200, Json.encodeToString(responseSerializer, result))
     }
@@ -177,14 +171,15 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     val function: (suspend Service.(CreateContext<ServiceRequest>) -> ServiceResponse)
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
-        val payload = request.withBody().body.let {
-            val string = String(it!!)
-            try {
-                Json.decodeFromString(requestSerializer, string)
-            } catch (e: Exception) {
-                throw RestaurantException("error deserializing request body: $string", e)
+        val payload =
+            request.withBody().body.let {
+                val string = String(it!!)
+                try {
+                    Json.decodeFromString(requestSerializer, string)
+                } catch (e: Exception) {
+                    throw RestaurantException("error deserializing request body: $string", e)
+                }
             }
-        }
 
         val result = service.function(CreateContextImpl(payload))
         return response(201, Json.encodeToString(responseSerializer, result))
@@ -198,25 +193,29 @@ class UpdateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     val function: (suspend Service.(UpdateContext<ServiceRequest>) -> ServiceResponse)
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
-        val id = request.queryParameters.let {
-            it["id"]?.singleOrNull()
-                ?: throw RuntimeException("id variable not found. variables: ${it.keys.joinToString()}")
-        }
-        val payload = request.withBody().body.let {
-            val string = String(it!!)
-            try {
-                Json.decodeFromString(requestSerializer, string)
-            } catch (e: Exception) {
-                throw RestaurantException("error deserializing request body: $string", e)
+        val id =
+            request.queryParameters.let {
+                it["id"]?.singleOrNull()
+                    ?: throw RuntimeException(
+                        "id variable not found. variables: ${it.keys.joinToString()}")
             }
-        }
+        val payload =
+            request.withBody().body.let {
+                val string = String(it!!)
+                try {
+                    Json.decodeFromString(requestSerializer, string)
+                } catch (e: Exception) {
+                    throw RestaurantException("error deserializing request body: $string", e)
+                }
+            }
 
         val result = service.function(UpdateContextImpl(payload, id))
         return response(200, Json.encodeToString(responseSerializer, result))
     }
 }
 
-class CreateContextImpl<ServiceRequest>(override val body: ServiceRequest) : CreateContext<ServiceRequest>
+class CreateContextImpl<ServiceRequest>(override val body: ServiceRequest) :
+    CreateContext<ServiceRequest>
 
 class UpdateContextImpl<ServiceRequest>(override val body: ServiceRequest, private val id: String) :
     UpdateContext<ServiceRequest> {
@@ -236,6 +235,7 @@ class FlowIndexHandler<Service : Any, ServiceResponse>(
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val result = service.function()
-        return FlowResponse(mapOf(), 200, result.map { Json.encodeToString(responseSerializer, it) + "\n" })
+        return FlowResponse(
+            mapOf(), 200, result.map { Json.encodeToString(responseSerializer, it) + "\n" })
     }
 }

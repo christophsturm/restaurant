@@ -19,46 +19,43 @@ import strikt.assertions.isEqualTo
 @Test
 class StreamingExample {
     @Suppress("unused")
-    val tests = testsAbout("streaming via kotlin flows") {
-        class StreamService : RestService {
-            @Suppress("unused")
-            fun index(): Flow<User> {
-                return flow {
-                    emit(User("5", "userName"))
-                    delay(10)
-                    emit(User("6", "otherUserName"))
+    val tests =
+        testsAbout("streaming via kotlin flows") {
+            class StreamService : RestService {
+                @Suppress("unused")
+                fun index(): Flow<User> {
+                    return flow {
+                        emit(User("5", "userName"))
+                        delay(10)
+                        emit(User("6", "otherUserName"))
+                    }
                 }
             }
-        }
 
-        val restaurant = autoClose(
-            Restaurant(mapper = JacksonMapper()) {
-                resources(StreamService())
-            }
-        )
+            val restaurant =
+                autoClose(Restaurant(mapper = JacksonMapper()) { resources(StreamService()) })
 
-        it("works with the buffering http client") {
-            val response = restaurant.sendRequest("/streams")
-            expectThat(response) {
-                get { statusCode }.isEqualTo(200)
-                get { body }.isEqualTo(
-                    """{"id":"5","name":"userName"}
+            it("works with the buffering http client") {
+                val response = restaurant.sendRequest("/streams")
+                expectThat(response) {
+                    get { statusCode }.isEqualTo(200)
+                    get { body }
+                        .isEqualTo(
+                            """{"id":"5","name":"userName"}
                             |{"id":"6","name":"otherUserName"}
                             |
-                    """.trimMargin()
-                )
+                    """
+                                .trimMargin())
+                }
+            }
+            it("works with the streaming http client") {
+                val response: RestaurantResponse<Flow<String>> =
+                    restaurant.sendStreamingRequest("/streams")
+                expectThat(response) { get { statusCode }.isEqualTo(200) }
+                val list = response.body!!.toList()
+                expectThat(list)
+                    .containsExactly(
+                        """{"id":"5","name":"userName"}""", """{"id":"6","name":"otherUserName"}""")
             }
         }
-        it("works with the streaming http client") {
-            val response: RestaurantResponse<Flow<String>> = restaurant.sendStreamingRequest("/streams")
-            expectThat(response) {
-                get { statusCode }.isEqualTo(200)
-            }
-            val list = response.body!!.toList()
-            expectThat(list).containsExactly(
-                """{"id":"5","name":"userName"}""",
-                """{"id":"6","name":"otherUserName"}"""
-            )
-        }
-    }
 }
