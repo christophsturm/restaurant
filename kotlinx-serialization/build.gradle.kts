@@ -9,7 +9,7 @@ plugins {
     id("restaurant.common")
     id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
-    kotlin("plugin.serialization") version ("2.1.0")
+    kotlin("plugin.serialization") version ("2.1.10")
 }
 
 dependencies {
