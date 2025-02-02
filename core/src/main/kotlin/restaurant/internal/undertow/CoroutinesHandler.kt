@@ -36,7 +36,18 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
                 requestScope.launch {
                     val response =
                         suspendHandler.handle(UndertowRequest(exchange), MutableRequestContext())
-                    exchange.statusCode = response.status
+                    try {
+                        exchange.statusCode = response.status
+                    } catch (e: IllegalStateException) {
+                        // setStatusCode throws IllegalStateException when the response is already
+                        // started.
+                        // we sometimes see this on ci so we are rethrowing it with more info for
+                        // now.
+                        throw RestaurantException(
+                            "Response already started when trying to send response $response," +
+                                " body: ${response.bodyString()}",
+                            e)
+                    }
                     response.headers.forEach {
                         exchange.responseHeaders.add(HttpString(it.key), it.value)
                     }
@@ -44,9 +55,11 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
                         is ByteBufferResponse -> {
                             exchange.responseSender.send(response.body)
                         }
+
                         is StatusResponse -> {
                             exchange.endExchange()
                         }
+
                         is StringResponse -> {
                             exchange.responseSender.send(response.body)
                         }
@@ -56,6 +69,7 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
                                 response.body.collect { responseSender.asyncSend(it) }
                             }
                         }
+
                         is ByteArrayFlowResponse -> {
                             send(exchange) { responseSender ->
                                 response.body.collect { responseSender.asyncSend(it) }
