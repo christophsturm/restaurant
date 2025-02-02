@@ -12,7 +12,7 @@ plugins {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
     api(project(":restaurant-core"))
-    api("com.auth0:java-jwt:4.4.0")
+    api("com.auth0:java-jwt:4.5.0")
     testImplementation("io.strikt:strikt-core:$striktVersion")
     testImplementation(project(":restaurant-test-common"))
 }
