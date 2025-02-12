@@ -7,7 +7,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 }
 plugins {
-    id("com.autonomousapps.build-health") version "2.6.0"
+    id("com.autonomousapps.build-health") version "2.8.2"
     id("org.jetbrains.kotlin.jvm") version "2.1.10" apply false
 }
 
