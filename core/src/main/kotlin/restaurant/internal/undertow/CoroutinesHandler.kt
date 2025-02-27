@@ -65,14 +65,16 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
                         }
 
                         is FlowResponse -> {
-                            send(exchange) { responseSender ->
+                            exchange.responseSender.let { responseSender ->
                                 response.body.collect { responseSender.asyncSend(it) }
+                                responseSender.close()
                             }
                         }
 
                         is ByteArrayFlowResponse -> {
-                            send(exchange) { responseSender ->
+                            exchange.responseSender.let { responseSender ->
                                 response.body.collect { responseSender.asyncSend(it) }
+                                responseSender.close()
                             }
                         }
                     }
@@ -92,12 +94,7 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
         deferred.await()
     }
 
-    private suspend fun send(exchange: HttpServerExchange, cb: suspend (Sender) -> Unit) {
-        val responseSender = exchange.responseSender
-        cb(responseSender)
-        responseSender.close()
-    }
-
+    /** an IOCallback that completes a CompletableDeferred */
     class CompletingIOCallback(private val deferred: CompletableDeferred<Unit>) : IoCallback {
         override fun onComplete(exchange: HttpServerExchange?, sender: Sender?) {
             deferred.complete(Unit)
