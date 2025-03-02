@@ -4,7 +4,7 @@ package restaurant.rest
 
 import failgood.Ignored
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import restaurant.*
 import restaurant.internal.HobbyService
 import restaurant.internal.UserService
@@ -18,7 +18,7 @@ fun restaurant(serviceMapping: RoutingDSL.() -> Unit) =
 @Test
 class RestRestaurantTest {
     val context =
-        testsAbout(Restaurant::class) {
+        testCollection(Restaurant::class) {
             describe("rest services") {
                 it("empty responses return 204") {
                     class EmptyReplyService : RestService {

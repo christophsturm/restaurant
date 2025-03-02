@@ -1,7 +1,7 @@
 package restaurant.client
 
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import kotlinx.coroutines.flow.toList
 import restaurant.*
 import strikt.api.expectThat
@@ -13,7 +13,7 @@ import strikt.assertions.isNotNull
 @Test
 class HttpClientTest {
     val context =
-        testsAbout(Java11HttpClient::class) {
+        testCollection(Java11HttpClient::class) {
             val restaurant =
                 autoClose(
                     Restaurant {

@@ -19,3 +19,5 @@ include(modules.map { "$projectName-$it" })
 modules.forEach {
     project(":$projectName-$it").projectDir = file(it)
 }
+
+includeBuild("../failgood")

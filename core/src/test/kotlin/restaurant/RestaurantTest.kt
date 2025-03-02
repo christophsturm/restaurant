@@ -1,7 +1,7 @@
 package restaurant
 
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import java.nio.ByteBuffer
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.CompletableDeferred
@@ -15,7 +15,7 @@ import strikt.assertions.*
 @Test
 class RestaurantTest {
     val context =
-        testsAbout(Restaurant::class) {
+        testCollection(Restaurant::class) {
             describe("routing") {
                 val restaurant =
                     autoClose(

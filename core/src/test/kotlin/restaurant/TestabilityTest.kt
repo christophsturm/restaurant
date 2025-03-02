@@ -1,7 +1,7 @@
 package restaurant
 
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import java.nio.ByteBuffer
 import restaurant.test.MockRequest
 import strikt.api.expectThat
@@ -18,7 +18,7 @@ class Reverser : SuspendingHandler {
 @Test
 class TestabilityTest {
     val context =
-        testsAbout("testability") {
+        testCollection("testability") {
             test("handlers can be invoked with a MockRequest") {
                 val handler = Reverser()
                 expectThat(
