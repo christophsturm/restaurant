@@ -1,7 +1,7 @@
 package restaurant.rest
 
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -20,7 +20,7 @@ import strikt.assertions.isEqualTo
 class StreamingExample {
     @Suppress("unused")
     val tests =
-        testsAbout("streaming via kotlin flows") {
+        testCollection("streaming via kotlin flows") {
             class StreamService : RestService {
                 @Suppress("unused")
                 fun index(): Flow<User> {

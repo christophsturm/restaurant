@@ -5,7 +5,7 @@ package restaurant.rest
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import restaurant.sendRequest
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -19,7 +19,7 @@ class LoginFailed(val message: String) : LoginResult()
 @Test
 class SealedClassTest {
     val context =
-        testsAbout("Different return types with sealed classes") {
+        testCollection("Different return types with sealed classes") {
             it("is supported") {
                 class SealService : RestService {
                     fun show(id: Long): LoginResult {
