@@ -16,7 +16,15 @@ jobs:
       matrix:
         java: [ 17,21 ]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: main
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: failgood/failgood
+          path: failgood
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -31,6 +39,7 @@ jobs:
         env:
           CI: true
         run: ./gradlew build
+        working-directory: main
       - uses: codecov/codecov-action@v4
         with:
           files: core/build/reports/kover/report.xml,rest/build/reports/kover/report.xml
