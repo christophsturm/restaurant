@@ -13,7 +13,15 @@ jobs:
     name: pitest on jdk 17
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: main
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: failgood/failgood
+          path: failgood
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -29,6 +37,8 @@ jobs:
           CI: true
           PITEST_THREADS: 2
         run: ./gradlew pitest
+        working-directory:
+          main
       - name: upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
