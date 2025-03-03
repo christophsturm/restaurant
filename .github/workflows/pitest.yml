@@ -25,7 +25,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Build with Gradle
-        continue-on-error: true
         env:
           CI: true
           PITEST_THREADS: 2
