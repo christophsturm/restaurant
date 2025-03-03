@@ -42,7 +42,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const path = 'build/reports/dependency-analysis/build-health-report.txt'
+            const path = 'main/build/reports/dependency-analysis/build-health-report.txt'
             const fs = require('fs')
             if (!fs.existsSync(path)) {
               console.error('Generated file not found!');
