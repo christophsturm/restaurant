@@ -48,7 +48,6 @@ java {
 
 plugins.withId("info.solidsoft.pitest") {
     configure<info.solidsoft.gradle.pitest.PitestPluginExtension> {
-        verbose.set(true)
         jvmArgs.set(listOf("-Xmx512m")) // necessary on CI
         targetClasses.set(setOf("restaurant.*")) //by default "${project.group}.*"
         targetTests.set(setOf("restaurant.*Test", "restaurant.**.*Test"))

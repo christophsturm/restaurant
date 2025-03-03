@@ -5,7 +5,7 @@ import restaurant.versions.striktVersion
 
 plugins {
     kotlin("jvm")
-    id("info.solidsoft.pitest")
+//    id("info.solidsoft.pitest") // disable because this does not currently work
     id("restaurant.common")
     id("restaurant.publish")
     id("org.jetbrains.kotlinx.kover")
