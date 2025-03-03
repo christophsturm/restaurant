@@ -15,7 +15,7 @@ dependencies {
     implementation(kotlin("gradle-plugin", "2.1.10"))
     implementation("org.jetbrains.kotlin.plugin.power-assert:org.jetbrains.kotlin.plugin.power-assert.gradle.plugin:2.1.10")
     implementation("info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0")
-    implementation("com.ncorti.ktfmt.gradle:plugin:0.21.0")
+    implementation("com.ncorti.ktfmt.gradle:plugin:0.22.0")
 }
 
 // to make idea ignore gradle generated classes in analyze code. (idea bug)
