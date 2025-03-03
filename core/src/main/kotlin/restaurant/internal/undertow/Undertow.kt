@@ -105,6 +105,7 @@ internal fun buildUndertow(
                     throw RestaurantException(
                         "could not start restaurant after trying $TOTAL_TRIES times." +
                             " ports tried: $triedPorts")
+                Thread.sleep(100)
                 continue
             }
             throw e
