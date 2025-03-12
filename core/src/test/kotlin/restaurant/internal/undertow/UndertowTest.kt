@@ -1,7 +1,7 @@
 package restaurant.internal.undertow
 
 import failgood.Test
-import failgood.tests
+import failgood.testCollection
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import restaurant.findFreePort
@@ -9,7 +9,7 @@ import restaurant.response
 
 @Test
 class UndertowTest {
-    val test = tests {
+    val test = testCollection {
         it("can create an undertow server on a random port") {
             autoClose(buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost")) {
                 it.undertow.stop()

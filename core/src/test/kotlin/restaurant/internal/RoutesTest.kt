@@ -2,7 +2,7 @@ package restaurant.internal
 
 import failgood.Test
 import failgood.mock.mock
-import failgood.testsAbout
+import failgood.testCollection
 import restaurant.*
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
@@ -10,7 +10,7 @@ import strikt.assertions.containsExactly
 @Test
 class RoutesTest {
     val context =
-        testsAbout("Routes") {
+        testCollection("Routes") {
             test("creates routes for wrapped handlers") {
                 val inner = Wrapper { SuspendingHandler { _, _ -> response(200) } }
                 val outer = Wrapper { SuspendingHandler { _, _ -> response(200) } }

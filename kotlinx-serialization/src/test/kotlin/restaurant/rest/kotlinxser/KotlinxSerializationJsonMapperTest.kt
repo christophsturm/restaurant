@@ -2,7 +2,7 @@ package restaurant.rest.kotlinxser
 
 import failgood.Ignored
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
 @Test
 object KotlinxSerializationJsonMapperTest {
     val context =
-        testsAbout(
+        testCollection(
             KotlinxSerializationMapper::class,
             ignored =
                 Ignored.Because(

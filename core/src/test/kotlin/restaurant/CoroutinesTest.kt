@@ -2,7 +2,7 @@ package restaurant
 
 import failgood.Ignored
 import failgood.Test
-import failgood.testsAbout
+import failgood.testCollection
 import java.net.http.HttpTimeoutException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
@@ -13,7 +13,7 @@ import strikt.assertions.isFalse
 @Test
 class CoroutinesTest {
     val context =
-        testsAbout("coroutine handling") {
+        testCollection("coroutine handling") {
             it(
                 "cancels coroutine scope when the client disconnects",
                 ignored =

@@ -14,7 +14,15 @@ jobs:
     name: Build Report
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: main
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: failgood/failgood
+          path: failgood
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -27,12 +35,14 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
       - name: Build with Gradle
         run: ./gradlew buildHealth
+        working-directory:
+          main
       - name: Comment PR
         uses: actions/github-script@v7
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const path = 'build/reports/dependency-analysis/build-health-report.txt'
+            const path = 'main/build/reports/dependency-analysis/build-health-report.txt'
             const fs = require('fs')
             if (!fs.existsSync(path)) {
               console.error('Generated file not found!');

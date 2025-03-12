@@ -12,7 +12,7 @@ plugins {
 
 dependencies {
     api(project(":restaurant-core"))
-    testImplementation("dev.failgood:failgood:$failgoodVersion")
+    testImplementation(project(":restaurant-test-common"))
 }
 
 
