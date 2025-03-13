@@ -12,7 +12,6 @@ import java.nio.ByteBuffer
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import restaurant.*
@@ -22,14 +21,17 @@ private val logger = KotlinLogging.logger {}
 class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         val requestScope = CoroutineScope(Dispatchers.Unconfined)
-        exchange.addExchangeCompleteListener { _, nextListener ->
-            try {
-                requestScope.cancel()
-            } catch (e: Exception) {
-                logger.error(e) { "error closing coroutine context" }
-            }
-            nextListener.proceed()
-        }
+        /*
+                exchange.addExchangeCompleteListener { _, nextListener ->
+                    logger.debug { "Exchange complete: ${exchange.statusCode}" }
+                    try {
+                        requestScope.cancel()
+                    } catch (e: Exception) {
+                        logger.error(e) { "error closing coroutine context" }
+                    }
+                    nextListener.proceed()
+                }
+        */
         exchange.dispatch(
             SameThreadExecutor.INSTANCE,
             Runnable {
