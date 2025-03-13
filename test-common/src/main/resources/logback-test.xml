@@ -1,5 +1,5 @@
 <configuration>
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%X{test}] %-5level %logger{36} - %msg %n</pattern>
@@ -19,8 +19,9 @@
         <discardingThreshold>0</discardingThreshold>
         <appender-ref ref="FILE"/>
     </appender>
-    <!--    <logger name="failgood.internal.ResourceCloserImpl" level="DEBUG"/>-->
-    <root level="INFO">
+    <!--    <logger name="restaurant.internal.undertow.CoroutinesHandler" level="DEBUG"/>-->
+    <root level="WARN">
         <appender-ref ref="ASYNC"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>
