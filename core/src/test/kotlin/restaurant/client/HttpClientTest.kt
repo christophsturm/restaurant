@@ -68,5 +68,30 @@ class HttpClientTest {
                     expectThat(response.body?.toList()).isNotNull().containsExactly("post", "reply")
                 }
             }
+            describe("query parameters") {
+                val restaurant =
+                    autoClose(
+                        Restaurant {
+                            route(Method.GET, "with-params") { request, _ ->
+                                val params = request.queryParameters
+                                response("received: ${params["name"]?.joinToString(",") ?: "none"}")
+                            }
+                        })
+                val httpClient = Java11HttpClient(HttpClientConfig(restaurant.baseUrl))
+
+                it("can send query parameters") {
+                    val response = httpClient.send("/with-params?name=test&name=test2")
+                    expectThat(response.body).isEqualTo("received: test,test2")
+                }
+                it("handles empty query parameters") {
+                    val response = httpClient.send("/with-params")
+                    expectThat(response.body).isEqualTo("received: none")
+                }
+                it("handles query parameters with special characters") {
+                    val response =
+                        httpClient.send("/with-params?name=hello%20world&name=test%26test")
+                    expectThat(response.body).isEqualTo("received: hello world,test&test")
+                }
+            }
         }
 }
