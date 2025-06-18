@@ -10,8 +10,132 @@ includes a http client based on the java 11 http client.
 
 Available from Maven Central.
 
+## REST API with Type-Safe DSL (rest2)
 
-### High Level API
+The newest and recommended way to build REST APIs with Restaurant. Uses a type-safe DSL and kotlinx-serialization for better performance and native compilation support.
+
+### build.gradle.kts
+
+```kotlin
+plugins {
+    kotlin("jvm") version "2.1.10"
+    kotlin("plugin.serialization") version "2.1.10"
+    application
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.christophsturm.restaurant:restaurant-kotlinx-serialization:0.0.8")
+}
+
+application {
+    mainClass.set("MainKt")
+}
+```
+
+### Main.kt
+
+```kotlin
+import kotlinx.serialization.Serializable
+import restaurant.*
+import restaurant.rest.RestService
+import restaurant.rest2.resources
+
+@Serializable
+data class User(val id: String? = null, val name: String, val email: String)
+
+@Serializable
+data class CreateUserRequest(val name: String, val email: String)
+
+class UserService : RestService {
+    private val users = mutableMapOf<String, User>()
+    private var nextId = 1
+
+    suspend fun index(): List<User> {
+        return users.values.toList()
+    }
+
+    suspend fun show(userId: Int): User {
+        return users[userId.toString()] 
+            ?: throw ResponseException(response(404, "User not found"))
+    }
+
+    suspend fun create(request: CreateUserRequest): User {
+        val id = (nextId++).toString()
+        val user = User(id, request.name, request.email)
+        users[id] = user
+        return user
+    }
+
+    suspend fun update(userId: Int, request: CreateUserRequest): User {
+        val existing = users[userId.toString()] 
+            ?: throw ResponseException(response(404, "User not found"))
+        val updated = existing.copy(name = request.name, email = request.email)
+        users[userId.toString()] = updated
+        return updated
+    }
+
+    suspend fun delete(userId: Int): Map<String, String> {
+        users.remove(userId.toString()) 
+            ?: throw ResponseException(response(404, "User not found"))
+        return mapOf("message" to "User deleted successfully")
+    }
+}
+
+fun main() {
+    val restaurant = Restaurant {
+        namespace("/api") {
+            resources(UserService()) {
+                index(User.serializer()) { index() }
+                show(User.serializer()) { show(it.intId()) }
+                create(
+                    requestSerializer = CreateUserRequest.serializer(),
+                    responseSerializer = User.serializer()
+                ) { create(it.body) }
+                update(
+                    requestSerializer = CreateUserRequest.serializer(), 
+                    responseSerializer = User.serializer()
+                ) { update(it.intId(), it.body) }
+                delete(kotlinx.serialization.builtins.MapSerializer(
+                    String.serializer(), String.serializer()
+                )) { delete(it.intId()) }
+            }
+        }
+    }
+    
+    println("Server started at ${restaurant.baseUrl}")
+    println("Try these endpoints:")
+    println("  GET    ${restaurant.baseUrl}/api/users")
+    println("  POST   ${restaurant.baseUrl}/api/users")
+    println("  GET    ${restaurant.baseUrl}/api/users/1") 
+    println("  PUT    ${restaurant.baseUrl}/api/users/1")
+    println("  DELETE ${restaurant.baseUrl}/api/users/1")
+    
+    // Keep the server running
+    readln()
+    restaurant.close()
+}
+```
+
+This creates these REST endpoints:
+
+* `GET /api/users` - List all users
+* `POST /api/users` - Create a new user  
+* `GET /api/users/{id}` - Get user by ID
+* `PUT /api/users/{id}` - Update user by ID
+* `DELETE /api/users/{id}` - Delete user by ID
+
+Key features:
+- **Type-safe**: Compile-time checking of request/response types
+- **Kotlinx-serialization**: Fast JSON serialization with native compilation support
+- **Automatic error handling**: 400 errors for malformed JSON, 404 for missing routes
+- **Coroutine support**: All handlers can be suspending functions
+- **No reflection**: Better performance and GraalVM native image support
+
+### High Level API (Jackson-based)
 
 Restaurant helps you implement REST apis in a simple way that is easy to test, and have your handlers not depend on any webserver classes.
 
