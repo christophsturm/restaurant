@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import restaurant.*
 import restaurant.rest.RestService
 import restaurant.rest2.resources
@@ -126,29 +127,27 @@ object RestRestaurantTest {
                             get { body() }.isEqualTo("""{"status":"user 5 deleted"}""")
                         }
                     }
-                    describe("missing", ignored = Ignored.Because("working on it")) {
-                        it("sets json content type") {
-                            val response = r.sendRequest("/api/users")
-                            expectThat(response)
-                                .get { headers().allValues(HttpHeader.CONTENT_TYPE) }
-                                .single()
-                                .isEqualTo(ContentType.APPLICATION_JSON)
-                        }
-                        describe("error handling") {
-                            describe("malformed requests") {
-                                it("returns a useful error message") {
-                                    val requestBody = """{"nam":"userName"}"""
-                                    val response = r.sendRequest("/api/users") { post(requestBody) }
-                                    expectThat(response) {
-                                        get { statusCode() }.isEqualTo(HttpStatus.BAD_REQUEST_400)
-                                        get { body }.isNotNull().contains(requestBody)
-                                    }
+                    it("sets json content type") {
+                        val response = r.sendRequest("/api/users")
+                        expectThat(response)
+                            .get { headers().allValues(HttpHeader.CONTENT_TYPE) }
+                            .single()
+                            .isEqualTo(ContentType.APPLICATION_JSON)
+                    }
+                    describe("error handling") {
+                        describe("malformed requests") {
+                            it("returns a useful error message") {
+                                val requestBody = """{"nam":"userName"}"""
+                                val response = r.sendRequest("/api/users") { post(requestBody) }
+                                expectThat(response) {
+                                    get { statusCode() }.isEqualTo(HttpStatus.BAD_REQUEST_400)
+                                    get { body }.isNotNull().contains(requestBody)
                                 }
                             }
                         }
-                        describe("error handling") {
+                        describe("exception handling") {
                             class ExceptionsService : RestService {
-                                fun index() {
+                                fun index(): String {
                                     throw RuntimeException("error message")
                                 }
                             }
@@ -158,13 +157,24 @@ object RestRestaurantTest {
                                         exceptionHandler = { ex: Throwable ->
                                             response(status = 418, result = "sorry: " + ex.message)
                                         }) {
-                                            resources(ExceptionsService()) {}
+                                            resources(ExceptionsService()) {
+                                                index(String.serializer()) { index() }
+                                            }
                                         }
-                                expectThat(restaurant.sendRequest("/exceptions")) {
+                                expectThat(restaurant.sendRequest("/exceptionss")) {
                                     get { statusCode() }.isEqualTo(418)
                                     get { body() }.isEqualTo("sorry: error message")
                                 }
                             }
+                        }
+                    }
+                    describe("missing", ignored = Ignored.Because("working on it")) {
+                        it("returns 204 for empty responses") {
+                            val response = r.sendRequest("/api/users")
+                            expectThat(response)
+                                .get { headers().allValues(HttpHeader.CONTENT_TYPE) }
+                                .single()
+                                .isEqualTo(ContentType.APPLICATION_JSON)
                         }
                     }
                 }

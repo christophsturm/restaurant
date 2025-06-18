@@ -7,6 +7,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import restaurant.*
 
+private val jsonContentTypeHeaders = mapOf(HttpHeader.CONTENT_TYPE to ContentType.APPLICATION_JSON)
+
 inline fun <Service : Any> RoutingDSL.resources(
     service: Service,
     path: String = ___path(service),
@@ -158,7 +160,8 @@ class IndexHandler<Service : Any, ServiceResponse>(
 ) : SuspendingHandler {
     override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val result = service.function()
-        return response(200, Json.encodeToString(responseSerializer, result))
+        return response(
+            200, Json.encodeToString(responseSerializer, result), jsonContentTypeHeaders)
     }
 }
 
@@ -175,7 +178,8 @@ class ShowHandler<Service : Any, ServiceResponse>(
                         "id variable not found. variables: ${it.keys.joinToString()}")
             }
         val result = service.function(ShowContextImpl(id))
-        return response(200, Json.encodeToString(responseSerializer, result))
+        return response(
+            200, Json.encodeToString(responseSerializer, result), jsonContentTypeHeaders)
     }
 }
 
@@ -192,12 +196,14 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
                 try {
                     Json.decodeFromString(requestSerializer, string)
                 } catch (e: Exception) {
-                    throw RestaurantException("error deserializing request body: $string", e)
+                    return response(
+                        HttpStatus.BAD_REQUEST_400, "error deserializing request body: $string")
                 }
             }
 
         val result = service.function(CreateContextImpl(payload))
-        return response(201, Json.encodeToString(responseSerializer, result))
+        return response(
+            201, Json.encodeToString(responseSerializer, result), jsonContentTypeHeaders)
     }
 }
 
@@ -220,12 +226,14 @@ class UpdateHandler<Service : Any, ServiceRequest, ServiceResponse>(
                 try {
                     Json.decodeFromString(requestSerializer, string)
                 } catch (e: Exception) {
-                    throw RestaurantException("error deserializing request body: $string", e)
+                    return response(
+                        HttpStatus.BAD_REQUEST_400, "error deserializing request body: $string")
                 }
             }
 
         val result = service.function(UpdateContextImpl(payload, id))
-        return response(200, Json.encodeToString(responseSerializer, result))
+        return response(
+            200, Json.encodeToString(responseSerializer, result), jsonContentTypeHeaders)
     }
 }
 
@@ -256,7 +264,8 @@ class DeleteHandler<Service : Any, ServiceResponse>(
                         "id variable not found. variables: ${it.keys.joinToString()}")
             }
         val result = service.function(DeleteContextImpl(id))
-        return response(200, Json.encodeToString(responseSerializer, result))
+        return response(
+            200, Json.encodeToString(responseSerializer, result), jsonContentTypeHeaders)
     }
 }
 
