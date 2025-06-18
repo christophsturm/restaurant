@@ -69,6 +69,11 @@ interface ResourceMapper<Service : Any> {
         responseSerializer: KSerializer<ServiceResponse>,
         body: suspend Service.() -> Flow<ServiceResponse>
     )
+
+    fun <ServiceResponse> delete(
+        responseSerializer: KSerializer<ServiceResponse>,
+        body: suspend Service.(DeleteContext) -> ServiceResponse
+    )
 }
 
 class ResourceMapperImpl<Service : Any>(
@@ -120,6 +125,14 @@ class ResourceMapperImpl<Service : Any>(
         routingDSL.route(
             Method.PUT, "$path/{id}", UpdateHandler(serializer, serializer, service, body))
     }
+
+    override fun <ServiceResponse> delete(
+        responseSerializer: KSerializer<ServiceResponse>,
+        body: suspend Service.(DeleteContext) -> ServiceResponse
+    ) {
+        routingDSL.route(
+            Method.DELETE, "$path/{id}", DeleteHandler(responseSerializer, service, body))
+    }
 }
 
 interface HasBody<RequestType> {
@@ -135,6 +148,8 @@ interface CreateContext<RequestType> : HasBody<RequestType>
 interface ShowContext : HasId
 
 interface UpdateContext<RequestType> : HasBody<RequestType>, HasId
+
+interface DeleteContext : HasId
 
 class IndexHandler<Service : Any, ServiceResponse>(
     private val responseSerializer: KSerializer<ServiceResponse>,
@@ -226,6 +241,27 @@ class ShowContextImpl(private val id: String) : ShowContext {
     override fun intId(): Int {
         return id.toInt()
     }
+}
+
+class DeleteHandler<Service : Any, ServiceResponse>(
+    private val responseSerializer: KSerializer<ServiceResponse>,
+    private val service: Service,
+    val function: (suspend Service.(DeleteContext) -> ServiceResponse)
+) : SuspendingHandler {
+    override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
+        val id =
+            request.queryParameters.let {
+                it["id"]?.singleOrNull()
+                    ?: throw RuntimeException(
+                        "id variable not found. variables: ${it.keys.joinToString()}")
+            }
+        val result = service.function(DeleteContextImpl(id))
+        return response(200, Json.encodeToString(responseSerializer, result))
+    }
+}
+
+class DeleteContextImpl(private val id: String) : DeleteContext {
+    override fun intId(): Int = id.toInt()
 }
 
 class FlowIndexHandler<Service : Any, ServiceResponse>(

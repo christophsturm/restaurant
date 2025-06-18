@@ -40,6 +40,7 @@ object RestRestaurantTest {
                                         show(User.serializer()) { show(it.intId()) }
                                         create(User.serializer()) { create(it.body) }
                                         update(User.serializer()) { update(it.intId(), it.body) }
+                                        delete(DeleteReply.serializer()) { delete(it.intId()) }
                                         //                                update = {
                                         // update(it.intId(), it.body()) }
                                     }
@@ -118,14 +119,14 @@ object RestRestaurantTest {
                             get { body() }.isEqualTo("""{"id":"5","name":"userName"}""")
                         }
                     }
-                    describe("missing", ignored = Ignored.Because("working on it")) {
-                        it("calls delete method on delete request") {
-                            val response = r.sendRequest("/api/users/5") { delete() }
-                            expectThat(response) {
-                                get { statusCode() }.isEqualTo(200)
-                                get { body() }.isEqualTo("""{"status":"user 5 deleted"}""")
-                            }
+                    it("calls delete method on delete request") {
+                        val response = r.sendRequest("/api/users/5") { delete() }
+                        expectThat(response) {
+                            get { statusCode() }.isEqualTo(200)
+                            get { body() }.isEqualTo("""{"status":"user 5 deleted"}""")
                         }
+                    }
+                    describe("missing", ignored = Ignored.Because("working on it")) {
                         it("sets json content type") {
                             val response = r.sendRequest("/api/users")
                             expectThat(response)
@@ -251,7 +252,7 @@ object RestRestaurantTest {
         }
     }
 
-    data class DeleteReply(val status: String)
+    @Serializable data class DeleteReply(val status: String)
 }
 
 class StreamingUserService : RestService {
