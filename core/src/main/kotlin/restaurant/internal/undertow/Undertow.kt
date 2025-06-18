@@ -83,8 +83,10 @@ internal fun buildUndertow(
     // retry undertow construction when listening on a random port and a bind exception occurs.
     val TOTAL_TRIES = 3
     val triedPorts = ArrayList<Int>(TOTAL_TRIES)
+    // Treat port = 0 as a request for a random port, just like port = null
+    val requestedPort = if (port == 0) null else port
     while (true) {
-        val realPort = port ?: getPort()
+        val realPort = requestedPort ?: getPort()
         triedPorts.add(realPort)
         try {
             return UndertowAndPort(
@@ -100,7 +102,8 @@ internal fun buildUndertow(
             if (e.cause is BindException ||
                 e.cause is IllegalStateException ||
                 e.cause is SocketException) {
-                if (port != null) throw RestaurantException("could not start server on port $port")
+                if (requestedPort != null)
+                    throw RestaurantException("could not start server on port $requestedPort")
                 if (triedPorts.size == TOTAL_TRIES)
                     throw RestaurantException(
                         "could not start restaurant after trying $TOTAL_TRIES times." +

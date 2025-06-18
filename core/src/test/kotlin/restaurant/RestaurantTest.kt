@@ -111,6 +111,19 @@ class RestaurantTest {
                 val restaurant = autoClose(Restaurant(port = null) {})
                 assert(restaurant.sendRequest("/").statusCode == HttpStatus.NOT_FOUND_404)
             }
+            it("can be called with port = 0 for random port assignment") {
+                val restaurant = autoClose(Restaurant(port = 0) {})
+                // Verify that the baseUrl contains a valid port (not 0)
+                expectThat(restaurant.baseUrl) {
+                    startsWith("http://127.0.0.1:")
+                    not { endsWith(":0") }
+                }
+                // Extract the actual port from baseUrl
+                val actualPort = restaurant.baseUrl.substringAfterLast(":").toInt()
+                expectThat(actualPort).isGreaterThan(0)
+                // Verify that the server is actually listening on that port
+                assert(restaurant.sendRequest("/").statusCode == HttpStatus.NOT_FOUND_404)
+            }
             describe("to string method for request") {
                 val toString = CompletableDeferred<String>()
                 val restaurant =
