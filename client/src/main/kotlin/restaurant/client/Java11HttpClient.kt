@@ -18,13 +18,44 @@ class Java11HttpClient(config: HttpClientConfig = HttpClientConfig()) {
     private val timeout = config.timeout.toJavaDuration()
     private val httpClient = HttpClient.newHttpClient()!!
 
-    suspend fun send(path: String, config: RequestDSL.() -> Unit = {}) =
-        send(buildRequest(path, config))
+    sealed interface BodyHandlerType<T> {
+        fun handler(): HttpResponse.BodyHandler<T>
+
+        data object AsString : BodyHandlerType<String> {
+            override fun handler(): HttpResponse.BodyHandler<String> =
+                HttpResponse.BodyHandlers.ofString()
+        }
+
+        data object AsBytes : BodyHandlerType<ByteArray> {
+            override fun handler(): HttpResponse.BodyHandler<ByteArray> =
+                HttpResponse.BodyHandlers.ofByteArray()
+        }
+    }
+
+    suspend fun send(path: String, config: RequestDSL.() -> Unit = {}): RestaurantResponse<String> =
+        send(buildRequest(path, config), BodyHandlerType.AsString)
+
+    suspend fun <T> send(
+        path: String,
+        asType: BodyHandlerType<T>,
+        config: RequestDSL.() -> Unit = {}
+    ): RestaurantResponse<T> = send(buildRequest(path, config), asType)
 
     suspend fun send(request: HttpRequest): RestaurantResponse<String> {
+        return sendInternal(request, BodyHandlerType.AsString.handler())
+    }
+
+    suspend fun <T> send(request: HttpRequest, asType: BodyHandlerType<T>): RestaurantResponse<T> {
+        return sendInternal(request, asType.handler())
+    }
+
+    private suspend fun <T> sendInternal(
+        request: HttpRequest,
+        bodyHandler: HttpResponse.BodyHandler<T>
+    ): RestaurantResponse<T> {
         val response =
             try {
-                httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).await()
+                httpClient.sendAsync(request, bodyHandler).await()
             } catch (e: ConnectException) {
                 throw HttpClientException("Error connecting to $request.", e)
             } catch (e: HttpTimeoutException) {

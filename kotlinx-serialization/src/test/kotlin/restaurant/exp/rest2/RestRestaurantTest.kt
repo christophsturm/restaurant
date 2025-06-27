@@ -20,10 +20,6 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.single
 
-/*
-new reflection-less type safe rest support.
- uses kotlinx-serialization for now because that is harder to support than jackson.
-*/
 fun restaurant(serviceMapping: RoutingDSL.() -> Unit) = Restaurant(serviceMapping = serviceMapping)
 
 @Test
@@ -42,8 +38,6 @@ object RestRestaurantTest {
                                         create(User.serializer()) { create(it.body) }
                                         update(User.serializer()) { update(it.intId(), it.body) }
                                         delete(DeleteReply.serializer()) { delete(it.intId()) }
-                                        //                                update = {
-                                        // update(it.intId(), it.body()) }
                                     }
                                 }
                             })
