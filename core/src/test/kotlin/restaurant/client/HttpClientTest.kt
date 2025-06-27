@@ -64,7 +64,8 @@ class HttpClientTest {
             }
             describe("streaming the response") {
                 it("works") {
-                    val response = httpClient.sendStreaming("/post") { post() }
+                    val response =
+                        httpClient.send("/post", Java11HttpClient.BodyHandlerType.AsFlow) { post() }
                     expectThat(response.body?.toList()).isNotNull().containsExactly("post", "reply")
                 }
             }

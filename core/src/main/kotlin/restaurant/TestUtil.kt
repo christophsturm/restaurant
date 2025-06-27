@@ -16,4 +16,5 @@ suspend fun Restaurant.sendRequest(
 suspend fun Restaurant.sendStreamingRequest(
     path: String,
     config: Java11HttpClient.RequestDSL.() -> Unit = {}
-): RestaurantResponse<Flow<String>> = httpClient.sendStreaming("$baseUrl$path", config)
+): RestaurantResponse<Flow<String>> =
+    httpClient.send("$baseUrl$path", Java11HttpClient.BodyHandlerType.AsFlow, config)

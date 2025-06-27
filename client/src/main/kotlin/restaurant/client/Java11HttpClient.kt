@@ -18,66 +18,78 @@ class Java11HttpClient(config: HttpClientConfig = HttpClientConfig()) {
     private val timeout = config.timeout.toJavaDuration()
     private val httpClient = HttpClient.newHttpClient()!!
 
-    sealed interface BodyHandlerType<T> {
-        fun handler(): HttpResponse.BodyHandler<T>
+    sealed interface BodyHandlerType<HandlerType, BodyType> {
+        fun handler(): HttpResponse.BodyHandler<HandlerType>
 
-        data object AsString : BodyHandlerType<String> {
+        fun convert(body: HandlerType): BodyType
+
+        data object AsString : BodyHandlerType<String, String> {
             override fun handler(): HttpResponse.BodyHandler<String> =
                 HttpResponse.BodyHandlers.ofString()
+
+            override fun convert(body: String): String = body
         }
 
-        data object AsBytes : BodyHandlerType<ByteArray> {
+        data object AsBytes : BodyHandlerType<ByteArray, ByteArray> {
             override fun handler(): HttpResponse.BodyHandler<ByteArray> =
                 HttpResponse.BodyHandlers.ofByteArray()
+
+            override fun convert(body: ByteArray): ByteArray = body
+        }
+
+        data object AsFlow : BodyHandlerType<Stream<String>, Flow<String>> {
+            override fun handler(): HttpResponse.BodyHandler<Stream<String>> =
+                HttpResponse.BodyHandlers.ofLines()
+
+            override fun convert(body: Stream<String>): Flow<String> {
+                return body.consumeAsFlow()
+            }
         }
     }
 
     suspend fun send(path: String, config: RequestDSL.() -> Unit = {}): RestaurantResponse<String> =
         send(buildRequest(path, config), BodyHandlerType.AsString)
 
-    suspend fun <T> send(
+    suspend fun <HandlerType, ResponseType> send(
         path: String,
-        asType: BodyHandlerType<T>,
+        asType: BodyHandlerType<HandlerType, ResponseType>,
         config: RequestDSL.() -> Unit = {}
-    ): RestaurantResponse<T> = send(buildRequest(path, config), asType)
+    ): RestaurantResponse<ResponseType> = sendInternal(buildRequest(path, config), asType)
 
     suspend fun send(request: HttpRequest): RestaurantResponse<String> {
-        return sendInternal(request, BodyHandlerType.AsString.handler())
+        return sendInternal(request, BodyHandlerType.AsString)
     }
 
-    suspend fun <T> send(request: HttpRequest, asType: BodyHandlerType<T>): RestaurantResponse<T> {
-        return sendInternal(request, asType.handler())
-    }
-
-    private suspend fun <T> sendInternal(
+    suspend fun <T> send(
         request: HttpRequest,
-        bodyHandler: HttpResponse.BodyHandler<T>
+        asType: BodyHandlerType<T, T>
     ): RestaurantResponse<T> {
+        return sendInternal(request, asType)
+    }
+
+    private suspend fun <HandlerType, ResponseType> sendInternal(
+        request: HttpRequest,
+        bodyHandler: BodyHandlerType<HandlerType, ResponseType>
+    ): RestaurantResponse<ResponseType> {
         val response =
             try {
-                httpClient.sendAsync(request, bodyHandler).await()
+                httpClient.sendAsync(request, bodyHandler.handler()).await()
             } catch (e: ConnectException) {
                 throw HttpClientException("Error connecting to $request.", e)
             } catch (e: HttpTimeoutException) {
                 throw HttpClientException("Request Timeout for request $request.", e)
             }
+        val body = response.body()
+        val convertedBody = bodyHandler.convert(body)
         return RestaurantResponse(
-            response.statusCode(), response.body(), response.headers(), response.uri())
+            response.statusCode(), convertedBody, response.headers(), response.uri())
     }
 
+    @Deprecated("use send(... BodyHandlerType.AsFlow)")
     suspend fun sendStreaming(
         url: String,
         config: RequestDSL.() -> Unit = {}
-    ): RestaurantResponse<Flow<String>> {
-        val request = buildRequest(url, config)
-        val response: HttpResponse<Stream<String>> =
-            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines()).await()
-        return RestaurantResponse(
-            response.statusCode(),
-            response.body().consumeAsFlow(),
-            response.headers(),
-            response.uri())
-    }
+    ): RestaurantResponse<Flow<String>> = send(url, BodyHandlerType.AsFlow, config)
 
     interface RequestDSL {
         fun post(body: String)
