@@ -50,7 +50,7 @@ class HttpClientTest {
                 val response = restaurant.sendRequest("/post") { post() }
                 describe("toString method") {
                     it("contains the url") { expectThat(response.toString()).contains("/post") }
-                    it("contains the post body") {
+                    it("contains the body") {
                         expectThat(response.toString()).contains("body:\"post\nreply\"")
                     }
                     it("contains the status code") {
