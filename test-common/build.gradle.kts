@@ -1,16 +1,13 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
-import restaurant.versions.failgoodVersion
-
 plugins {
     kotlin("jvm")
-    id("restaurant.common")
+    id("shared.common")
 }
 
 dependencies {
-    api("dev.failgood:failgood:$failgoodVersion")
-    api(kotlin("test"))
-    api(kotlin("test-junit5")) // this improves assertEquals output and makes idea show a diff
-    implementation("ch.qos.logback:logback-classic:1.5.16")
+    api(libs.failgood)
+    api(libs.kotlin.test)
+    api(libs.kotlin.test.junit5) // this improves assertEquals output and makes idea show a diff
+    implementation(libs.logback.classic)
 }
-

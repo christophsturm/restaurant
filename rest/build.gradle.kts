@@ -1,20 +1,15 @@
-@file:Suppress("GradlePackageUpdate")
-
-import restaurant.versions.failgoodVersion
-
-// buggy
+@file:Suppress("GradlePackageUpdate") // buggy
 
 plugins {
     kotlin("jvm")
-    id("info.solidsoft.pitest")
-    id("restaurant.common")
-    id("restaurant.publish")
+    id("shared.pitest")
+    id("shared.common")
+    id("shared.publishing")
     id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
     api(project(":restaurant-core"))
-    implementation(kotlin("reflect"))
-    kotlin("test")
-    testImplementation("dev.failgood:failgood:$failgoodVersion")
+    implementation(libs.kotlin.reflect)
+    testImplementation(libs.failgood)
 }

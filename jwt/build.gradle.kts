@@ -1,18 +1,16 @@
 @file:Suppress("GradlePackageUpdate") // buggy
-import restaurant.versions.kotlinVersion
-import restaurant.versions.striktVersion
 
 plugins {
     kotlin("jvm")
-    id("info.solidsoft.pitest")
-    id("restaurant.common")
-    id("restaurant.publish")
+    id("shared.pitest")
+    id("shared.common")
+    id("shared.publishing")
 }
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
+    implementation(platform(libs.kotlin.bom))
     api(project(":restaurant-core"))
-    api("com.auth0:java-jwt:4.5.0")
-    testImplementation("io.strikt:strikt-core:$striktVersion")
+    api(libs.auth0.jwt)
+    testImplementation(libs.strikt)
     testImplementation(project(":restaurant-test-common"))
 }

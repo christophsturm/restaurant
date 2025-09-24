@@ -1,12 +1,10 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
-import restaurant.versions.*
-
 plugins {
     kotlin("jvm")
-    id("info.solidsoft.pitest")
-    id("restaurant.common")
-    id("restaurant.publish")
+    id("shared.pitest")
+    id("shared.common")
+    id("shared.publishing")
     id("org.jetbrains.kotlinx.kover")
     id("dev.jacomet.logging-capabilities") version "0.11.1"
 }
@@ -14,16 +12,14 @@ plugins {
 dependencies {
     api(project(":restaurant-client"))
 
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
-    implementation(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
+    implementation(platform(libs.kotlin.bom))
+    implementation(platform(libs.kotlinx.coroutines.bom))
 
-    api("io.undertow:undertow-core:$undertowVersion")
+    api(libs.undertow.core)
 
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("io.github.microutils:kotlin-logging:3.0.5")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
-    testImplementation("io.strikt:strikt-core:$striktVersion")
+    api(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlin.logging)
+    implementation(libs.kotlinx.coroutines.jdk8)
+    testImplementation(libs.strikt)
     testImplementation(project(":restaurant-test-common"))
 }
-
-

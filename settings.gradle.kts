@@ -20,4 +20,5 @@ modules.forEach {
     project(":$projectName-$it").projectDir = file(it)
 }
 
+includeBuild("../failgood/build-logic")
 includeBuild("../failgood")

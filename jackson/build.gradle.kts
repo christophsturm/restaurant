@@ -1,22 +1,20 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
-import restaurant.versions.*
-
 plugins {
     kotlin("jvm")
-    id("info.solidsoft.pitest")
-    id("restaurant.common")
-    id("restaurant.publish")
+    id("shared.pitest")
+    id("shared.common")
+    id("shared.publishing")
     id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
-    api("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    api("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    api(libs.jackson.core)
+    api(libs.jackson.databind)
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
+    implementation(libs.jackson.module.kotlin)
+    implementation(platform(libs.kotlin.bom))
     api(project(":restaurant-rest"))
-    testImplementation("io.strikt:strikt-core:$striktVersion")
+    testImplementation(libs.strikt)
     testImplementation(project(":restaurant-test-common"))
 }

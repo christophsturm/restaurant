@@ -41,10 +41,10 @@ class StreamingExample {
                     get { statusCode }.isEqualTo(200)
                     get { body }
                         .isEqualTo(
-                            """{"id":"5","name":"userName"}
+                            """
+                            |{"id":"5","name":"userName"}
                             |{"id":"6","name":"otherUserName"}
-                            |
-                    """
+                            |"""
                                 .trimMargin())
                 }
             }
