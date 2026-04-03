@@ -11,3 +11,4 @@ out/
 /.vscode
 .autotest.failgood
 .kotlin
+local.properties
