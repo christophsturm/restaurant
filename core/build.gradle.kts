@@ -16,7 +16,9 @@ dependencies {
     api(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.jdk8)
     testImplementation(libs.strikt)
+    testImplementation(project(":restaurant-java11-client"))
     testImplementation(project(":restaurant-netty"))
+    testImplementation(project(":restaurant-okhttp-client"))
     testImplementation(project(":restaurant-test-common"))
     testImplementation(project(":restaurant-undertow"))
 }

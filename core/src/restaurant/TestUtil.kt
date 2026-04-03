@@ -1,20 +1,24 @@
 package restaurant
 
 import kotlinx.coroutines.flow.Flow
-import restaurant.client.Java11HttpClient
+import restaurant.client.RequestDSL
+import restaurant.client.RestaurantHttpClient
 import restaurant.client.RestaurantResponse
+import restaurant.client.loadHttpClientFactory
 
-private val httpClient = Java11HttpClient()
+private val defaultHttpClient by lazy { loadHttpClientFactory().create() }
 
 /** make a http request to a restaurant instance. */
 suspend fun Restaurant.sendRequest(
     path: String,
-    config: Java11HttpClient.RequestDSL.() -> Unit = {}
-): RestaurantResponse<String> = httpClient.send("$baseUrl$path", config)
+    client: RestaurantHttpClient = defaultHttpClient,
+    config: RequestDSL.() -> Unit = {}
+): RestaurantResponse<String> = client.send("$baseUrl$path", config)
 
 /** make a http request to a restaurant instance and stream the response */
 suspend fun Restaurant.sendStreamingRequest(
     path: String,
-    config: Java11HttpClient.RequestDSL.() -> Unit = {}
+    client: RestaurantHttpClient = defaultHttpClient,
+    config: RequestDSL.() -> Unit = {}
 ): RestaurantResponse<Flow<String>> =
-    httpClient.send("$baseUrl$path", Java11HttpClient.BodyHandlerType.AsFlow, config)
+    client.send("$baseUrl$path", RestaurantHttpClient.BodyHandlerType.AsFlow, config)

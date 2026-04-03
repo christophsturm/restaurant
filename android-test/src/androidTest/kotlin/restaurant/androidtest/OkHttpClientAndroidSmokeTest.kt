@@ -9,22 +9,23 @@ import org.junit.runner.RunWith
 import restaurant.Method
 import restaurant.Restaurant
 import restaurant.client.HttpClientConfig
-import restaurant.client.OkHttpClient
+import restaurant.client.loadHttpClientFactory
 import restaurant.response
-import restaurant.sendRequest
 
 @RunWith(AndroidJUnit4::class)
-class RestaurantAndroidSmokeTest {
+class OkHttpClientAndroidSmokeTest {
     @Test
-    fun currentServerAndClientApisRoundTripOnAndroid() = runBlocking {
+    fun serviceLoadedHttpClientRoundTripsOnAndroid() = runBlocking {
         val restaurant =
             Restaurant {
                 route(Method.GET, "ping") { _, _ -> response("pong") }
             }
-        val httpClient = OkHttpClient(HttpClientConfig(restaurant.baseUrl))
+        val clientFactory = loadHttpClientFactory()
+        val httpClient = clientFactory.create(HttpClientConfig(restaurant.baseUrl))
 
         try {
-            val response = restaurant.sendRequest("/ping", httpClient)
+            assertEquals("okhttp-client", clientFactory.name)
+            val response = httpClient.send("/ping")
             assertTrue(response.isOk)
             assertEquals("pong", response.body)
         } finally {

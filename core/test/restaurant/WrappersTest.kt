@@ -3,6 +3,7 @@ package restaurant
 import failgood.Test
 import failgood.testCollection
 import java.nio.ByteBuffer
+import restaurant.client.HttpClientConfig
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
@@ -11,7 +12,7 @@ import strikt.assertions.isEqualTo
 class WrappersTest {
     val context =
         testCollection("Wrapper Support") {
-            forEachBackend { backend ->
+            forEachClientAndServer { client, server ->
                 val events = mutableListOf<String>()
                 val inner = Wrapper { wrapped ->
                     SuspendingHandler { request, requestContext ->
@@ -27,7 +28,7 @@ class WrappersTest {
                 }
                 val restaurant =
                     autoClose(
-                        Restaurant(serverFactory = backend.serverFactory) {
+                        Restaurant(serverFactory = server.serverFactory) {
                             wrap(outer) {
                                 wrap(inner) {
                                     route(Method.POST, "/handlers/reverser") { exchange, _ ->
@@ -38,7 +39,10 @@ class WrappersTest {
                                 }
                             }
                         })
-                val response = restaurant.sendRequest("/handlers/reverser") { post("jakob") }
+                val httpClient =
+                    autoClose(client.clientFactory.create(HttpClientConfig(restaurant.baseUrl)))
+                val response =
+                    restaurant.sendRequest("/handlers/reverser", httpClient) { post("jakob") }
                 it("calls the wrapped handler") {
                     expectThat(response) {
                         get { statusCode() }.isEqualTo(200)

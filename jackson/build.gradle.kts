@@ -13,6 +13,7 @@ dependencies {
     implementation(platform(libs.kotlin.bom))
     api(project(":restaurant-rest"))
     testImplementation(libs.strikt)
+    testImplementation(project(":restaurant-java11-client"))
     testImplementation(project(":restaurant-test-common"))
     testImplementation(project(":restaurant-undertow"))
 }

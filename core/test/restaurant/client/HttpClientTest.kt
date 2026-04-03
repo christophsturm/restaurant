@@ -13,11 +13,14 @@ import strikt.assertions.isNotNull
 @Test
 class HttpClientTest {
     val context =
-        testCollection(Java11HttpClient::class) {
-            forEachBackend { backend ->
+        testCollection(RestaurantHttpClient::class) {
+            forEachClientAndServer { client, server ->
+                fun clientFor(restaurant: Restaurant) =
+                    autoClose(client.clientFactory.create(HttpClientConfig(restaurant.baseUrl)))
+
                 val restaurant =
                     autoClose(
-                        Restaurant(serverFactory = backend.serverFactory) {
+                        Restaurant(serverFactory = server.serverFactory) {
                             route(Method.GET, "get") { _, _ -> response("get reply") }
                             route(Method.GET, "empty_get") { _, _ -> response() }
                             route(Method.POST, "post") { _, _ ->
@@ -27,28 +30,26 @@ class HttpClientTest {
                                     mapOf("Content-Type" to "only the best content"))
                             }
                         })
-                val httpClient = Java11HttpClient(HttpClientConfig(restaurant.baseUrl))
+                val httpClient = clientFor(restaurant)
 
                 describe("standalone") {
                     it("can send url requests") {
                         expectThat(httpClient.send("/get").body).isEqualTo("get reply")
                     }
-                    it("can send requests") {
-                        expectThat(httpClient.send(httpClient.buildRequest("/get")).body)
-                            .isEqualTo("get reply")
-                    }
                 }
 
                 describe("get requests") {
                     it("are default") {
-                        expectThat(restaurant.sendRequest("/get").body).isEqualTo("get reply")
+                        expectThat(restaurant.sendRequest("/get", httpClient).body)
+                            .isEqualTo("get reply")
                     }
                     it("can have empty replies") {
-                        expectThat(restaurant.sendRequest("/empty_get").body).isEqualTo("")
+                        expectThat(restaurant.sendRequest("/empty_get", httpClient).body)
+                            .isEqualTo("")
                     }
                 }
                 describe("http response") {
-                    val response = restaurant.sendRequest("/post") { post() }
+                    val response = restaurant.sendRequest("/post", httpClient) { post() }
                     describe("toString method") {
                         it("contains the url") { expectThat(response.toString()).contains("/post") }
                         it("contains the body") {
@@ -66,7 +67,7 @@ class HttpClientTest {
                 describe("streaming the response") {
                     it("works") {
                         val response =
-                            httpClient.send("/post", Java11HttpClient.BodyHandlerType.AsFlow) {
+                            httpClient.send("/post", RestaurantHttpClient.BodyHandlerType.AsFlow) {
                                 post()
                             }
                         expectThat(response.body?.toList())
@@ -77,14 +78,14 @@ class HttpClientTest {
                 describe("query parameters") {
                     val restaurant =
                         autoClose(
-                            Restaurant(serverFactory = backend.serverFactory) {
+                            Restaurant(serverFactory = server.serverFactory) {
                                 route(Method.GET, "with-params") { request, _ ->
                                     val params = request.queryParameters
                                     response(
                                         "received: ${params["name"]?.joinToString(",") ?: "none"}")
                                 }
                             })
-                    val httpClient = Java11HttpClient(HttpClientConfig(restaurant.baseUrl))
+                    val httpClient = clientFor(restaurant)
 
                     it("can send query parameters") {
                         val response = httpClient.send("/with-params?name=test&name=test2")

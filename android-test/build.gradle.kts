@@ -51,6 +51,7 @@ kotlin {
 
 dependencies {
     androidTestImplementation(project(":restaurant-netty"))
+    androidTestImplementation(project(":restaurant-okhttp-client"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
 }

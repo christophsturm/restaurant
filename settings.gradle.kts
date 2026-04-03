@@ -28,6 +28,8 @@ val modules =
         "android-test",
         "test-common",
         "client",
+        "java11-client",
+        "okhttp-client",
         "core",
         "undertow",
         "netty",

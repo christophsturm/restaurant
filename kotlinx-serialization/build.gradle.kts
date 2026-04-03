@@ -14,5 +14,7 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.failgood)
     testImplementation(libs.strikt)
+    testImplementation(project(":restaurant-java11-client"))
     testImplementation(project(":restaurant-test-common"))
+    testImplementation(project(":restaurant-undertow"))
 }

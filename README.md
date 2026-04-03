@@ -12,7 +12,7 @@ Available from Maven Central.
 
 ## Development
 
-Use focused Gradle tasks while iterating, but use `./ci` as the final verification command before committing. It runs formatting and the full `check` lifecycle with `CI=true`.
+Use focused Gradle tasks while iterating, but treat `./ci` as the commit gate for repo changes. Run it before committing. It runs formatting and the full `check` lifecycle with `CI=true`.
 
 ## REST API with Type-Safe DSL (rest2)
 

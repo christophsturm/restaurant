@@ -3,9 +3,10 @@ package restaurant
 import failgood.Ignored
 import failgood.Test
 import failgood.testCollection
-import java.net.http.HttpTimeoutException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
+import restaurant.client.HttpClientConfig
+import restaurant.client.HttpClientException
 import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isFalse
@@ -14,7 +15,7 @@ import strikt.assertions.isFalse
 class CoroutinesTest {
     val context =
         testCollection("coroutine handling") {
-            forEachBackend { backend ->
+            forEachClientAndServer { client, server ->
                 it(
                     "cancels coroutine scope when the client disconnects",
                     ignored =
@@ -23,11 +24,17 @@ class CoroutinesTest {
                                 "current server backends")) {
                         val delayService = DelayService()
                         val restaurant =
-                            Restaurant(serverFactory = backend.serverFactory) {
-                                route(Method.GET, "/delay", delayService)
+                            autoClose(
+                                Restaurant(serverFactory = server.serverFactory) {
+                                    route(Method.GET, "/delay", delayService)
+                                })
+                        val httpClient =
+                            autoClose(
+                                client.clientFactory.create(HttpClientConfig(restaurant.baseUrl)))
+                        expectThrows<HttpClientException> {
+                            restaurant.sendRequest("/delay", httpClient) {
+                                timeout(30.milliseconds)
                             }
-                        expectThrows<HttpTimeoutException> {
-                            restaurant.sendRequest("/delay") { timeout(30.milliseconds) }
                         }
                         delay(200)
                         expectThat(delayService).get { afterDelay }.isFalse()

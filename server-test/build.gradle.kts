@@ -8,5 +8,6 @@ plugins {
 
 dependencies {
     api(project(":restaurant-undertow"))
+    testImplementation(project(":restaurant-java11-client"))
     testImplementation(project(":restaurant-test-common"))
 }

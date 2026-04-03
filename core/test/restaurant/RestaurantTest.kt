@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import restaurant.client.HttpClientConfig
 import strikt.api.expectThat
 import strikt.assertions.*
 
@@ -16,11 +17,14 @@ import strikt.assertions.*
 class RestaurantTest {
     val context =
         testCollection(Restaurant::class) {
-            forEachBackend { backend ->
+            forEachClientAndServer { client, server ->
+                fun clientFor(restaurant: Restaurant) =
+                    autoClose(client.clientFactory.create(HttpClientConfig(restaurant.baseUrl)))
+
                 describe("routing") {
                     val restaurant =
                         autoClose(
-                            Restaurant(serverFactory = backend.serverFactory) {
+                            Restaurant(serverFactory = server.serverFactory) {
                                 namespace("/handlers") {
                                     route(Method.POST, "reverser") { ex, _ ->
                                         response(
@@ -28,6 +32,8 @@ class RestaurantTest {
                                     }
                                 }
                             })
+                    val httpClient = clientFor(restaurant)
+
                     it("exposes routes") {
                         with(assertNotNull(restaurant.routes.single())) {
                             assert(method == Method.POST)
@@ -36,14 +42,16 @@ class RestaurantTest {
                         }
                     }
                     it("returns 404 if the route is not found") {
-                        val response = restaurant.sendRequest("/unconfigured-url")
+                        val response = restaurant.sendRequest("/unconfigured-url", httpClient)
                         expectThat(response)
                             .get { statusCode() }
                             .isEqualTo(HttpStatus.NOT_FOUND_404)
                     }
                     it("calls handlers with body and returns result") {
                         val response =
-                            restaurant.sendRequest("/handlers/reverser") { post("""jakob""") }
+                            restaurant.sendRequest("/handlers/reverser", httpClient) {
+                                post("""jakob""")
+                            }
                         expectThat(response) {
                             get { statusCode() }.isEqualTo(200)
                             get { body() }.isEqualTo("bokaj")
@@ -59,39 +67,47 @@ class RestaurantTest {
                             throw RuntimeException("error message")
                         }
                     }
+
                     it("returns status 500 per default on error") {
                         val restaurant =
                             autoClose(
-                                Restaurant(serverFactory = backend.serverFactory) {
+                                Restaurant(serverFactory = server.serverFactory) {
                                     route(Method.GET, "/", ExceptionsHandler())
                                 })
-                        expectThat(restaurant.sendRequest("/")) {
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/", httpClient)) {
                             get { statusCode() }.isEqualTo(500)
                             get { body }.isNotNull().contains("internal server error")
                         }
                     }
                     it("calls error handler to create error reply") {
                         val restaurant =
-                            Restaurant(
-                                exceptionHandler = { ex: Throwable ->
-                                    response(status = 418, result = "sorry: " + ex.message)
-                                },
-                                serverFactory = backend.serverFactory) {
-                                    route(Method.GET, "/", ExceptionsHandler())
-                                }
-                        expectThat(restaurant.sendRequest("/")) {
+                            autoClose(
+                                Restaurant(
+                                    exceptionHandler = { ex: Throwable ->
+                                        response(status = 418, result = "sorry: " + ex.message)
+                                    },
+                                    serverFactory = server.serverFactory) {
+                                        route(Method.GET, "/", ExceptionsHandler())
+                                    })
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/", httpClient)) {
                             get { statusCode() }.isEqualTo(418)
                             get { body() }.isEqualTo("sorry: error message")
                         }
                     }
                     it("handles errors in the error handler gracefully") {
                         val restaurant =
-                            Restaurant(
-                                exceptionHandler = { throw Exception("oops error handler failed") },
-                                serverFactory = backend.serverFactory) {
-                                    route(Method.GET, "/", ExceptionsHandler())
-                                }
-                        expectThat(restaurant.sendRequest("/")) {
+                            autoClose(
+                                Restaurant(
+                                    exceptionHandler = {
+                                        throw Exception("oops error handler failed")
+                                    },
+                                    serverFactory = server.serverFactory) {
+                                        route(Method.GET, "/", ExceptionsHandler())
+                                    })
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/", httpClient)) {
                             get { statusCode() }.isEqualTo(500)
                             get { body }
                                 .isNotNull()
@@ -106,8 +122,9 @@ class RestaurantTest {
                                     defaultHandler = { _: Request, _: RequestContext ->
                                         response(418, "not found but anyway I'm teapot")
                                     },
-                                    serverFactory = backend.serverFactory) {})
-                        expectThat(restaurant.sendRequest("/not-found")) {
+                                    serverFactory = server.serverFactory) {})
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/not-found", httpClient)) {
                             get { statusCode() }.isEqualTo(418)
                             get { body() }.isEqualTo("not found but anyway I'm teapot")
                         }
@@ -120,43 +137,51 @@ class RestaurantTest {
                             Restaurant(
                                 host = "0.0.0.0",
                                 port = port,
-                                serverFactory = backend.serverFactory) {})
+                                serverFactory = server.serverFactory) {})
                     expectThat(restaurant.baseUrl).isEqualTo("http://0.0.0.0:$port")
                 }
                 it("can be called with null as port for autodetect") {
                     val restaurant =
-                        autoClose(Restaurant(port = null, serverFactory = backend.serverFactory) {})
-                    assert(restaurant.sendRequest("/").statusCode == HttpStatus.NOT_FOUND_404)
+                        autoClose(Restaurant(port = null, serverFactory = server.serverFactory) {})
+                    val httpClient = clientFor(restaurant)
+                    assert(
+                        restaurant.sendRequest("/", httpClient).statusCode ==
+                            HttpStatus.NOT_FOUND_404)
                 }
                 it("can be called with port = 0 for random port assignment") {
                     val restaurant =
-                        autoClose(Restaurant(port = 0, serverFactory = backend.serverFactory) {})
+                        autoClose(Restaurant(port = 0, serverFactory = server.serverFactory) {})
+                    val httpClient = clientFor(restaurant)
                     expectThat(restaurant.baseUrl) {
                         startsWith("http://127.0.0.1:")
                         not { endsWith(":0") }
                     }
                     val actualPort = restaurant.baseUrl.substringAfterLast(":").toInt()
                     expectThat(actualPort).isGreaterThan(0)
-                    assert(restaurant.sendRequest("/").statusCode == HttpStatus.NOT_FOUND_404)
+                    assert(
+                        restaurant.sendRequest("/", httpClient).statusCode ==
+                            HttpStatus.NOT_FOUND_404)
                 }
                 describe("to string method for request") {
                     val toString = CompletableDeferred<String>()
                     val restaurant =
                         autoClose(
-                            Restaurant(serverFactory = backend.serverFactory) {
+                            Restaurant(serverFactory = server.serverFactory) {
                                 route(Method.GET, "/path") { req, _ ->
                                     toString.complete(req.toString())
                                     response()
                                 }
                             })
+                    val httpClient = clientFor(restaurant)
+
                     it("works without query string") {
-                        restaurant.sendRequest("/path")
+                        restaurant.sendRequest("/path", httpClient)
                         val await = toString.await()
                         assert(await.contains("/path"))
                         assert(!await.contains("/path?"))
                     }
                     it("works with query string") {
-                        restaurant.sendRequest("/path?blah")
+                        restaurant.sendRequest("/path?blah", httpClient)
                         assert(toString.await().contains("/path?blah"))
                     }
                 }
@@ -172,12 +197,13 @@ class RestaurantTest {
 
                         val restaurant =
                             autoClose(
-                                Restaurant(serverFactory = backend.serverFactory) {
+                                Restaurant(serverFactory = server.serverFactory) {
                                     route(Method.GET, "/async") { _, _ ->
                                         FlowResponse(mapOf(), 200, californiaStreaming)
                                     }
                                 })
-                        val response = restaurant.sendStreamingRequest("/async")
+                        val httpClient = clientFor(restaurant)
+                        val response = restaurant.sendStreamingRequest("/async", httpClient)
                         expectThat(response).get { statusCode }.isEqualTo(200)
                         var received = 0
                         expectThat(

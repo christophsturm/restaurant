@@ -3,6 +3,7 @@ package restaurant
 import failgood.Test
 import failgood.testCollection
 import kotlin.test.assertEquals
+import restaurant.client.HttpClientConfig
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
@@ -13,19 +14,23 @@ import strikt.assertions.isNotNull
 class RequestTest {
     val context =
         testCollection(Request::class) {
-            forEachBackend { backend ->
+            forEachClientAndServer { client, server ->
+                fun clientFor(restaurant: Restaurant) =
+                    autoClose(client.clientFactory.create(HttpClientConfig(restaurant.baseUrl)))
+
                 describe("get requests") {
                     lateinit var req: Request
                     val restaurant =
                         autoClose(
-                            Restaurant(serverFactory = backend.serverFactory) {
+                            Restaurant(serverFactory = server.serverFactory) {
                                 route(Method.GET, "/path") { request, _ ->
                                     req = request
                                     response(200)
                                 }
                             })
+                    val httpClient = clientFor(restaurant)
                     val response =
-                        restaurant.sendRequest("/path?p1=v1&p1=v2&p2=v3") {
+                        restaurant.sendRequest("/path?p1=v1&p1=v2&p2=v3", httpClient) {
                             addHeader("header1", "value1")
                             addHeader("header1", "value2")
                             addHeader("header2", "value3")
@@ -60,13 +65,17 @@ class RequestTest {
                         lateinit var req: RequestWithBody
                         val restaurant =
                             autoClose(
-                                Restaurant(serverFactory = backend.serverFactory) {
+                                Restaurant(serverFactory = server.serverFactory) {
                                     route(Method.POST, "/path") { request, _ ->
                                         req = request.withBody()
                                         response(200)
                                     }
                                 })
-                        val response = restaurant.sendRequest("/path?query=string") { post("body") }
+                        val httpClient = clientFor(restaurant)
+                        val response =
+                            restaurant.sendRequest("/path?query=string", httpClient) {
+                                post("body")
+                            }
                         assert(response.isOk)
                         it("can convert to a request that has a body") {
                             assert(String(req.body!!) == "body")
@@ -85,7 +94,7 @@ class RequestTest {
                         lateinit var req: RequestWithBody
                         val restaurant =
                             autoClose(
-                                Restaurant(serverFactory = backend.serverFactory) {
+                                Restaurant(serverFactory = server.serverFactory) {
                                     wrap(BodyReader()) {
                                         route(Method.POST, "/path") { request, _ ->
                                             req = request.withBody()
@@ -93,7 +102,11 @@ class RequestTest {
                                         }
                                     }
                                 })
-                        val response = restaurant.sendRequest("/path?query=string") { post("body") }
+                        val httpClient = clientFor(restaurant)
+                        val response =
+                            restaurant.sendRequest("/path?query=string", httpClient) {
+                                post("body")
+                            }
                         assert(response.isOk)
                         it("can convert to a request that has a body") {
                             assert(String(req.body!!) == "body")
