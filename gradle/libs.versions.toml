@@ -1,14 +1,14 @@
 [versions]
 kotlin = "2.3.20"
-kotlinx-coroutines = "1.10.1"
-kotlinx-serialization = "1.8.0"
-jackson = "2.19.0"
-undertow = "2.3.18.Final"
+kotlinx-coroutines = "1.10.2"
+kotlinx-serialization = "1.10.0"
+jackson = "2.21.2"
+undertow = "2.3.24.Final"
 failgood = "0.9.2"
-strikt = "0.34.1"
+strikt = "0.35.1"
 kotlin-logging = "3.0.5"
 logback = "1.5.16"
-auth0-jwt = "4.5.0"
+auth0-jwt = "4.5.1"
 pitest = "1.9.8"
 
 [libraries]
