@@ -1,12 +1,9 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
 plugins {
-    kotlin("jvm")
-    //    id("info.solidsoft.pitest") // disable because this does not currently work
-    id("shared.common")
-    id("shared.publishing")
+    id("buildgood.module")
     id("org.jetbrains.kotlinx.kover")
-    kotlin("plugin.serialization") version ("2.1.10")
+    kotlin("plugin.serialization") version ("2.3.20")
 }
 
 dependencies {

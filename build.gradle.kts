@@ -1,33 +1,23 @@
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import java.util.*
+import buildgood.CommonBuildExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("com.github.ben-manes.versions") version "0.52.0"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.1" apply false
+    id("buildgood.root")
 }
 // to release:
 // ./gradlew publishToSonatype closeSonatypeStagingRepository (or ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository)
 
-fun isNonStable(version: String): Boolean {
-    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase(Locale.getDefault()).contains(it) }
-    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-    val isStable = stableKeyword || regex.matches(version)
-    return isStable.not()
-}
-tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
-    rejectVersionIf {
-        isNonStable(candidate.version) && !isNonStable(currentVersion)
+// Configure build settings for all modules using the DSL
+commonBuild {
+    basePackage = "restaurant"
+    jvmTarget {
+        production(JvmTarget.JVM_11)
+        test(JvmTarget.JVM_17)
     }
-    // optional parameters
-    gradleReleaseChannel = "current"
-    checkForGradleUpdate = true
-    outputFormatter = "json"
-    outputDir = "build/dependencyUpdates"
-    reportfileName = "report"
+    // Don't use strict mode based on gradle.properties setting
 }
-
-tasks.wrapper { distributionType = Wrapper.DistributionType.ALL }
 
 nexusPublishing {
     repositories {

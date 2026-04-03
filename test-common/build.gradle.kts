@@ -1,9 +1,6 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
-plugins {
-    kotlin("jvm")
-    id("shared.common")
-}
+plugins { id("buildgood.module") }
 
 dependencies {
     api(libs.failgood)

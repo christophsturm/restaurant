@@ -1,11 +1,6 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
-plugins {
-    kotlin("jvm")
-    id("shared.pitest")
-    id("shared.common")
-    id("shared.publishing")
-}
+plugins { id("buildgood.module") }
 
 dependencies {
     implementation(platform(libs.kotlin.bom))
