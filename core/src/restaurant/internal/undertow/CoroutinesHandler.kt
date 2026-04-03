@@ -54,8 +54,8 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
                         exchange.responseHeaders.add(HttpString(it.key), it.value)
                     }
                     when (response) {
-                        is ByteBufferResponse -> {
-                            exchange.responseSender.send(response.body)
+                        is ByteArrayResponse -> {
+                            exchange.responseSender.send(ByteBuffer.wrap(response.body))
                         }
 
                         is StatusResponse -> {

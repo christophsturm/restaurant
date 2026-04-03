@@ -7,6 +7,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":restaurant-api"))
     api(project(":restaurant-client"))
 
     implementation(platform(libs.kotlin.bom))

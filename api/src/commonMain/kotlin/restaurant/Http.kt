@@ -1,5 +1,13 @@
 package restaurant
 
+object ContentType {
+    const val APPLICATION_JSON = "application/json"
+}
+
+object HttpHeader {
+    const val CONTENT_TYPE = "Content-Type"
+}
+
 object HttpStatus {
     const val OK_200 = 200
     const val CREATED_201 = 201

@@ -10,6 +10,10 @@ includes a http client based on the java 11 http client.
 
 Available from Maven Central.
 
+## Development
+
+Use focused Gradle tasks while iterating, but use `./ci` as the final verification command before committing. It runs formatting and the full `check` lifecycle with `CI=true`.
+
 ## REST API with Type-Safe DSL (rest2)
 
 The newest and recommended way to build REST APIs with Restaurant. Uses a type-safe DSL and kotlinx-serialization for better performance and native compilation support.

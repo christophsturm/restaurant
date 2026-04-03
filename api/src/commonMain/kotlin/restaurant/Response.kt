@@ -1,6 +1,5 @@
 package restaurant
 
-import java.nio.ByteBuffer
 import kotlinx.coroutines.flow.Flow
 
 fun response(status: Int = HttpStatus.NO_CONTENT_204, headers: Map<String, String> = mapOf()) =
@@ -9,17 +8,11 @@ fun response(status: Int = HttpStatus.NO_CONTENT_204, headers: Map<String, Strin
 fun response(status: Int, result: String, headers: Map<String, String> = mapOf()) =
     StringResponse(status, result, headers)
 
-fun response(status: Int, result: ByteBuffer, headers: Map<String, String> = mapOf()) =
-    ByteBufferResponse(status, result, headers)
-
 fun response(status: Int, result: ByteArray, headers: Map<String, String> = mapOf()) =
-    ByteBufferResponse(status, ByteBuffer.wrap(result), headers)
-
-fun response(result: ByteBuffer, headers: Map<String, String> = mapOf()) =
-    ByteBufferResponse(200, result, headers)
+    ByteArrayResponse(status, result, headers)
 
 fun response(result: ByteArray, headers: Map<String, String> = mapOf()) =
-    ByteBufferResponse(200, ByteBuffer.wrap(result), headers)
+    ByteArrayResponse(200, result, headers)
 
 fun response(result: String, headers: Map<String, String> = mapOf()) =
     StringResponse(200, result, headers)
@@ -46,13 +39,13 @@ data class StringResponse(
     override fun bodyString() = body
 }
 
-data class ByteBufferResponse(
+data class ByteArrayResponse(
     override val status: Int,
-    val body: ByteBuffer,
+    val body: ByteArray,
     override val headers: Map<String, String> = mapOf()
 ) : Response {
     override fun bodyString(): String {
-        return String(body.array())
+        return body.decodeToString()
     }
 }
 

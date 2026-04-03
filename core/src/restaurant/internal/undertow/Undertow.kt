@@ -36,7 +36,7 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
 
     override val queryString: String = exchange.queryString
 
-    override val headers: HeaderMap = HeaderMap(exchange.requestHeaders)
+    override val headers: HeaderMap = exchange.requestHeaders.toRestaurantHeaderMap()
     override val method: Method =
         when (val method = exchange.requestMethod) {
             Methods.GET -> Method.GET
@@ -52,6 +52,9 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
         if (queryString.isEmpty()) "Request(method:$method, path:$requestPath)"
         else "Request(method:$method, path:$requestPath?$queryString)"
 }
+
+private fun io.undertow.util.HeaderMap.toRestaurantHeaderMap(): HeaderMap =
+    HeaderMap(asSequence().associate { it.headerName.toString() to it.toList() })
 
 class UndertowRequestWithBody(
     private val undertowRequest: UndertowRequest,
