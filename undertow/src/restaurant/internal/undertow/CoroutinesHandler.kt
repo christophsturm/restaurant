@@ -13,25 +13,11 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 import restaurant.*
-
-private val logger = KotlinLogging.logger {}
 
 class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         val requestScope = CoroutineScope(Dispatchers.Unconfined)
-        /*
-                exchange.addExchangeCompleteListener { _, nextListener ->
-                    logger.debug { "Exchange complete: ${exchange.statusCode}" }
-                    try {
-                        requestScope.cancel()
-                    } catch (e: Exception) {
-                        logger.error(e) { "error closing coroutine context" }
-                    }
-                    nextListener.proceed()
-                }
-        */
         exchange.dispatch(
             SameThreadExecutor.INSTANCE,
             Runnable {
@@ -41,10 +27,6 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
                     try {
                         exchange.statusCode = response.status
                     } catch (e: IllegalStateException) {
-                        // setStatusCode throws IllegalStateException when the response is already
-                        // started.
-                        // we sometimes see this on ci so we are rethrowing it with more info for
-                        // now.
                         throw RestaurantException(
                             "Response already started when trying to send response $response," +
                                 " body: ${response.bodyString()}",
@@ -96,7 +78,6 @@ class CoroutinesHandler(private val suspendHandler: SuspendingHandler) : HttpHan
         deferred.await()
     }
 
-    /** an IOCallback that completes a CompletableDeferred */
     class CompletingIOCallback(private val deferred: CompletableDeferred<Unit>) : IoCallback {
         override fun onComplete(exchange: HttpServerExchange?, sender: Sender?) {
             deferred.complete(Unit)

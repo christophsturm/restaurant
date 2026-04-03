@@ -1,11 +1,10 @@
 package restaurant
 
-import io.undertow.Undertow
 import java.net.ServerSocket
+import java.util.ServiceLoader
 import restaurant.HttpStatus.INTERNAL_SERVER_ERROR_500
 import restaurant.internal.Mapper
 import restaurant.internal.routes
-import restaurant.internal.undertow.buildUndertow
 
 /** return an unused port for servers to listen on */
 fun findFreePort(): Int =
@@ -30,7 +29,7 @@ data class Restaurant
 internal constructor(
     val baseUrl: String,
     val routes: List<Route>,
-    private val undertow: Undertow,
+    private val server: RestaurantServer,
     @Suppress("unused") @Deprecated("use baseUrl") val port: Int
 ) : AutoCloseable {
     companion object {
@@ -40,6 +39,7 @@ internal constructor(
             exceptionHandler: ExceptionHandler = defaultExceptionHandler,
             defaultHandler: SuspendingHandler = defaultDefaultHandler,
             mapper: Mapper? = null,
+            serverFactory: RestaurantServerFactory = loadServerFactory(),
             serviceMapping: RoutingDSL.() -> Unit
         ): Restaurant {
             val routes: List<Route> = routes(mapper, serviceMapping)
@@ -47,9 +47,9 @@ internal constructor(
                 routes.map { route ->
                     Pair(rootHandler(route.wrappers, exceptionHandler, route.handler), route)
                 }
-            val undertowAndPort = buildUndertow(rootHandlers, defaultHandler, port, host)
-            val baseUrl = "http://$host:${undertowAndPort.port}"
-            return Restaurant(baseUrl, routes, undertowAndPort.undertow, undertowAndPort.port)
+            val runningServer = serverFactory.start(rootHandlers, defaultHandler, port, host)
+            val baseUrl = "http://$host:${runningServer.port}"
+            return Restaurant(baseUrl, routes, runningServer.server, runningServer.port)
         }
 
         private fun rootHandler(
@@ -73,9 +73,25 @@ internal constructor(
                 }
             }
         }
+
+        private fun loadServerFactory(): RestaurantServerFactory {
+            val factories = ServiceLoader.load(RestaurantServerFactory::class.java).toList()
+            if (factories.isEmpty()) {
+                throw RestaurantException(
+                    "no restaurant server implementation found. add restaurant-undertow or " +
+                        "restaurant-netty, or pass serverFactory explicitly")
+            }
+            if (factories.size > 1) {
+                throw RestaurantException(
+                    "multiple restaurant server implementations found: " +
+                        factories.joinToString { it.name } +
+                        ". pass serverFactory explicitly")
+            }
+            return factories.single()
+        }
     }
 
     override fun close() {
-        undertow.stop()
+        server.close()
     }
 }

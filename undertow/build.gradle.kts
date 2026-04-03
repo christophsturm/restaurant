@@ -6,13 +6,12 @@ plugins {
 }
 
 dependencies {
-    api(libs.jackson.core)
-    api(libs.jackson.databind)
+    api(project(":restaurant-core"))
 
-    implementation(libs.jackson.module.kotlin)
     implementation(platform(libs.kotlin.bom))
-    api(project(":restaurant-rest"))
+    implementation(platform(libs.kotlinx.coroutines.bom))
+    implementation(libs.undertow.core)
+
     testImplementation(libs.strikt)
     testImplementation(project(":restaurant-test-common"))
-    testImplementation(project(":restaurant-undertow"))
 }

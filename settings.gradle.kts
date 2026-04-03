@@ -29,6 +29,8 @@ val modules =
         "test-common",
         "client",
         "core",
+        "undertow",
+        "netty",
         "rest",
         "jackson",
         "kotlinx-serialization",

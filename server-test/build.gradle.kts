@@ -7,6 +7,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":restaurant-core"))
+    api(project(":restaurant-undertow"))
     testImplementation(project(":restaurant-test-common"))
 }

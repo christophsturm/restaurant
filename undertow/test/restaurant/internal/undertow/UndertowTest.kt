@@ -12,7 +12,7 @@ class UndertowTest {
     val test = testCollection {
         it("can create an undertow server on a random port") {
             autoClose(buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost")) {
-                it.undertow.stop()
+                it.server.close()
             }
         }
         it("can create an undertow server on a fixed port") {
@@ -20,7 +20,7 @@ class UndertowTest {
             val result =
                 autoClose(
                     buildUndertow(emptyList(), { _, _ -> response(200) }, port, "localhost")) {
-                        it.undertow.stop()
+                        it.server.close()
                     }
             assert(result.port == port)
         }
@@ -28,7 +28,7 @@ class UndertowTest {
             val usedPort =
                 autoClose(
                         buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost")) {
-                            it.undertow.stop()
+                            it.server.close()
                         }
                     .port
             val exception =
@@ -45,7 +45,7 @@ class UndertowTest {
             val usedPort =
                 autoClose(
                         buildUndertow(emptyList(), { _, _ -> response(200) }, null, "localhost")) {
-                            it.undertow.stop()
+                            it.server.close()
                         }
                     .port
             val exception =

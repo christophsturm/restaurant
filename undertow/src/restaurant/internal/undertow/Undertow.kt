@@ -26,7 +26,7 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
     override suspend fun withBody(): RequestWithBody {
         if (requestWithBody != null) return requestWithBody!!
         val body: ByteArray = suspendCoroutine {
-            exchange.requestReceiver.receiveFullBytes { _, body -> it.resume(body) }
+            exchange.requestReceiver.receiveFullBytes { _, bytes -> it.resume(bytes) }
         }
         requestWithBody = UndertowRequestWithBody(this, body)
         return requestWithBody!!
@@ -38,12 +38,12 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
 
     override val headers: HeaderMap = exchange.requestHeaders.toRestaurantHeaderMap()
     override val method: Method =
-        when (val method = exchange.requestMethod) {
+        when (val requestMethod = exchange.requestMethod) {
             Methods.GET -> Method.GET
             Methods.POST -> Method.POST
             Methods.PUT -> Method.PUT
             Methods.DELETE -> Method.DELETE
-            else -> throw RestaurantException("unknown request method: $method")
+            else -> throw RestaurantException("unknown request method: $requestMethod")
         }
 
     override val queryParameters: Map<String, Collection<String>> = exchange.queryParameters
@@ -64,8 +64,12 @@ class UndertowRequestWithBody(
 
     override fun toString(): String {
         val withoutBody = undertowRequest.toString()
-        val body = body?.let { String(it) }
-        return if (body != null) withoutBody.dropLast(1) + ", body:" + body + ")" else withoutBody
+        val requestBody = body?.let { String(it) }
+        return if (requestBody != null) {
+            withoutBody.dropLast(1) + ", body:" + requestBody + ")"
+        } else {
+            withoutBody
+        }
     }
 }
 
@@ -75,42 +79,40 @@ internal fun buildUndertow(
     port: Int?,
     host: String,
     getPort: () -> Int = { findFreePort() }
-): UndertowAndPort {
+): RunningRestaurantServer {
     val routingHandler =
-        rootHandlers.fold(RoutingHandler()) { routingHandler, (handler, route) ->
+        rootHandlers.fold(RoutingHandler()) { currentRoutingHandler, (handler, route) ->
             val httpHandler = CoroutinesHandler(handler)
-            routingHandler.add(route.methodToHttpString(), route.path, httpHandler)
+            currentRoutingHandler.add(route.methodToHttpString(), route.path, httpHandler)
         }
     routingHandler.fallbackHandler = CoroutinesHandler(defaultHandler)
 
-    // retry undertow construction when listening on a random port and a bind exception occurs.
-    val TOTAL_TRIES = 3
-    val triedPorts = ArrayList<Int>(TOTAL_TRIES)
-    // Treat port = 0 as a request for a random port, just like port = null
+    val totalTries = 3
+    val triedPorts = ArrayList<Int>(totalTries)
     val requestedPort = if (port == 0) null else port
     while (true) {
         val realPort = requestedPort ?: getPort()
         triedPorts.add(realPort)
         try {
-            return UndertowAndPort(
+            val undertow =
                 Undertow.builder()
-                    //            .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
                     .addHttpListener(realPort, host)
                     .setHandler(SimpleErrorPageHandler(routingHandler))
                     .build()
-                    .apply { start() },
-                realPort)
+                    .apply { start() }
+            return RunningRestaurantServer(RestaurantServer { undertow.stop() }, realPort)
         } catch (e: RuntimeException) {
-            // it seems that undertow now wraps the bind exception in a runtime exception
             if (e.cause is BindException ||
                 e.cause is IllegalStateException ||
                 e.cause is SocketException) {
-                if (requestedPort != null)
+                if (requestedPort != null) {
                     throw RestaurantException("could not start server on port $requestedPort")
-                if (triedPorts.size == TOTAL_TRIES)
+                }
+                if (triedPorts.size == totalTries) {
                     throw RestaurantException(
-                        "could not start restaurant after trying $TOTAL_TRIES times." +
+                        "could not start restaurant after trying $totalTries times." +
                             " ports tried: $triedPorts")
+                }
                 Thread.sleep(100)
                 continue
             }
@@ -118,5 +120,3 @@ internal fun buildUndertow(
         }
     }
 }
-
-data class UndertowAndPort(val undertow: Undertow, val port: Int)

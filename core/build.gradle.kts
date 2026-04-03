@@ -13,11 +13,10 @@ dependencies {
     implementation(platform(libs.kotlin.bom))
     implementation(platform(libs.kotlinx.coroutines.bom))
 
-    api(libs.undertow.core)
-
     api(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlin.logging)
     implementation(libs.kotlinx.coroutines.jdk8)
     testImplementation(libs.strikt)
+    testImplementation(project(":restaurant-netty"))
     testImplementation(project(":restaurant-test-common"))
+    testImplementation(project(":restaurant-undertow"))
 }

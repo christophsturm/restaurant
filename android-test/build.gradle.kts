@@ -23,6 +23,7 @@ android {
     packaging {
         resources {
             excludes += "META-INF/INDEX.LIST"
+            pickFirsts += "META-INF/io.netty.versions.properties"
         }
     }
 
@@ -49,7 +50,7 @@ kotlin {
 }
 
 dependencies {
-    androidTestImplementation(project(":restaurant-core"))
+    androidTestImplementation(project(":restaurant-netty"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
 }

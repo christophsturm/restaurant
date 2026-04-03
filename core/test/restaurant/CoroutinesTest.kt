@@ -14,20 +14,25 @@ import strikt.assertions.isFalse
 class CoroutinesTest {
     val context =
         testCollection("coroutine handling") {
-            it(
-                "cancels coroutine scope when the client disconnects",
-                ignored =
-                    Ignored.Because(
-                        "it seems undertow does not close the exchange when the client disconnects," +
-                            "so we have no way of detecting client disconnects.")) {
-                    val delayService = DelayService()
-                    val restaurant = Restaurant { route(Method.GET, "/delay", delayService) }
-                    expectThrows<HttpTimeoutException> {
-                        restaurant.sendRequest("/delay") { timeout(30.milliseconds) }
+            forEachBackend { backend ->
+                it(
+                    "cancels coroutine scope when the client disconnects",
+                    ignored =
+                        Ignored.Because(
+                            "client disconnect cancellation is not wired reliably across the " +
+                                "current server backends")) {
+                        val delayService = DelayService()
+                        val restaurant =
+                            Restaurant(serverFactory = backend.serverFactory) {
+                                route(Method.GET, "/delay", delayService)
+                            }
+                        expectThrows<HttpTimeoutException> {
+                            restaurant.sendRequest("/delay") { timeout(30.milliseconds) }
+                        }
+                        delay(200)
+                        expectThat(delayService).get { afterDelay }.isFalse()
                     }
-                    delay(200)
-                    expectThat(delayService).get { afterDelay }.isFalse()
-                }
+            }
         }
 }
 

@@ -8,4 +8,5 @@ dependencies {
     api(libs.auth0.jwt)
     testImplementation(libs.strikt)
     testImplementation(project(":restaurant-test-common"))
+    testImplementation(project(":restaurant-undertow"))
 }

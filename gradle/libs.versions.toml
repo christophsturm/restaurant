@@ -4,6 +4,7 @@ kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.10.0"
 jackson = "2.21.2"
 undertow = "2.3.24.Final"
+netty = "4.1.110.Final"
 failgood = "0.9.2"
 strikt = "0.35.1"
 kotlin-logging = "3.0.5"
@@ -36,6 +37,10 @@ jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-
 
 # Server
 undertow-core = { module = "io.undertow:undertow-core", version.ref = "undertow" }
+netty-codec-http = { module = "io.netty:netty-codec-http", version.ref = "netty" }
+netty-handler = { module = "io.netty:netty-handler", version.ref = "netty" }
+netty-resolver = { module = "io.netty:netty-resolver", version.ref = "netty" }
+netty-transport = { module = "io.netty:netty-transport", version.ref = "netty" }
 
 # JWT
 auth0-jwt = { module = "com.auth0:java-jwt", version.ref = "auth0-jwt" }
