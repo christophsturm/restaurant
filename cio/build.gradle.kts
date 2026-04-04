@@ -1,9 +1,6 @@
 @file:Suppress("GradlePackageUpdate") // buggy
 
-plugins {
-    id("buildgood.kmp")
-    kotlin("plugin.serialization") version ("2.3.20")
-}
+plugins { id("buildgood.kmp") }
 
 kotlin {
     jvm()
@@ -13,8 +10,10 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":restaurant-api"))
-            implementation(project(":restaurant-kotlinx-serialization"))
+            api(project(":restaurant-server-runtime"))
+            implementation(libs.ktor.http)
+            implementation(libs.ktor.http.cio)
+            implementation(libs.ktor.network)
         }
 
         commonTest.dependencies { implementation(libs.kotlin.test) }

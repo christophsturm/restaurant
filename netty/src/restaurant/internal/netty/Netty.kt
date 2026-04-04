@@ -38,6 +38,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import restaurant.*
+import restaurant.internal.findRoute
+import restaurant.internal.withPathParameters
 
 internal fun buildNetty(
     rootHandlers: List<Pair<SuspendingHandler, Route>>,
@@ -112,9 +114,6 @@ private class NettyRestaurantHandler(
                 parameters[name] = values.toList()
                 parameters
             }
-        routeMatch?.pathParameters?.forEach { (name, value) ->
-            queryParameters[name] = (queryParameters[name] ?: emptyList()) + value
-        }
         val restaurantRequest =
             NettyRequest(
                 requestPath = requestPath,
@@ -129,7 +128,11 @@ private class NettyRestaurantHandler(
                 writeResponse(
                     ctx = ctx,
                     keepAlive = keepAlive,
-                    response = handler.handle(restaurantRequest, MutableRequestContext()))
+                    response =
+                        handler.handle(
+                            restaurantRequest.withPathParameters(
+                                routeMatch?.pathParameters ?: emptyMap()),
+                            MutableRequestContext()))
             } catch (e: Throwable) {
                 ctx.fireExceptionCaught(e)
             }
@@ -140,65 +143,6 @@ private class NettyRestaurantHandler(
         ctx.close()
     }
 }
-
-private data class MatchedHandler(
-    val handler: SuspendingHandler,
-    val pathParameters: Map<String, String>
-)
-
-private data class MatchedRoute(
-    val handler: SuspendingHandler,
-    val pathParameters: Map<String, String>,
-    val literalSegmentCount: Int
-)
-
-private data class PathMatch(val pathParameters: Map<String, String>, val literalSegmentCount: Int)
-
-private fun findRoute(
-    rootHandlers: List<Pair<SuspendingHandler, Route>>,
-    requestMethod: Method,
-    requestPath: String
-): MatchedHandler? {
-    val matchedRoute =
-        rootHandlers
-            .asSequence()
-            .mapNotNull { (handler, route) ->
-                if (route.method != requestMethod) return@mapNotNull null
-                val pathMatch = matchPath(route.path, requestPath) ?: return@mapNotNull null
-                MatchedRoute(handler, pathMatch.pathParameters, pathMatch.literalSegmentCount)
-            }
-            .maxByOrNull { it.literalSegmentCount } ?: return null
-    return MatchedHandler(matchedRoute.handler, matchedRoute.pathParameters)
-}
-
-private fun matchPath(routePath: String, requestPath: String): PathMatch? {
-    val routeSegments = normalizePath(routePath).splitIntoSegments()
-    val requestSegments = normalizePath(requestPath).splitIntoSegments()
-    if (routeSegments.size != requestSegments.size) return null
-    val pathParameters = mutableMapOf<String, String>()
-    var literalSegmentCount = 0
-    routeSegments.zip(requestSegments).forEach { (routeSegment, requestSegment) ->
-        if (routeSegment.isPathParameter()) {
-            pathParameters[routeSegment.removeSurrounding("{", "}")] = requestSegment
-        } else if (routeSegment != requestSegment) {
-            return null
-        } else {
-            literalSegmentCount++
-        }
-    }
-    return PathMatch(pathParameters, literalSegmentCount)
-}
-
-private fun String.isPathParameter(): Boolean = startsWith("{") && endsWith("}")
-
-private fun normalizePath(path: String): String {
-    val trimmed = path.trim()
-    if (trimmed.isEmpty() || trimmed == "/") return "/"
-    return "/" + trimmed.trim('/')
-}
-
-private fun String.splitIntoSegments(): List<String> =
-    if (this == "/") emptyList() else trim('/').split('/')
 
 private class NettyRequest(
     override val requestPath: String,

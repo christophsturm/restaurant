@@ -8,6 +8,7 @@ plugins {
 
 dependencies {
     api(project(":restaurant-api"))
+    api(project(":restaurant-server-runtime"))
     api(project(":restaurant-client"))
 
     implementation(platform(libs.kotlin.bom))
@@ -17,6 +18,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.jdk8)
     testImplementation(libs.strikt)
     testImplementation(project(":restaurant-java11-client"))
+    testImplementation(project(":restaurant-cio"))
     testImplementation(project(":restaurant-netty"))
     testImplementation(project(":restaurant-okhttp-client"))
     testImplementation(project(":restaurant-test-common"))

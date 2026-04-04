@@ -26,11 +26,13 @@ val modules =
     listOf(
         "api",
         "android-test",
+        "cio",
         "test-common",
         "client",
         "java11-client",
         "okhttp-client",
         "core",
+        "server-runtime",
         "undertow",
         "netty",
         "rest",

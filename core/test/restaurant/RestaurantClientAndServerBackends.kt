@@ -1,6 +1,7 @@
 package restaurant
 
 import failgood.dsl.ContextDSL
+import restaurant.cio.CioRestaurantServerFactory
 import restaurant.client.Java11HttpClientFactory
 import restaurant.client.OkHttpClientFactory
 import restaurant.client.RestaurantHttpClientFactory
@@ -16,6 +17,7 @@ data class RestaurantClientBackend(
 
 private val restaurantServerBackends =
     listOf(
+        RestaurantServerBackend("cio", CioRestaurantServerFactory()),
         RestaurantServerBackend("undertow", UndertowRestaurantServerFactory()),
         RestaurantServerBackend("netty", NettyRestaurantServerFactory()),
     )

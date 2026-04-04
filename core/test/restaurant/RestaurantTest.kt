@@ -87,6 +87,48 @@ class RestaurantTest {
                             get { body() }.isEqualTo("1234")
                         }
                     }
+                    it("exposes multiple path parameters to handlers") {
+                        val restaurant =
+                            autoClose(
+                                Restaurant(serverFactory = server.serverFactory) {
+                                    route(Method.GET, "/teams/{teamId}/users/{userId}") { request, _
+                                        ->
+                                        response(
+                                            "${request.queryParameters["teamId"]!!.single()}:${request.queryParameters["userId"]!!.single()}")
+                                    }
+                                })
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/teams/blue/users/42", httpClient)) {
+                            get { statusCode() }.isEqualTo(200)
+                            get { body() }.isEqualTo("blue:42")
+                        }
+                    }
+                    it("keeps query parameters when path parameters use different names") {
+                        val restaurant =
+                            autoClose(
+                                Restaurant(serverFactory = server.serverFactory) {
+                                    route(Method.GET, "/teams/{teamId}") { request, _ ->
+                                        response(
+                                            "${request.queryParameters["teamId"]!!.single()}:${request.queryParameters["view"]!!.single()}")
+                                    }
+                                })
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/teams/blue?view=full", httpClient)) {
+                            get { statusCode() }.isEqualTo(200)
+                            get { body() }.isEqualTo("blue:full")
+                        }
+                    }
+                    it("returns the default handler when segment counts differ") {
+                        val restaurant =
+                            autoClose(
+                                Restaurant(serverFactory = server.serverFactory) {
+                                    route(Method.GET, "/users/{id}") { _, _ -> response("matched") }
+                                })
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/users/123/profile", httpClient)) {
+                            get { statusCode() }.isEqualTo(404)
+                        }
+                    }
                 }
                 describe("error handling") {
                     class ExceptionsHandler : SuspendingHandler {
