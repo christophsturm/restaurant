@@ -35,9 +35,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.IOException
@@ -75,24 +74,34 @@ class CioRestaurantServerFactory : RestaurantServerFactory {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val selector = SelectorManager(scope.coroutineContext)
         val serverSocketDeferred = CompletableDeferred<ServerSocket>()
-        val clientJobs = mutableListOf<kotlinx.coroutines.Job>()
 
         val acceptJob =
             scope.launch {
                 val serverSocket =
-                    aSocket(selector).tcp().bind(host, requestedPort) { reuseAddress = true }
+                    try {
+                        aSocket(selector).tcp().bind(host, requestedPort) { reuseAddress = true }
+                    } catch (e: Exception) {
+                        serverSocketDeferred.completeExceptionally(e)
+                        return@launch
+                    }
                 serverSocketDeferred.complete(serverSocket)
 
                 try {
                     while (isActive) {
-                        val client = serverSocket.accept()
-                        clientJobs += launch {
-                            handleConnection(client, rootHandlers, defaultHandler)
-                        }
+                        val client =
+                            try {
+                                serverSocket.accept()
+                            } catch (_: CancellationException) {
+                                break
+                            } catch (_: IOException) {
+                                if (!isActive) break
+                                continue
+                            }
+                        launch { handleConnection(client, rootHandlers, defaultHandler) }
                     }
                 } finally {
-                    serverSocket.close()
-                    serverSocket.awaitClosed()
+                    runCatching { serverSocket.close() }
+                    runCatching { serverSocket.awaitClosed() }
                 }
             }
 
@@ -110,13 +119,13 @@ class CioRestaurantServerFactory : RestaurantServerFactory {
 
         val server = RestaurantServer {
             runBlocking {
-                acceptJob.cancel()
-                scope.coroutineContext.cancelChildren()
-                serverSocket.close()
-                serverSocket.awaitClosed()
-                clientJobs.joinAll()
-                scope.cancel()
-                selector.close()
+                try {
+                    runCatching { serverSocket.close() }
+                    acceptJob.cancelAndJoin()
+                } finally {
+                    scope.cancel()
+                    selector.close()
+                }
             }
         }
         return RunningRestaurantServer(server, serverSocket.port)
@@ -137,7 +146,7 @@ private suspend fun handleConnection(
                 try {
                     parseRequest(input) ?: break
                 } catch (e: ParserException) {
-                    writeBadRequest(output, e.message)
+                    runCatching { writeBadRequest(output, e.message) }
                     break
                 } catch (_: IOException) {
                     break
@@ -160,9 +169,11 @@ private suspend fun handleConnection(
                 writeResponse(output, response, keepAlive)
                 if (!keepAlive) break
             } catch (e: ParserException) {
-                writeBadRequest(output, e.message)
+                runCatching { writeBadRequest(output, e.message) }
                 break
             } catch (_: CancellationException) {
+                break
+            } catch (_: IOException) {
                 break
             } finally {
                 request.release()
