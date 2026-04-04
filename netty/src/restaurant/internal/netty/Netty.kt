@@ -146,32 +146,47 @@ private data class MatchedHandler(
     val pathParameters: Map<String, String>
 )
 
+private data class MatchedRoute(
+    val handler: SuspendingHandler,
+    val pathParameters: Map<String, String>,
+    val literalSegmentCount: Int
+)
+
+private data class PathMatch(val pathParameters: Map<String, String>, val literalSegmentCount: Int)
+
 private fun findRoute(
     rootHandlers: List<Pair<SuspendingHandler, Route>>,
     requestMethod: Method,
     requestPath: String
 ): MatchedHandler? {
-    rootHandlers.forEach { (handler, route) ->
-        if (route.method != requestMethod) return@forEach
-        val pathParameters = matchPath(route.path, requestPath) ?: return@forEach
-        return MatchedHandler(handler, pathParameters)
-    }
-    return null
+    val matchedRoute =
+        rootHandlers
+            .asSequence()
+            .mapNotNull { (handler, route) ->
+                if (route.method != requestMethod) return@mapNotNull null
+                val pathMatch = matchPath(route.path, requestPath) ?: return@mapNotNull null
+                MatchedRoute(handler, pathMatch.pathParameters, pathMatch.literalSegmentCount)
+            }
+            .maxByOrNull { it.literalSegmentCount } ?: return null
+    return MatchedHandler(matchedRoute.handler, matchedRoute.pathParameters)
 }
 
-private fun matchPath(routePath: String, requestPath: String): Map<String, String>? {
+private fun matchPath(routePath: String, requestPath: String): PathMatch? {
     val routeSegments = normalizePath(routePath).splitIntoSegments()
     val requestSegments = normalizePath(requestPath).splitIntoSegments()
     if (routeSegments.size != requestSegments.size) return null
     val pathParameters = mutableMapOf<String, String>()
+    var literalSegmentCount = 0
     routeSegments.zip(requestSegments).forEach { (routeSegment, requestSegment) ->
         if (routeSegment.isPathParameter()) {
             pathParameters[routeSegment.removeSurrounding("{", "}")] = requestSegment
         } else if (routeSegment != requestSegment) {
             return null
+        } else {
+            literalSegmentCount++
         }
     }
-    return pathParameters
+    return PathMatch(pathParameters, literalSegmentCount)
 }
 
 private fun String.isPathParameter(): Boolean = startsWith("{") && endsWith("}")

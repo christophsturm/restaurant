@@ -52,6 +52,16 @@ class JWTTest {
                     get { body() }.isEqualTo("welcome user 42")
                 }
             }
+            it("treats authorization headers case-insensitively") {
+                val response =
+                    restaurant.sendRequest("/handlers/welcome") {
+                        addHeader("authorization", "Bearer ${JWTConfig.makeToken(42)}")
+                    }
+                expectThat(response) {
+                    get { statusCode() }.isEqualTo(200)
+                    get { body() }.isEqualTo("welcome user 42")
+                }
+            }
 
             it("returns 401 for unauthorized requests") {
                 val response = restaurant.sendRequest("/handlers/welcome")

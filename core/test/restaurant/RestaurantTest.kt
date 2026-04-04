@@ -57,6 +57,36 @@ class RestaurantTest {
                             get { body() }.isEqualTo("bokaj")
                         }
                     }
+                    it("prefers literal routes over path parameters") {
+                        val restaurant =
+                            autoClose(
+                                Restaurant(serverFactory = server.serverFactory) {
+                                    route(Method.GET, "/users/{id}") { request, _ ->
+                                        response(
+                                            "param:${request.queryParameters["id"]!!.single()}")
+                                    }
+                                    route(Method.GET, "/users/me") { _, _ -> response("literal") }
+                                })
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/users/me", httpClient)) {
+                            get { statusCode() }.isEqualTo(200)
+                            get { body() }.isEqualTo("literal")
+                        }
+                    }
+                    it("exposes path parameters to handlers") {
+                        val restaurant =
+                            autoClose(
+                                Restaurant(serverFactory = server.serverFactory) {
+                                    route(Method.GET, "/{prefix}/blah") { request, _ ->
+                                        response(request.queryParameters["prefix"]!!.single())
+                                    }
+                                })
+                        val httpClient = clientFor(restaurant)
+                        expectThat(restaurant.sendRequest("/1234/blah", httpClient)) {
+                            get { statusCode() }.isEqualTo(200)
+                            get { body() }.isEqualTo("1234")
+                        }
+                    }
                 }
                 describe("error handling") {
                     class ExceptionsHandler : SuspendingHandler {
@@ -131,14 +161,16 @@ class RestaurantTest {
                     }
                 }
                 it("exposes its base url for easier testing") {
-                    val port = findFreePort()
                     val restaurant =
                         autoClose(
                             Restaurant(
                                 host = "0.0.0.0",
-                                port = port,
+                                port = 0,
                                 serverFactory = server.serverFactory) {})
-                    expectThat(restaurant.baseUrl).isEqualTo("http://0.0.0.0:$port")
+                    expectThat(restaurant.baseUrl) {
+                        startsWith("http://0.0.0.0:")
+                        not { endsWith(":0") }
+                    }
                 }
                 it("can be called with null as port for autodetect") {
                     val restaurant =

@@ -51,6 +51,11 @@ class RequestTest {
                                 .isNotNull()
                                 .containsExactly("value1", "value2")
                         }
+                        it("looks up header names case-insensitively") {
+                            expectThat(req.headers["HEADER1"])
+                                .isNotNull()
+                                .containsExactly("value1", "value2")
+                        }
                     }
                     describe("query parameters") {
                         it("can get a list of query parameters") {

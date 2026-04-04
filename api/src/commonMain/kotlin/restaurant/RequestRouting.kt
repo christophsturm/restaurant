@@ -35,10 +35,16 @@ class MutableRequestContext : RequestContext {
     @Suppress("UNCHECKED_CAST") override operator fun <T> get(key: Key<T>): T = map[key] as T
 }
 
-class HeaderMap(private val requestHeaders: Map<String, List<String>> = emptyMap()) {
-    operator fun get(header: String): List<String>? {
-        return requestHeaders[header]
-    }
+class HeaderMap(requestHeaders: Map<String, List<String>> = emptyMap()) {
+    private val normalizedHeaders: Map<String, List<String>> =
+        requestHeaders.entries
+            .fold(linkedMapOf<String, MutableList<String>>()) { headers, (name, values) ->
+                headers.getOrPut(name.lowercase()) { mutableListOf() }.addAll(values)
+                headers
+            }
+            .mapValues { (_, values) -> values.toList() }
+
+    operator fun get(header: String): List<String>? = normalizedHeaders[header.lowercase()]
 }
 
 interface Request {

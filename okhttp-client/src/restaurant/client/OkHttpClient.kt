@@ -14,10 +14,19 @@ import okhttp3.RequestBody.Companion.toRequestBody
 class OkHttpClient(config: HttpClientConfig = HttpClientConfig()) : RestaurantHttpClient(config) {
     private val httpClient = SquareOkHttpClient.Builder().withTimeouts(timeout).build()
 
+    private class ClientLease(val client: SquareOkHttpClient, private val closeClient: () -> Unit) :
+        AutoCloseable {
+        private var closed = false
+
+        override fun close() {
+            if (closed) return
+            closed = true
+            closeClient()
+        }
+    }
+
     override fun close() {
-        httpClient.dispatcher.executorService.shutdown()
-        httpClient.connectionPool.evictAll()
-        httpClient.cache?.close()
+        httpClient.closeResources()
     }
 
     override suspend fun <BodyType> sendInternal(
@@ -32,34 +41,54 @@ class OkHttpClient(config: HttpClientConfig = HttpClientConfig()) : RestaurantHt
         }
 
     private suspend fun sendString(request: RequestData): RestaurantResponse<String> =
-        execute(request) { response ->
-            response.use { openResponse ->
-                RestaurantResponse(
-                    openResponse.code,
-                    openResponse.body?.string().orEmpty(),
-                    ResponseHeaders.of(openResponse.headers.toMultimap()),
-                    openResponse.request.url.toUri())
+        execute(request) { lease, response ->
+            lease.use {
+                response.use { openResponse ->
+                    RestaurantResponse(
+                        openResponse.code,
+                        openResponse.body?.string().orEmpty(),
+                        ResponseHeaders.of(openResponse.headers.toMultimap()),
+                        openResponse.request.url.toUri())
+                }
             }
         }
 
     private suspend fun sendBytes(request: RequestData): RestaurantResponse<ByteArray> =
-        execute(request) { response ->
-            response.use { openResponse ->
-                RestaurantResponse(
-                    openResponse.code,
-                    openResponse.body?.bytes() ?: byteArrayOf(),
-                    ResponseHeaders.of(openResponse.headers.toMultimap()),
-                    openResponse.request.url.toUri())
+        execute(request) { lease, response ->
+            lease.use {
+                response.use { openResponse ->
+                    RestaurantResponse(
+                        openResponse.code,
+                        openResponse.body?.bytes() ?: byteArrayOf(),
+                        ResponseHeaders.of(openResponse.headers.toMultimap()),
+                        openResponse.request.url.toUri())
+                }
             }
         }
 
     private suspend fun sendFlow(
         request: RequestData
-    ): RestaurantResponse<kotlinx.coroutines.flow.Flow<String>> =
-        execute(request) { response ->
-            RestaurantResponse(
-                response.code,
-                flow {
+    ): RestaurantResponse<kotlinx.coroutines.flow.Flow<String>> {
+        val lease = clientFor(request)
+        val response =
+            try {
+                withContext(Dispatchers.IO) {
+                    lease.client.newCall(request.toOkHttpRequest()).execute()
+                }
+            } catch (e: Throwable) {
+                lease.close()
+                when (e) {
+                    is ConnectException ->
+                        throw HttpClientException("Error connecting to ${request.url}.", e)
+                    is InterruptedIOException ->
+                        throw HttpClientException("Request Timeout for request ${request.url}.", e)
+                    else -> throw e
+                }
+            }
+        return RestaurantResponse(
+            response.code,
+            flow {
+                    lease.use {
                         response.use { openResponse ->
                             val source = openResponse.body?.source() ?: return@use
                             while (true) {
@@ -68,18 +97,27 @@ class OkHttpClient(config: HttpClientConfig = HttpClientConfig()) : RestaurantHt
                             }
                         }
                     }
-                    .flowOn(Dispatchers.IO),
-                ResponseHeaders.of(response.headers.toMultimap()),
-                response.request.url.toUri())
-        }
+                }
+                .flowOn(Dispatchers.IO),
+            ResponseHeaders.of(response.headers.toMultimap()),
+            response.request.url.toUri())
+    }
 
     private suspend fun <BodyType> execute(
         request: RequestData,
-        mapResponse: (okhttp3.Response) -> RestaurantResponse<BodyType>
+        mapResponse: (ClientLease, okhttp3.Response) -> RestaurantResponse<BodyType>
     ): RestaurantResponse<BodyType> =
         try {
+            val lease = clientFor(request)
             withContext(Dispatchers.IO) {
-                clientFor(request).newCall(request.toOkHttpRequest()).execute().let(mapResponse)
+                try {
+                    lease.client.newCall(request.toOkHttpRequest()).execute().let {
+                        mapResponse(lease, it)
+                    }
+                } catch (e: Throwable) {
+                    lease.close()
+                    throw e
+                }
             }
         } catch (e: ConnectException) {
             throw HttpClientException("Error connecting to ${request.url}.", e)
@@ -87,11 +125,13 @@ class OkHttpClient(config: HttpClientConfig = HttpClientConfig()) : RestaurantHt
             throw HttpClientException("Request Timeout for request ${request.url}.", e)
         }
 
-    private fun clientFor(request: RequestData): SquareOkHttpClient =
+    private fun clientFor(request: RequestData): ClientLease =
         if (request.timeout == timeout) {
-            httpClient
+            ClientLease(httpClient) {}
         } else {
-            httpClient.newBuilder().withTimeouts(request.timeout).build()
+            httpClient.newBuilder().withTimeouts(request.timeout).build().let { client ->
+                ClientLease(client) { client.closeResources() }
+            }
         }
 
     private fun RequestData.toOkHttpRequest(): Request {
@@ -113,6 +153,12 @@ class OkHttpClient(config: HttpClientConfig = HttpClientConfig()) : RestaurantHt
         connectTimeout(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
             .readTimeout(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
             .writeTimeout(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+
+    private fun SquareOkHttpClient.closeResources() {
+        dispatcher.executorService.shutdown()
+        connectionPool.evictAll()
+        cache?.close()
+    }
 }
 
 class OkHttpClientFactory : RestaurantHttpClientFactory {
