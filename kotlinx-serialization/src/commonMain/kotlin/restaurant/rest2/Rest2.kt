@@ -1,6 +1,5 @@
 package restaurant.rest2
 
-import java.util.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
@@ -37,8 +36,7 @@ class ResourceMapperWithDefaultType<Service : Any, DefaultType>(
     }
 }
 
-fun ___path(service: Any) =
-    service::class.simpleName!!.lowercase(Locale.getDefault()).removeSuffix("service") + "s"
+fun ___path(service: Any) = service::class.simpleName!!.lowercase().removeSuffix("service") + "s"
 
 interface ResourceMapper<Service : Any> {
     fun <ServiceResponse> show(
@@ -192,7 +190,7 @@ class CreateHandler<Service : Any, ServiceRequest, ServiceResponse>(
     override suspend fun handle(request: Request, requestContext: MutableRequestContext): Response {
         val payload =
             request.withBody().body.let {
-                val string = String(it!!)
+                val string = it!!.decodeToString()
                 try {
                     Json.decodeFromString(requestSerializer, string)
                 } catch (e: Exception) {
@@ -222,7 +220,7 @@ class UpdateHandler<Service : Any, ServiceRequest, ServiceResponse>(
             }
         val payload =
             request.withBody().body.let {
-                val string = String(it!!)
+                val string = it!!.decodeToString()
                 try {
                     Json.decodeFromString(requestSerializer, string)
                 } catch (e: Exception) {

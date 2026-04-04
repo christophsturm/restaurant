@@ -17,6 +17,7 @@ Use focused Gradle tasks while iterating, but treat `./ci` as the commit gate fo
 ## REST API with Type-Safe DSL (rest2)
 
 The newest and recommended way to build REST APIs with Restaurant. Uses a type-safe DSL and kotlinx-serialization for better performance and native compilation support.
+The routing DSL can live in `commonMain`; on JVM, `restaurant-core` still provides `Restaurant` and the server bootstrap.
 
 ### build.gradle.kts
 
@@ -45,7 +46,6 @@ application {
 ```kotlin
 import kotlinx.serialization.Serializable
 import restaurant.*
-import restaurant.rest.RestService
 import restaurant.rest2.resources
 
 @Serializable
@@ -54,7 +54,7 @@ data class User(val id: String? = null, val name: String, val email: String)
 @Serializable
 data class CreateUserRequest(val name: String, val email: String)
 
-class UserService : RestService {
+class UserService {
     private val users = mutableMapOf<String, User>()
     private var nextId = 1
 

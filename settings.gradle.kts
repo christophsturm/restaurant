@@ -36,6 +36,7 @@ val modules =
         "rest",
         "jackson",
         "kotlinx-serialization",
+        "kmp-test",
         "jwt",
         "server-test",
     )

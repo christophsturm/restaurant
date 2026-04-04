@@ -12,7 +12,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import restaurant.*
-import restaurant.rest.RestService
 import restaurant.rest2.resources
 import strikt.api.expectThat
 import strikt.assertions.contains
@@ -140,7 +139,7 @@ object RestRestaurantTest {
                             }
                         }
                         describe("exception handling") {
-                            class ExceptionsService : RestService {
+                            class ExceptionsService {
                                 fun index(): String {
                                     throw RuntimeException("error message")
                                 }
@@ -203,7 +202,7 @@ object RestRestaurantTest {
 
     data class Hobby(val name: String)
 
-    class UserService : RestService {
+    class UserService {
         suspend fun index(): List<User> {
             delay(1)
             return listOf(User("5", "userName"), User("6", "userName"))
@@ -230,7 +229,7 @@ object RestRestaurantTest {
         }
     }
 
-    class UserStringPKService : RestService {
+    class UserStringPKService {
         suspend fun index(): List<User> {
             delay(1)
             return listOf(User("5", "userName"), User("6", "userName"))
@@ -260,7 +259,7 @@ object RestRestaurantTest {
     @Serializable data class DeleteReply(val status: String)
 }
 
-class StreamingUserService : RestService {
+class StreamingUserService {
     suspend fun index(): Flow<RestRestaurantTest.User> {
         delay(1)
         return flowOf(
