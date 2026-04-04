@@ -60,3 +60,7 @@ ktfmt {
     kotlinLangStyle()
     trailingCommaManagementStrategy = TrailingCommaManagementStrategy.NONE
 }
+
+tasks.named("check").configure {
+    dependsOn("pixel2Api34DebugAndroidTest")
+}
