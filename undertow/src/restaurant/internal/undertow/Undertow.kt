@@ -6,6 +6,8 @@ import io.undertow.server.RoutingHandler
 import io.undertow.server.handlers.error.SimpleErrorPageHandler
 import io.undertow.util.HttpString
 import io.undertow.util.Methods
+import io.undertow.util.SameThreadExecutor
+import java.lang.Runnable
 import java.net.BindException
 import java.net.SocketException
 import kotlin.coroutines.resume
@@ -26,7 +28,11 @@ class UndertowRequest(private val exchange: HttpServerExchange) : Request {
     override suspend fun withBody(): RequestWithBody {
         if (requestWithBody != null) return requestWithBody!!
         val body: ByteArray = suspendCoroutine {
-            exchange.requestReceiver.receiveFullBytes { _, bytes -> it.resume(bytes) }
+            exchange.requestReceiver.receiveFullBytes { _, bytes ->
+                // AsyncReceiver resumes inside a nested executeRootHandler call. Dispatching the
+                // continuation keeps Undertow from ending the exchange before later suspensions.
+                exchange.dispatch(SameThreadExecutor.INSTANCE, Runnable { it.resume(bytes) })
+            }
         }
         requestWithBody = UndertowRequestWithBody(this, body)
         return requestWithBody!!

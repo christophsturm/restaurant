@@ -2,8 +2,12 @@ package restaurant
 
 import failgood.Test
 import failgood.testCollection
+import java.nio.ByteBuffer
 import kotlin.test.assertEquals
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import restaurant.client.HttpClientConfig
+import restaurant.undertow.UndertowRestaurantServerFactory
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
@@ -116,6 +120,41 @@ class RequestTest {
                         it("can convert to a request that has a body") {
                             assert(String(req.body!!) == "body")
                         }
+                    }
+                }
+            }
+            it("undertow keeps the response body when an async request body read suspends again") {
+                coroutineScope {
+                    val steps = RequestBodyReadSteps()
+                    val requestBody = "prefix-" + "x".repeat(8_192) + "-suffix"
+                    val restaurant =
+                        autoClose(
+                            Restaurant(serverFactory = UndertowRestaurantServerFactory()) {
+                                route(Method.POST, "/slow-body") { request, _ ->
+                                    steps.handlerReadyForBodyRemainder.complete(Unit)
+                                    val body = request.withBody().body!!
+                                    steps.bodyReadCompleted.complete(Unit)
+                                    steps.allowResponse.await()
+                                    response(ByteBuffer.wrap(body))
+                                }
+                            })
+                    val httpClient =
+                        autoClose(
+                            StepControlledOkHttpClient(
+                                HttpClientConfig(restaurant.baseUrl), steps, splitAfterBytes = 1))
+                    val response = async {
+                        restaurant.sendRequest("/slow-body", httpClient) { post(requestBody) }
+                    }
+
+                    steps.firstChunkWritten.await()
+                    steps.handlerReadyForBodyRemainder.await()
+                    steps.allowBodyRemainder.complete(Unit)
+                    steps.bodyReadCompleted.await()
+                    steps.allowResponse.complete(Unit)
+
+                    expectThat(response.await()) {
+                        get { statusCode() }.isEqualTo(200)
+                        get { body() }.isEqualTo(requestBody)
                     }
                 }
             }

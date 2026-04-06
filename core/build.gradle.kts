@@ -23,4 +23,5 @@ dependencies {
     testImplementation(project(":restaurant-okhttp-client"))
     testImplementation(project(":restaurant-test-common"))
     testImplementation(project(":restaurant-undertow"))
+    testImplementation(libs.okhttp)
 }
